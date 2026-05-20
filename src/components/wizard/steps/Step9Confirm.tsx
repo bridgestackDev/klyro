@@ -3,7 +3,11 @@
 import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getVertical } from "@/lib/verticals/registry";
+import { formatCurrency, formatPhoneDisplay } from "@/lib/format";
+import { DEFAULT_COUNTRY, COUNTRIES } from "@/lib/i18n/countries";
 import { useWizard } from "../WizardContext";
+
+const DEFAULT_LOCALE = COUNTRIES[DEFAULT_COUNTRY].locale;
 
 export function Step9Confirm() {
   const t = useTranslations("wizard.steps.confirm");
@@ -27,7 +31,21 @@ export function Step9Confirm() {
     },
     {
       label: t("sections.services"),
-      value: t("servicesCount", { count: data.step4.services.length }),
+      value: (() => {
+        const svcs = data.step4.services;
+        if (svcs.length === 0) return "—";
+        const prices = svcs.filter((s) => s.price > 0);
+        const countStr = t("servicesCount", { count: svcs.length });
+        if (prices.length === 0) return countStr;
+        const min = Math.min(...prices.map((s) => s.price));
+        const max = Math.max(...prices.map((s) => s.price));
+        const currency = svcs[0]?.currency ?? "HNL";
+        const range =
+          min === max
+            ? formatCurrency(min, currency, DEFAULT_LOCALE)
+            : `${formatCurrency(min, currency, DEFAULT_LOCALE)} – ${formatCurrency(max, currency, DEFAULT_LOCALE)}`;
+        return `${countStr} · ${range}`;
+      })(),
     },
     {
       label: t("sections.staff"),
@@ -41,10 +59,13 @@ export function Step9Confirm() {
     },
     {
       label: t("sections.messaging"),
-      value:
-        data.step7.channel === "whatsapp"
-          ? `${t("channelWhatsapp")}${data.step7.whatsappNumber ? ` · ${data.step7.whatsappNumber}` : ""}`
-          : t("channelEmail"),
+      value: (() => {
+        if (data.step7.channel !== "whatsapp") return t("channelEmail");
+        const raw = data.step7.whatsappNumber;
+        if (!raw) return t("channelWhatsapp");
+        const display = formatPhoneDisplay(raw, DEFAULT_COUNTRY) ?? raw;
+        return `${t("channelWhatsapp")} · ${display}`;
+      })(),
     },
   ];
 

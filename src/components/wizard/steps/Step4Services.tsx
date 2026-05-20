@@ -4,8 +4,13 @@ import { useEffect } from "react";
 import { Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getVertical } from "@/lib/verticals/registry";
+import { formatCurrency } from "@/lib/format";
+import { DEFAULT_COUNTRY, COUNTRIES } from "@/lib/i18n/countries";
 import type { ServiceDraft } from "@/lib/schemas/wizard";
 import { useWizard } from "../WizardContext";
+
+const DEFAULT_CURRENCY = COUNTRIES[DEFAULT_COUNTRY].currency;
+const DEFAULT_LOCALE = COUNTRIES[DEFAULT_COUNTRY].locale;
 
 const DURATION_OPTIONS = [15, 20, 30, 45, 60, 75, 90, 120, 150, 180, 240];
 
@@ -112,17 +117,24 @@ export function Step4Services() {
                 </option>
               ))}
             </select>
-            <input
-              type="number"
-              value={service.price === 0 ? "" : service.price}
-              onChange={(e) =>
-                updateService(i, { price: Number(e.target.value) || 0 })
-              }
-              placeholder="0"
-              min={0}
-              aria-label={t("priceLabel")}
-              className="rounded-[var(--radius-button)] border border-[var(--border-subtle)] bg-[var(--color-bg-surface)] px-3 py-2 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition-colors focus:border-[var(--color-violet)] focus:ring-1 focus:ring-[var(--color-violet)]"
-            />
+            <div className="space-y-0.5">
+              <input
+                type="number"
+                value={service.price === 0 ? "" : service.price}
+                onChange={(e) =>
+                  updateService(i, { price: Number(e.target.value) || 0 })
+                }
+                placeholder="0"
+                min={0}
+                aria-label={t("priceLabel")}
+                className="w-full rounded-[var(--radius-button)] border border-[var(--border-subtle)] bg-[var(--color-bg-surface)] px-3 py-2 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition-colors focus:border-[var(--color-violet)] focus:ring-1 focus:ring-[var(--color-violet)]"
+              />
+              {service.price > 0 && (
+                <p className="text-[10px] text-[var(--color-text-muted)]">
+                  {formatCurrency(service.price, service.currency || DEFAULT_CURRENCY, DEFAULT_LOCALE)}
+                </p>
+              )}
+            </div>
             <button
               type="button"
               onClick={() => removeService(i)}

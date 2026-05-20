@@ -1,4 +1,7 @@
 import { z } from "zod";
+import { COUNTRIES, DEFAULT_COUNTRY, type CountryCode } from "@/lib/i18n/countries";
+
+const COUNTRY_CODES = Object.keys(COUNTRIES) as [CountryCode, ...CountryCode[]];
 
 export const VERTICAL_KEYS = [
   "barbershop",
@@ -30,6 +33,7 @@ export const step3Schema = z.object({
   city: z.string(),
   timezone: z.string().min(1),
   phone: z.string(),
+  country: z.enum(COUNTRY_CODES).default(DEFAULT_COUNTRY),
 });
 
 export const serviceDraftSchema = z.object({

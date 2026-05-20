@@ -206,7 +206,7 @@ export function SetupWizard({
   ownerDisplayName: string;
 }) {
   return (
-    <WizardProvider>
+    <WizardProvider locale={locale}>
       <WizardInner locale={locale} ownerDisplayName={ownerDisplayName} />
     </WizardProvider>
   );
