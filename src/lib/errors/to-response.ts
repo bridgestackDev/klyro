@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { ApiError, ERROR_CODES } from "./api-error";
+import { logger } from "@/lib/log";
 
 interface PostgrestError {
   code: string;
@@ -58,7 +59,7 @@ export function toErrorResponse(error: unknown): NextResponse {
         { status: apiErr.status, headers }
       );
     }
-    console.error("[toErrorResponse] PostgrestError", {
+    logger.error("toErrorResponse: PostgrestError", {
       reqId,
       pgCode: error.code,
       message: error.message,
@@ -70,7 +71,10 @@ export function toErrorResponse(error: unknown): NextResponse {
   }
 
   const cause = error instanceof Error ? error : new Error(String(error));
-  console.error("[toErrorResponse] Unhandled error", { reqId, cause });
+  logger.error("toErrorResponse: unhandled error", {
+    reqId,
+    error: cause instanceof Error ? cause.message : String(cause),
+  });
   return NextResponse.json(
     { code: ERROR_CODES.INTERNAL, message: "An unexpected error occurred" },
     { status: 500, headers }

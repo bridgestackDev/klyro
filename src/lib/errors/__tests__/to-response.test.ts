@@ -106,8 +106,9 @@ describe("toErrorResponse — unknown errors", () => {
     expect(res._body["code"]).toBe(ERROR_CODES.INTERNAL);
   });
 
-  it("logs the cause for unknown errors", () => {
-    const spy = vi.spyOn(console, "error");
+  it("logs the cause for unknown errors via logger.error", async () => {
+    const logModule = await import("@/lib/log");
+    const spy = vi.spyOn(logModule.logger, "error");
     toErrorResponse(new Error("logged cause"));
     expect(spy).toHaveBeenCalled();
   });

@@ -88,12 +88,12 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 - [x] C5: Unit tests (12 tests — passthrough, Upstash-backed, getIp, lazy singletons)
 - [x] C6: env vars `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` added to `.env.example` + `env.ts`
 
-### Block D — Structured Logging ⬜
-- [ ] D1: `src/lib/log/logger.ts` — pino instance
-- [ ] D2: Replace console.log/error/warn in src/
-- [ ] D3: Request logging wrapper for API routes
-- [ ] D4: Sentry breadcrumbs for warn+ logs
-- [ ] D5: Unit tests
+### Block D — Structured Logging ✅
+- [x] D1: `src/lib/log/logger.ts` — pino instance (pretty in dev, JSON in prod)
+- [x] D2: Replace console.error in `to-response.ts` + `wizard.ts`; `env.ts` console.warn kept intentionally (initialization order)
+- [x] D3: `src/lib/log/with-request-logging.ts` — `withRequestLogging(route, handler)` wrapper
+- [x] D4: Sentry breadcrumbs for warn+ logs via try/catch dynamic hook (no-ops until @sentry/nextjs installed)
+- [x] D5: Unit tests (9 tests — logger methods, getRequestLogger, withRequestLogging pass/fail)
 
 ### Block E — Wizard E2E Test ⬜
 - [ ] E1: `tests/e2e/wizard.spec.ts` — full wizard journey for barbershop

@@ -1,7 +1,7 @@
 # Klyro — Build Status
 
 **Last updated:** 2026-05-20
-**Active phase:** Phase 2.5 — Hardening & Localization (Blocks A+B+C done, awaiting approval for Block D)
+**Active phase:** Phase 2.5 — Hardening & Localization (Blocks A+B+C+D done, awaiting approval for Block E)
 
 ---
 
@@ -187,7 +187,23 @@ Files changed:
 
 Tests: 101/101 passing (89 existing + 12 new)
 
-**Blocks D–E** — Not started
+**Block D — Structured Logging** ✅ Done
+
+Files added:
+- `src/lib/log/logger.ts` — `logger` (pino, pretty in dev / JSON in prod) + `getRequestLogger(reqId, route)` + `trySentryCrumb` hook (auto-activates when `@sentry/nextjs` installed)
+- `src/lib/log/with-request-logging.ts` — `withRequestLogging(route, handler)` HOF for route handlers
+- `src/lib/log/index.ts` — barrel export
+
+Files changed:
+- `src/lib/errors/to-response.ts` — `console.error` → `logger.error`
+- `src/lib/actions/wizard.ts` — `console.error` → `logger.error`
+- `src/lib/env.ts` — `console.warn` kept (initialization order; logger reads env vars from this file)
+- `.env.example` + `src/lib/env.ts` — added `LOG_LEVEL` + `LOG_PRETTY` optional vars
+- `src/lib/errors/__tests__/to-response.test.ts` — updated spy from `console.error` → `logger.error`
+
+Tests: 110/110 passing (101 existing + 9 new)
+
+**Block E** — Not started
 
 ---
 
