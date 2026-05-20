@@ -17,6 +17,18 @@ const COUNTRY_FLAGS: Record<CountryCode, string> = {
   US: "🇺🇸",
 };
 
+/** Example phone numbers in national format — shown as placeholder text. */
+const PHONE_EXAMPLE: Record<CountryCode, string> = {
+  HN: "+504 9876-5432",
+  SV: "+503 7890-1234",
+  GT: "+502 5678-9012",
+  NI: "+505 8123-4567",
+  CR: "+506 8765-4321",
+  MX: "+52 55 1234-5678",
+  CO: "+57 300 123-4567",
+  US: "+1 (555) 123-4567",
+};
+
 const TIMEZONES = [
   { value: "America/Tegucigalpa", label: "Tegucigalpa (UTC-6)" },
   { value: "America/Mexico_City", label: "México (UTC-6)" },
@@ -174,7 +186,7 @@ export function Step3Branch() {
             value={step3.phone}
             onChange={(e) => update("phone", e.target.value)}
             onBlur={handlePhoneBlur}
-            placeholder={t("phonePlaceholder")}
+            placeholder={PHONE_EXAMPLE[step3.country as CountryCode] ?? t("phonePlaceholder")}
             className="w-full rounded-[var(--radius-button)] border border-[var(--border-subtle)] bg-[var(--color-bg-surface)] px-4 py-2.5 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition-colors focus:border-[var(--color-violet)] focus:ring-1 focus:ring-[var(--color-violet)]"
           />
           {phoneError && (
