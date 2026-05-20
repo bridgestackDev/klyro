@@ -1,7 +1,7 @@
 # Klyro — Build Status
 
 **Last updated:** 2026-05-20
-**Active phase:** Phase 2.5 — Hardening & Localization (Blocks A+B done, awaiting approval for Block C)
+**Active phase:** Phase 2.5 — Hardening & Localization (Blocks A+B+C done, awaiting approval for Block D)
 
 ---
 
@@ -172,7 +172,22 @@ Files changed:
 
 Tests: 89/89 passing
 
-**Blocks C–E** — Not started
+**Block C — Rate Limiting Infrastructure** ✅ Done
+
+Files added:
+- `src/lib/rate-limit/client.ts` — `createLimiter()` with Upstash Redis backend + `PassthroughLimiter` fallback
+- `src/lib/rate-limit/limiters.ts` — lazy singletons: `getSlugCheckLimiter` (30/60s), `getBookingLimiter` (10/60s), `getAuthLimiter` (5/300s), `getGenericLimiter` (60/60s)
+- `src/lib/rate-limit/get-ip.ts` — `getIp(req)` extracts client IP from standard proxy headers
+- `src/lib/rate-limit/index.ts` — barrel export
+
+Files changed:
+- `src/lib/actions/wizard.ts` — `saveBusinessStep` rate-limited via `getSlugCheckLimiter` keyed by `user.id`
+- `.env.example` — added `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` (optional, passthrough when absent)
+- `src/lib/env.ts` — added optional Upstash env vars to server schema
+
+Tests: 101/101 passing (89 existing + 12 new)
+
+**Blocks D–E** — Not started
 
 ---
 

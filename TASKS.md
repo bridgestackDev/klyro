@@ -80,13 +80,13 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 - [x] B1.5: `WizardProvider` accepts `locale` prop; seeds country from detected locale; patches absent country on localStorage restore
 - [x] B1.6: i18n keys `wizard.steps.branch.country.{label, help}` in es + en
 
-### Block C — Rate Limiting Infrastructure ⬜
-- [ ] C1: `src/lib/rate-limit/client.ts` — Upstash client + in-memory fallback
-- [ ] C2: `src/lib/rate-limit/limiters.ts` — pre-defined limiters
-- [ ] C3: Apply slug-check limiter to wizard slug-check
-- [ ] C4: `src/lib/rate-limit/get-ip.ts` — IP extraction helper
-- [ ] C5: Unit tests
-- [ ] C6: README rate limiting section
+### Block C — Rate Limiting Infrastructure ✅
+- [x] C1: `src/lib/rate-limit/client.ts` — Upstash client + passthrough fallback (no Redis in dev/CI)
+- [x] C2: `src/lib/rate-limit/limiters.ts` — pre-defined limiters (slug-check, booking, auth, generic)
+- [x] C3: Apply slug-check limiter to wizard slug-check (`saveBusinessStep`, keyed by user.id)
+- [x] C4: `src/lib/rate-limit/get-ip.ts` — IP extraction helper for route handlers
+- [x] C5: Unit tests (12 tests — passthrough, Upstash-backed, getIp, lazy singletons)
+- [x] C6: env vars `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` added to `.env.example` + `env.ts`
 
 ### Block D — Structured Logging ⬜
 - [ ] D1: `src/lib/log/logger.ts` — pino instance

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ApiError } from "@/lib/errors";
+import { getSlugCheckLimiter } from "@/lib/rate-limit";
 import { slugify } from "@/lib/validation";
 import { COUNTRIES } from "@/lib/i18n/countries";
 import {
@@ -59,6 +60,10 @@ export async function saveBusinessStep(
 
     const user = await getVerifiedUser();
     if (!user) return { businessId: "", error: ApiError.unauthorized().code };
+
+    // C3: rate-limit slug writes per user (30 req / 60 s)
+    const rl = await getSlugCheckLimiter().limit(`slug-check:${user.id}`);
+    if (!rl.success) return { businessId: "", error: ApiError.rateLimited(60).code };
 
     const admin = createAdminClient();
 
