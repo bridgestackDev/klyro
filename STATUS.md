@@ -1,7 +1,7 @@
 # Klyro — Build Status
 
-**Last updated:** 2026-05-19
-**Active phase:** Phase 2 complete — Phase 3 next
+**Last updated:** 2026-05-20
+**Active phase:** Phase 2.5 — Hardening & Localization (Block A done, awaiting approval for Block B)
 
 ---
 
@@ -12,6 +12,7 @@
 | 0 | Foundation | ✅ Done | All 12 tables, RLS, types, brand, CI |
 | 1 | Auth & Onboarding Shell | ✅ Done | Magic link confirmed working end-to-end |
 | 2 | Setup Wizard | ✅ Done | 9-step wizard, all DB writes, admin client RLS fix |
+| 2.5 | Hardening & Localization | 🟡 In progress | Block A done; B–E pending |
 | 3 | Public Booking Flow | ⬜ Not started | `/[biz]/[branch]/[staff]` |
 | 4 | Messaging Engine | ⬜ Not started | WhatsApp + email templates |
 | 5 | Owner Dashboard | ⬜ Not started | Full operational view |
@@ -108,6 +109,29 @@
 - [x] `pnpm typecheck` — 0 errors
 - [x] `pnpm lint` — 0 warnings
 - [x] `pnpm test` — 8/8 passing
+
+---
+
+## Phase 2.5 — Hardening & Localization 🟡
+
+**Block A — Error Model & Global Handler** ✅ Done
+
+Files added:
+- `src/lib/errors/api-error.ts` — `ApiError` class + `ERROR_CODES` enum
+- `src/lib/errors/to-response.ts` — `toErrorResponse()` for route handlers
+- `src/lib/errors/index.ts` — barrel export
+- `src/app/[locale]/error.tsx` — branded error boundary ("use client")
+- `src/app/[locale]/not-found.tsx` — branded 404 page
+
+Files changed:
+- `src/lib/actions/wizard.ts` — all 6 actions wrapped in try/catch; use `ApiError.*` internally
+- `src/components/wizard/SetupWizard.tsx` — `resolveError` extended to handle new codes
+- `src/i18n/locales/es.json` + `en.json` — added FORBIDDEN, NOT_FOUND, VALIDATION_FAILED, RATE_LIMITED, INTERNAL, BAD_REQUEST, CONFLICT codes + `boundary.*` + `notFound.*` sections
+- `DECISIONS.md` — ADR-001, ADR-002, ADR-003
+
+Tests: 53/53 passing (41 existing + 9 ApiError + 13 toErrorResponse)
+
+**Blocks B–E** — Not started
 
 ---
 

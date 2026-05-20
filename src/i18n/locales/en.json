@@ -59,7 +59,24 @@
     "MISSING_IDS": "Missing required data. Please restart the wizard.",
     "SLUG_TAKEN": "This URL is already taken. Please choose a different one.",
     "WHATSAPP_INVALID": "Enter a valid WhatsApp number.",
-    "TIME_END_BEFORE_START": "End time must be after start time."
+    "TIME_END_BEFORE_START": "End time must be after start time.",
+    "FORBIDDEN": "You don't have permission to perform this action.",
+    "NOT_FOUND": "Resource not found.",
+    "VALIDATION_FAILED": "Validation failed. Please check your inputs.",
+    "RATE_LIMITED": "Too many requests. Please try again in {seconds} seconds.",
+    "INTERNAL": "Something went wrong. Please try again.",
+    "BAD_REQUEST": "Invalid request.",
+    "CONFLICT": "Conflict with an existing resource.",
+    "boundary": {
+      "title": "Something went wrong",
+      "body": "An unexpected error occurred. Please try again.",
+      "cta": "Go back"
+    },
+    "notFound": {
+      "title": "Page not found",
+      "body": "The page you're looking for doesn't exist or has been moved.",
+      "cta": "Go home"
+    }
   },
   "wizard": {
     "stepLabel": "Step {current} of {total}",

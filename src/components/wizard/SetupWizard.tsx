@@ -70,6 +70,13 @@ function resolveError(
     "SLUG_TAKEN",
     "WHATSAPP_INVALID",
     "TIME_END_BEFORE_START",
+    "FORBIDDEN",
+    "NOT_FOUND",
+    "VALIDATION_FAILED",
+    "RATE_LIMITED",
+    "INTERNAL",
+    "BAD_REQUEST",
+    "CONFLICT",
   ] as const;
   if ((known as readonly string[]).includes(code)) {
     return t(code as (typeof known)[number]);

@@ -59,7 +59,24 @@
     "MISSING_IDS": "Faltan datos requeridos. Reinicia el asistente.",
     "SLUG_TAKEN": "Esta URL ya está en uso. Elige una diferente.",
     "WHATSAPP_INVALID": "Ingresa un número de WhatsApp válido.",
-    "TIME_END_BEFORE_START": "La hora de fin debe ser posterior a la hora de inicio."
+    "TIME_END_BEFORE_START": "La hora de fin debe ser posterior a la hora de inicio.",
+    "FORBIDDEN": "No tienes permiso para realizar esta acción.",
+    "NOT_FOUND": "Recurso no encontrado.",
+    "VALIDATION_FAILED": "Error de validación. Revisa los campos.",
+    "RATE_LIMITED": "Demasiadas solicitudes. Intenta de nuevo en {seconds} segundos.",
+    "INTERNAL": "Algo salió mal. Intenta de nuevo.",
+    "BAD_REQUEST": "Solicitud inválida.",
+    "CONFLICT": "Conflicto con un recurso existente.",
+    "boundary": {
+      "title": "Algo salió mal",
+      "body": "Ocurrió un error inesperado. Por favor, intenta de nuevo.",
+      "cta": "Volver"
+    },
+    "notFound": {
+      "title": "Página no encontrada",
+      "body": "La página que buscas no existe o fue movida.",
+      "cta": "Ir al inicio"
+    }
   },
   "wizard": {
     "stepLabel": "Paso {current} de {total}",
