@@ -1,6 +1,6 @@
 # Klyro — Task List
 
-**Last updated:** 2026-05-19
+**Last updated:** 2026-05-20
 
 Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 
@@ -48,6 +48,51 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 - [x] S3: WizardShell close button `aria-label` uses i18n `t("closeButton")`
 - [x] S6: Availability time fields validated against `^\d{2}:\d{2}$` regex in schema
 - [x] DB types regenerated — `replace_branch_services` RPC now in `src/types/database.ts`
+
+---
+
+## Phase 2.5 — Hardening & Localization
+
+### Block A — Error Model & Global Handler ✅
+- [x] A1: `src/lib/errors/api-error.ts` — ApiError class + ERROR_CODES enum + static factories
+- [x] A2: `src/lib/errors/to-response.ts` — toErrorResponse(error) → NextResponse
+- [x] A3: `src/app/[locale]/error.tsx` — branded error boundary (use client)
+- [x] A4: `src/app/[locale]/not-found.tsx` — branded 404 page
+- [x] A5: Migrate `wizard.ts` actions to use ApiError (try/catch wrappers)
+- [x] A6: i18n keys for error codes + boundary.* + notFound.*
+- [x] A7: Unit tests — ApiError factories + toErrorResponse (ZodError, PostgrestError, unknown)
+
+### Block B — Validation + Country Catalog + Formatters ⬜
+- [ ] B1: `src/lib/validation/phone.ts` — libphonenumber-js wrapper
+- [ ] B2: `src/lib/validation/slug.ts` — consolidate slug logic
+- [ ] B3: `src/lib/i18n/countries.ts` — country catalog (HN + 6 LATAM + US)
+- [ ] B4: `src/lib/format/currency.ts` — formatCurrency
+- [ ] B5: `src/lib/format/date.ts` — formatDate / formatTime / formatDateTime / formatRelative
+- [ ] B6: `src/lib/format/phone.ts` — formatPhoneE164 / formatPhoneDisplay
+- [ ] B7: Wizard migration — phone validation on steps 3 & 7, formatCurrency on steps 4 & 8
+- [ ] B8: Unit tests
+
+### Block C — Rate Limiting Infrastructure ⬜
+- [ ] C1: `src/lib/rate-limit/client.ts` — Upstash client + in-memory fallback
+- [ ] C2: `src/lib/rate-limit/limiters.ts` — pre-defined limiters
+- [ ] C3: Apply slug-check limiter to wizard slug-check
+- [ ] C4: `src/lib/rate-limit/get-ip.ts` — IP extraction helper
+- [ ] C5: Unit tests
+- [ ] C6: README rate limiting section
+
+### Block D — Structured Logging ⬜
+- [ ] D1: `src/lib/log/logger.ts` — pino instance
+- [ ] D2: Replace console.log/error/warn in src/
+- [ ] D3: Request logging wrapper for API routes
+- [ ] D4: Sentry breadcrumbs for warn+ logs
+- [ ] D5: Unit tests
+
+### Block E — Wizard E2E Test ⬜
+- [ ] E1: `tests/e2e/wizard.spec.ts` — full wizard journey for barbershop
+- [ ] E2: `tests/e2e/helpers/` — createTestUser, test-db, wizard-page POM
+- [ ] E3: `playwright.config.ts` — baseURL, headless, retries, webserver
+- [ ] E4: CI integration — `.github/workflows/ci.yml`
+- [ ] E5: `package.json` scripts — test:e2e, test:e2e:ui, test:e2e:install
 
 ---
 
