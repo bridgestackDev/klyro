@@ -1,10 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { validatePhone } from "@/lib/validation";
-import { DEFAULT_COUNTRY } from "@/lib/i18n/countries";
+import { COUNTRIES, type CountryCode } from "@/lib/i18n/countries";
 import { useWizard } from "../WizardContext";
+
+const COUNTRY_FLAGS: Record<CountryCode, string> = {
+  HN: "🇭🇳",
+  SV: "🇸🇻",
+  GT: "🇬🇹",
+  NI: "🇳🇮",
+  CR: "🇨🇷",
+  MX: "🇲🇽",
+  CO: "🇨🇴",
+  US: "🇺🇸",
+};
 
 const TIMEZONES = [
   { value: "America/Tegucigalpa", label: "Tegucigalpa (UTC-6)" },
@@ -33,9 +44,30 @@ export function Step3Branch() {
   const { data, updateData } = useWizard();
   const step3 = data.step3;
   const [phoneError, setPhoneError] = useState<string | null>(null);
+  // Tracks whether the user has manually changed the timezone so we don't clobber their choice
+  const timezoneTouched = useRef(false);
 
   const update = (field: FieldKey, value: string) => {
     updateData({ step3: { ...step3, [field]: value } });
+  };
+
+  const handleCountryChange = (newCountry: CountryCode) => {
+    const countryData = COUNTRIES[newCountry];
+    updateData({
+      step3: {
+        ...step3,
+        country: newCountry,
+        // Autosuggest timezone unless the user already picked one manually
+        timezone: timezoneTouched.current ? step3.timezone : countryData.timezone,
+      },
+    });
+    // Clear phone error when country changes since validation rules change
+    setPhoneError(null);
+  };
+
+  const handleTimezoneChange = (tz: string) => {
+    timezoneTouched.current = true;
+    update("timezone", tz);
   };
 
   const handlePhoneBlur = () => {
@@ -43,9 +75,12 @@ export function Step3Branch() {
       setPhoneError(null);
       return;
     }
-    const result = validatePhone(step3.phone, DEFAULT_COUNTRY);
+    const result = validatePhone(step3.phone, step3.country as CountryCode);
     setPhoneError(result.ok ? null : t("phoneInvalid"));
   };
+
+  const selectClass =
+    "w-full rounded-[var(--radius-button)] border border-[var(--border-subtle)] bg-[var(--color-bg-surface)] px-4 py-2.5 text-sm text-[var(--color-text-primary)] outline-none transition-colors focus:border-[var(--color-violet)] focus:ring-1 focus:ring-[var(--color-violet)]";
 
   return (
     <div className="space-y-6">
@@ -73,6 +108,30 @@ export function Step3Branch() {
           value={step3.address}
           onChange={(v) => update("address", v)}
         />
+
+        {/* Country — comes before city so locale context is set first */}
+        <div className="space-y-1.5">
+          <label
+            htmlFor="branch-country"
+            className="text-sm font-medium text-[var(--color-text-secondary)]"
+          >
+            {t("country.label")}
+          </label>
+          <select
+            id="branch-country"
+            value={step3.country}
+            onChange={(e) => handleCountryChange(e.target.value as CountryCode)}
+            className={selectClass}
+          >
+            {(Object.keys(COUNTRIES) as CountryCode[]).map((code) => (
+              <option key={code} value={code}>
+                {COUNTRY_FLAGS[code]} {COUNTRIES[code].name}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-[var(--color-text-muted)]">{t("country.help")}</p>
+        </div>
+
         <Field
           id="branch-city"
           label={t("cityLabel")}
@@ -91,8 +150,8 @@ export function Step3Branch() {
           <select
             id="branch-timezone"
             value={step3.timezone}
-            onChange={(e) => update("timezone", e.target.value)}
-            className="w-full rounded-[var(--radius-button)] border border-[var(--border-subtle)] bg-[var(--color-bg-surface)] px-4 py-2.5 text-sm text-[var(--color-text-primary)] outline-none transition-colors focus:border-[var(--color-violet)] focus:ring-1 focus:ring-[var(--color-violet)]"
+            onChange={(e) => handleTimezoneChange(e.target.value)}
+            className={selectClass}
           >
             {TIMEZONES.map((tz) => (
               <option key={tz.value} value={tz.value}>

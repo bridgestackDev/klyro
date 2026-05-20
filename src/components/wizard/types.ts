@@ -1,3 +1,4 @@
+import { DEFAULT_COUNTRY } from "@/lib/i18n/countries";
 import type {
   Step1Data,
   Step2Data,
@@ -33,6 +34,7 @@ export const defaultWizardData: WizardData = {
     city: "",
     timezone: "America/Tegucigalpa",
     phone: "",
+    country: DEFAULT_COUNTRY,
   },
   step4: { services: [] },
   step5: { ownerName: "", ownerSlug: "" },

@@ -111,7 +111,11 @@
         "timezoneLabel": "Timezone",
         "phoneLabel": "Phone (optional)",
         "phonePlaceholder": "+504 9999-9999",
-        "phoneInvalid": "Enter a valid phone number"
+        "phoneInvalid": "Enter a valid phone number",
+        "country": {
+          "label": "Country",
+          "help": "Sets the currency and phone format"
+        }
       },
       "services": {
         "title": "Your services",

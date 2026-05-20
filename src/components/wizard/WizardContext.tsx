@@ -7,7 +7,8 @@ import React, {
   useEffect,
   useReducer,
 } from "react";
-import { wizardStorageSchema } from "@/lib/schemas/wizard";
+import { wizardStorageSchema, type Step3Data } from "@/lib/schemas/wizard";
+import { detectCountryFromLocale } from "@/lib/i18n/detect-country";
 import { defaultWizardData, WIZARD_TOTAL_STEPS, type WizardData } from "./types";
 
 type WizardState = {
@@ -58,9 +59,20 @@ const WizardContext = createContext<WizardContextType | null>(null);
 
 const STORAGE_KEY = "klyro_wizard_v1";
 
-export function WizardProvider({ children }: { children: React.ReactNode }) {
+export function WizardProvider({
+  children,
+  locale = "es",
+}: {
+  children: React.ReactNode;
+  locale?: string;
+}) {
+  const detectedCountry = detectCountryFromLocale(locale);
+
   const [state, dispatch] = useReducer(reducer, {
-    data: defaultWizardData,
+    data: {
+      ...defaultWizardData,
+      step3: { ...defaultWizardData.step3, country: detectedCountry },
+    },
     currentStep: 1,
     direction: 1,
   });
@@ -73,7 +85,16 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
         // I4: validate shape before restoring to guard against corrupted/stale state
         const validated = wizardStorageSchema.safeParse(raw);
         if (validated.success) {
-          dispatch({ type: "RESTORE", state: validated.data as WizardState });
+          const restoredState = validated.data as WizardState;
+          // B1.5: if localStorage predates this block, step3.country will be absent — patch it
+          const step3 = restoredState.data.step3 as Partial<Step3Data> | undefined;
+          if (step3 && !step3.country) {
+            restoredState.data = {
+              ...restoredState.data,
+              step3: { ...defaultWizardData.step3, ...step3, country: detectedCountry },
+            };
+          }
+          dispatch({ type: "RESTORE", state: restoredState });
         } else {
           localStorage.removeItem(STORAGE_KEY);
         }
@@ -81,6 +102,7 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // ignore parse errors — default state is used
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

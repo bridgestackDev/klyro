@@ -154,6 +154,24 @@ Files changed:
 
 Tests: 83/83 passing
 
+**Block B.1 — Country Selection in Wizard** ✅ Done
+
+Files added:
+- `src/lib/i18n/detect-country.ts` — `detectCountryFromLocale(locale)` helper
+- `src/lib/i18n/__tests__/detect-country.test.ts` — 6 unit tests
+
+Files changed:
+- `src/lib/schemas/wizard.ts` — `step3Schema` gains `country` enum field (COUNTRIES keys, default HN)
+- `src/components/wizard/types.ts` — `defaultWizardData.step3.country` initialized to `DEFAULT_COUNTRY`
+- `src/lib/actions/wizard.ts` — `saveBranchStep` persists `country` to `branches`; UPDATEs `businesses.country` + `businesses.default_currency` in the same action
+- `src/components/wizard/steps/Step3Branch.tsx` — Country select (before city), timezone autosuggest on country change, phone validation uses selected country
+- `src/components/wizard/WizardContext.tsx` — `WizardProvider` accepts `locale` prop; seeds `step3.country` from detected locale on fresh starts and patches missing country on localStorage restore
+- `src/components/wizard/SetupWizard.tsx` — passes `locale` to `WizardProvider`
+- `src/i18n/locales/es.json` + `en.json` — added `wizard.steps.branch.country.{label, help}`
+- `DECISIONS.md` — ADR-004 + ADR-005
+
+Tests: 89/89 passing
+
 **Blocks C–E** — Not started
 
 ---

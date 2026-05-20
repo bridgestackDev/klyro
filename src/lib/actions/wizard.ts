@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ApiError } from "@/lib/errors";
 import { slugify } from "@/lib/validation";
+import { COUNTRIES } from "@/lib/i18n/countries";
 import {
   step1Schema,
   step2Schema,
@@ -125,6 +126,9 @@ export async function saveBranchStep(
 
     const slug = slugify(parsed.data.branchName);
 
+    const country = parsed.data.country;
+    const currency = COUNTRIES[country].currency;
+
     if (existingBranchId) {
       // C1: verify branch belongs to this business
       const { data: branchCheck } = await admin
@@ -145,9 +149,21 @@ export async function saveBranchStep(
           city: parsed.data.city || null,
           phone: parsed.data.phone || null,
           timezone: parsed.data.timezone,
+          country,
         })
         .eq("id", existingBranchId);
       if (error) return { branchId: "", branchSlug: "", error: error.message };
+
+      // Propagate country + currency to the business
+      const { error: bizError } = await admin
+        .from("businesses")
+        .update({ country, default_currency: currency })
+        .eq("id", ownBusinessId);
+      if (bizError) {
+        console.error("saveBranchStep: failed to update business country", bizError);
+        return { branchId: "", branchSlug: "", error: ApiError.internal().code };
+      }
+
       return { branchId: existingBranchId, branchSlug: slug };
     }
 
@@ -161,11 +177,23 @@ export async function saveBranchStep(
         city: parsed.data.city || null,
         phone: parsed.data.phone || null,
         timezone: parsed.data.timezone,
+        country,
       })
       .select("id")
       .single();
 
     if (error || !branch) return { branchId: "", branchSlug: "", error: error?.message };
+
+    // Propagate country + currency to the business
+    const { error: bizError } = await admin
+      .from("businesses")
+      .update({ country, default_currency: currency })
+      .eq("id", ownBusinessId);
+    if (bizError) {
+      console.error("saveBranchStep: failed to update business country", bizError);
+      return { branchId: "", branchSlug: "", error: ApiError.internal().code };
+    }
+
     return { branchId: branch.id, branchSlug: slug };
   } catch (e) {
     const err = e instanceof ApiError ? e : ApiError.internal(e instanceof Error ? e : undefined);

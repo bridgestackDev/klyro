@@ -72,6 +72,14 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 - [x] B7: Wizard migration — phone validation on steps 2, 3, 7, 9; formatCurrency on steps 4, 9
 - [x] B8: Unit tests
 
+### Block B.1 — Country Selection in Wizard ✅
+- [x] B1.1: `src/lib/i18n/detect-country.ts` helper + 6 unit tests
+- [x] B1.2: `step3Schema` accepts `country` (enum from COUNTRIES keys, default HN)
+- [x] B1.3: `saveBranchStep` persists `country` to branches + UPDATEs business country + currency
+- [x] B1.4: `Step3Branch` — Country select before city, timezone autosuggest on change, phone validation uses country
+- [x] B1.5: `WizardProvider` accepts `locale` prop; seeds country from detected locale; patches absent country on localStorage restore
+- [x] B1.6: i18n keys `wizard.steps.branch.country.{label, help}` in es + en
+
 ### Block C — Rate Limiting Infrastructure ⬜
 - [ ] C1: `src/lib/rate-limit/client.ts` — Upstash client + in-memory fallback
 - [ ] C2: `src/lib/rate-limit/limiters.ts` — pre-defined limiters
