@@ -2,18 +2,8 @@
 
 import { useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { slugify } from "@/lib/validation";
 import { useWizard } from "../WizardContext";
-
-function toSlug(name: string) {
-  return name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-")
-    .slice(0, 50);
-}
 
 export function Step2Business() {
   const t = useTranslations("wizard.steps.business");
@@ -23,7 +13,7 @@ export function Step2Business() {
   // Auto-generate slug from name when slug hasn't been manually edited
   useEffect(() => {
     if (name && !data.step2.slug) {
-      updateData({ step2: { ...data.step2, slug: toSlug(name) } });
+      updateData({ step2: { ...data.step2, slug: slugify(name) } });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -32,7 +22,7 @@ export function Step2Business() {
     updateData({
       step2: {
         name: value,
-        slug: toSlug(value),
+        slug: slugify(value),
       },
     });
   };

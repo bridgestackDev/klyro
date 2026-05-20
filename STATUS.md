@@ -1,7 +1,7 @@
 # Klyro — Build Status
 
 **Last updated:** 2026-05-20
-**Active phase:** Phase 2.5 — Hardening & Localization (Block A done, awaiting approval for Block B)
+**Active phase:** Phase 2.5 — Hardening & Localization (Blocks A+B done, awaiting approval for Block C)
 
 ---
 
@@ -131,7 +131,30 @@ Files changed:
 
 Tests: 53/53 passing (41 existing + 9 ApiError + 13 toErrorResponse)
 
-**Blocks B–E** — Not started
+**Block B — Validation + Country Catalog + Formatters** ✅ Done
+
+Files added:
+- `src/lib/validation/phone.ts` — validatePhone, normalizePhone, isValidWhatsAppNumber
+- `src/lib/validation/slug.ts` — SLUG_REGEX, slugify, isValidSlug (consolidated from inline)
+- `src/lib/validation/index.ts` — barrel
+- `src/lib/i18n/countries.ts` — COUNTRIES catalog (HN + 6 LATAM + US), getCountry, DEFAULT_COUNTRY
+- `src/lib/format/currency.ts` — formatCurrency via Intl.NumberFormat
+- `src/lib/format/date.ts` — formatDate, formatTime, formatDateTime, formatRelative (date-fns)
+- `src/lib/format/phone.ts` — formatPhoneE164, formatPhoneDisplay
+- `src/lib/format/index.ts` — barrel
+
+Files changed:
+- `Step2Business.tsx` — uses `slugify` from validation lib (replaced inline function)
+- `Step3Branch.tsx` — phone field validated on blur via `validatePhone`
+- `Step4Services.tsx` — price shows formatted currency hint below input
+- `Step7Messaging.tsx` — WhatsApp field validated via `isValidWhatsAppNumber`, stores E.164 on blur
+- `Step9Confirm.tsx` — services row shows price range via `formatCurrency`; WhatsApp shows `formatPhoneDisplay`
+- `wizard.ts` (server action) — branch slug generation uses `slugify`
+- `es.json` + `en.json` — added phoneInvalid + whatsappInvalid keys
+
+Tests: 83/83 passing
+
+**Blocks C–E** — Not started
 
 ---
 

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ApiError } from "@/lib/errors";
+import { slugify } from "@/lib/validation";
 import {
   step1Schema,
   step2Schema,
@@ -122,10 +123,7 @@ export async function saveBranchStep(
     if (!user) return { branchId: "", branchSlug: "", error: ApiError.unauthorized().code };
     if (!ownBusinessId || ownBusinessId !== businessId) return { branchId: "", branchSlug: "", error: "NOT_AUTHORIZED" };
 
-    const slug = parsed.data.branchName
-      .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^a-z0-9-]/g, "");
+    const slug = slugify(parsed.data.branchName);
 
     if (existingBranchId) {
       // C1: verify branch belongs to this business

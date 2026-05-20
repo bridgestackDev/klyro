@@ -62,15 +62,15 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 - [x] A6: i18n keys for error codes + boundary.* + notFound.*
 - [x] A7: Unit tests — ApiError factories + toErrorResponse (ZodError, PostgrestError, unknown)
 
-### Block B — Validation + Country Catalog + Formatters ⬜
-- [ ] B1: `src/lib/validation/phone.ts` — libphonenumber-js wrapper
-- [ ] B2: `src/lib/validation/slug.ts` — consolidate slug logic
-- [ ] B3: `src/lib/i18n/countries.ts` — country catalog (HN + 6 LATAM + US)
-- [ ] B4: `src/lib/format/currency.ts` — formatCurrency
-- [ ] B5: `src/lib/format/date.ts` — formatDate / formatTime / formatDateTime / formatRelative
-- [ ] B6: `src/lib/format/phone.ts` — formatPhoneE164 / formatPhoneDisplay
-- [ ] B7: Wizard migration — phone validation on steps 3 & 7, formatCurrency on steps 4 & 8
-- [ ] B8: Unit tests
+### Block B — Validation + Country Catalog + Formatters ✅
+- [x] B1: `src/lib/validation/phone.ts` — libphonenumber-js wrapper
+- [x] B2: `src/lib/validation/slug.ts` — consolidate slug logic
+- [x] B3: `src/lib/i18n/countries.ts` — country catalog (HN + 6 LATAM + US)
+- [x] B4: `src/lib/format/currency.ts` — formatCurrency
+- [x] B5: `src/lib/format/date.ts` — formatDate / formatTime / formatDateTime / formatRelative
+- [x] B6: `src/lib/format/phone.ts` — formatPhoneE164 / formatPhoneDisplay
+- [x] B7: Wizard migration — phone validation on steps 2, 3, 7, 9; formatCurrency on steps 4, 9
+- [x] B8: Unit tests
 
 ### Block C — Rate Limiting Infrastructure ⬜
 - [ ] C1: `src/lib/rate-limit/client.ts` — Upstash client + in-memory fallback

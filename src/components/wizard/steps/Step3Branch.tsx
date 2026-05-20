@@ -1,6 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { validatePhone } from "@/lib/validation";
+import { DEFAULT_COUNTRY } from "@/lib/i18n/countries";
 import { useWizard } from "../WizardContext";
 
 const TIMEZONES = [
@@ -29,9 +32,19 @@ export function Step3Branch() {
   const t = useTranslations("wizard.steps.branch");
   const { data, updateData } = useWizard();
   const step3 = data.step3;
+  const [phoneError, setPhoneError] = useState<string | null>(null);
 
   const update = (field: FieldKey, value: string) => {
     updateData({ step3: { ...step3, [field]: value } });
+  };
+
+  const handlePhoneBlur = () => {
+    if (!step3.phone) {
+      setPhoneError(null);
+      return;
+    }
+    const result = validatePhone(step3.phone, DEFAULT_COUNTRY);
+    setPhoneError(result.ok ? null : t("phoneInvalid"));
   };
 
   return (
@@ -89,14 +102,26 @@ export function Step3Branch() {
           </select>
         </div>
 
-        <Field
-          id="branch-phone"
-          label={t("phoneLabel")}
-          placeholder={t("phonePlaceholder")}
-          value={step3.phone}
-          onChange={(v) => update("phone", v)}
-          type="tel"
-        />
+        <div className="space-y-1.5">
+          <label
+            htmlFor="branch-phone"
+            className="text-sm font-medium text-[var(--color-text-secondary)]"
+          >
+            {t("phoneLabel")}
+          </label>
+          <input
+            id="branch-phone"
+            type="tel"
+            value={step3.phone}
+            onChange={(e) => update("phone", e.target.value)}
+            onBlur={handlePhoneBlur}
+            placeholder={t("phonePlaceholder")}
+            className="w-full rounded-[var(--radius-button)] border border-[var(--border-subtle)] bg-[var(--color-bg-surface)] px-4 py-2.5 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition-colors focus:border-[var(--color-violet)] focus:ring-1 focus:ring-[var(--color-violet)]"
+          />
+          {phoneError && (
+            <p className="text-xs text-[var(--color-danger)]">{phoneError}</p>
+          )}
+        </div>
       </div>
     </div>
   );

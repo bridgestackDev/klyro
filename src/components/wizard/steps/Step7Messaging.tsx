@@ -1,16 +1,43 @@
 "use client";
 
+import { useState } from "react";
 import { MessageCircle, Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { isValidWhatsAppNumber, normalizePhone } from "@/lib/validation";
+import { DEFAULT_COUNTRY } from "@/lib/i18n/countries";
 import { useWizard } from "../WizardContext";
 
 export function Step7Messaging() {
   const t = useTranslations("wizard.steps.messaging");
   const { data, updateData } = useWizard();
   const { channel, whatsappNumber } = data.step7;
+  const [waError, setWaError] = useState<string | null>(null);
 
   const setChannel = (ch: "whatsapp" | "email") => {
     updateData({ step7: { ...data.step7, channel: ch } });
+    setWaError(null);
+  };
+
+  const handleWaBlur = () => {
+    if (!whatsappNumber?.trim()) {
+      setWaError(null);
+      return;
+    }
+    const valid = isValidWhatsAppNumber(whatsappNumber, DEFAULT_COUNTRY);
+    setWaError(valid ? null : t("whatsappInvalid"));
+  };
+
+  const handleWaChange = (value: string) => {
+    updateData({ step7: { ...data.step7, whatsappNumber: value } });
+    if (waError) setWaError(null);
+  };
+
+  const handleWaCommit = () => {
+    if (!whatsappNumber?.trim()) return;
+    const e164 = normalizePhone(whatsappNumber, DEFAULT_COUNTRY);
+    if (e164) {
+      updateData({ step7: { ...data.step7, whatsappNumber: e164 } });
+    }
   };
 
   return (
@@ -54,14 +81,14 @@ export function Step7Messaging() {
             id="wa-number"
             type="tel"
             value={whatsappNumber}
-            onChange={(e) =>
-              updateData({
-                step7: { ...data.step7, whatsappNumber: e.target.value },
-              })
-            }
+            onChange={(e) => handleWaChange(e.target.value)}
+            onBlur={() => { handleWaBlur(); handleWaCommit(); }}
             placeholder={t("whatsappNumberPlaceholder")}
             className="w-full rounded-[var(--radius-button)] border border-[var(--border-subtle)] bg-[var(--color-bg-surface)] px-4 py-2.5 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition-colors focus:border-[var(--color-violet)] focus:ring-1 focus:ring-[var(--color-violet)]"
           />
+          {waError && (
+            <p className="text-xs text-[var(--color-danger)]">{waError}</p>
+          )}
         </div>
       )}
     </div>

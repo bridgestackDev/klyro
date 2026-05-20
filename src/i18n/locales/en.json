@@ -110,7 +110,8 @@
         "cityPlaceholder": "E.g. Tegucigalpa",
         "timezoneLabel": "Timezone",
         "phoneLabel": "Phone (optional)",
-        "phonePlaceholder": "+504 9999-9999"
+        "phonePlaceholder": "+504 9999-9999",
+        "phoneInvalid": "Enter a valid phone number"
       },
       "services": {
         "title": "Your services",
@@ -157,7 +158,8 @@
         "emailDesc": "Use your account email to send confirmations.",
         "whatsappNumberLabel": "Business WhatsApp number",
         "whatsappNumberPlaceholder": "+504 9999-9999",
-        "whatsappRequired": "Enter your WhatsApp number"
+        "whatsappRequired": "Enter your WhatsApp number",
+        "whatsappInvalid": "Enter a valid WhatsApp number"
       },
       "preview": {
         "title": "Your booking link",
