@@ -58,6 +58,24 @@ This file records non-obvious design decisions and their rationale. Never delete
 
 ---
 
+## Phase 2.5 — Block D
+
+### ADR-008: env.ts keeps console.warn (not logger) for initialization-order safety
+
+**Decision:** The two `console.warn` calls in `src/lib/env.ts` were not replaced with `logger.*` calls.
+
+**Why:** `env.ts` runs at module load time before any other module is initialized. The logger reads `process.env.LOG_LEVEL` and `process.env.LOG_PRETTY` at construction time — importing `logger` inside `env.ts` would create an initialization-order problem where the logger constructs before the env schema is validated. `console.warn` is the correct tool for startup-time diagnostics that precede the logging system.
+
+---
+
+### ADR-009: Sentry breadcrumbs use try/catch dynamic require (no hard SDK dependency)
+
+**Decision:** `trySentryCrumb()` in `logger.ts` uses `require("@sentry/nextjs")` wrapped in `try/catch` rather than a static import.
+
+**Why:** `@sentry/nextjs` is not yet installed. A static import would cause a module-not-found error at startup. The dynamic require approach is a forward-compatible shim: it no-ops cleanly when Sentry is absent, and activates automatically once the SDK is installed and initialized in Phase 3/4 without any further code changes.
+
+---
+
 ## Phase 2.5 — Block C
 
 ### ADR-006: Rate limiter uses user.id as identifier for authenticated server actions

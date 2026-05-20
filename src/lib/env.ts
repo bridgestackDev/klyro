@@ -41,6 +41,10 @@ const serverSchema = z.object({
   // Observability
   SENTRY_AUTH_TOKEN: z.string().optional(),
 
+  // Logging — optional, sensible defaults in logger.ts
+  LOG_LEVEL: z.enum(["trace", "debug", "info", "warn", "error"]).optional(),
+  LOG_PRETTY: z.enum(["true", "false"]).optional(),
+
   // Rate limiting (Upstash Redis) — optional, falls back to in-memory passthrough
   UPSTASH_REDIS_REST_URL: z.string().url().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
@@ -69,7 +73,8 @@ function parseEnv() {
       );
     }
     // In dev, log a warning but don't crash so local dev works before Supabase is set up.
-    console.warn("[env] Client env var validation failed (dev mode, continuing):\n", clientResult.error.toString());
+    // console.warn intentional here: logger isn't ready yet (it reads LOG_LEVEL from this file)
+    console.warn("[env] Client env var validation failed (dev mode):\n", clientResult.error.toString());
   }
 
   const serverResult = serverSchema.safeParse(process.env);
@@ -79,7 +84,7 @@ function parseEnv() {
         `Missing required server env vars:\n${serverResult.error.toString()}`
       );
     }
-    console.warn("[env] Server env var validation failed (dev mode, continuing):\n", serverResult.error.toString());
+    console.warn("[env] Server env var validation failed (dev mode):\n", serverResult.error.toString());
   }
 
   return {

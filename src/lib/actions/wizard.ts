@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ApiError } from "@/lib/errors";
+import { logger } from "@/lib/log";
 import { getSlugCheckLimiter } from "@/lib/rate-limit";
 import { slugify } from "@/lib/validation";
 import { COUNTRIES } from "@/lib/i18n/countries";
@@ -165,7 +166,7 @@ export async function saveBranchStep(
         .update({ country, default_currency: currency })
         .eq("id", ownBusinessId);
       if (bizError) {
-        console.error("saveBranchStep: failed to update business country", bizError);
+        logger.error("saveBranchStep: failed to update business country", { error: bizError.message });
         return { branchId: "", branchSlug: "", error: ApiError.internal().code };
       }
 
