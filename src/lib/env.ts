@@ -41,6 +41,10 @@ const serverSchema = z.object({
   // Observability
   SENTRY_AUTH_TOKEN: z.string().optional(),
 
+  // Rate limiting (Upstash Redis) — optional, falls back to in-memory passthrough
+  UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+
   // Encryption
   ENCRYPTION_KEY: z.string().optional(),
 });

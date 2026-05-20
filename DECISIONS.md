@@ -57,3 +57,21 @@ This file records non-obvious design decisions and their rationale. Never delete
 **Why:** The error boundary is a "use client" component that must work even if the component tree that imports `<Button>` is broken. Keeping it dependency-light prevents a broken import from causing a blank screen on error.
 
 ---
+
+## Phase 2.5 — Block C
+
+### ADR-006: Rate limiter uses user.id as identifier for authenticated server actions
+
+**Decision:** The slug-check limiter in `saveBusinessStep` is keyed by `user.id` (e.g. `slug-check:${user.id}`), not by client IP.
+
+**Why:** Server actions don't have direct access to `NextRequest`, so extracting the client IP requires calling `headers()` from `next/headers`. Using the authenticated user ID is simpler, more accurate (same user on multiple IPs / behind CGNAT), and already available from the session check that precedes the rate limit call. IP-based limiting is the right approach for public unauthenticated API routes (Phase 3 booking endpoints), where `getIp()` will be used.
+
+---
+
+### ADR-007: PassthroughLimiter (always-allows) when Upstash env vars absent
+
+**Decision:** `createLimiter()` returns a `PassthroughLimiter` that always returns `{ success: true }` when `UPSTASH_REDIS_REST_URL` or `UPSTASH_REDIS_REST_TOKEN` are not set.
+
+**Why:** Local dev and CI should work without provisioning an Upstash Redis instance. The fallback is intentionally not an in-memory sliding window — a real in-memory limiter would give false confidence that rate limiting is working when it isn't (e.g. a single Vercel serverless instance vs. multiple), and it would reset on every deploy. The passthrough is honest about its behavior: rate limiting is only active in production when Redis credentials are configured.
+
+---
