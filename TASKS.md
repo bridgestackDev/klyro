@@ -1,21 +1,8 @@
 # Klyro — Task List
 
-**Last updated:** 2026-05-15
+**Last updated:** 2026-05-19
 
 Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
-
----
-
-## Immediate (before Phase 2)
-
-- [ ] 🔴 Add `SUPABASE_SERVICE_ROLE_KEY` to `klyro/.env.local`
-- [ ] Configure Resend SMTP in Supabase → Auth → SMTP Settings (host: `smtp.resend.com`, port: `465`, user: `resend`, password: Resend API key) — required to avoid free-tier email rate limits
-- [ ] Add `RESEND_API_KEY` to `klyro/.env.local`
-- [ ] Add `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` to `.env.local` (Google Cloud Console)
-- [ ] Enable Google OAuth in Supabase → Authentication → Providers → Google
-- [ ] Test Google OAuth sign-in end-to-end
-- [ ] Run `nvm use 22` — project requires Node 22 LTS; Node 24 causes dev-server OOM crashes
-- [x] ~~Add `http://localhost:3000/auth/callback` to Supabase → Auth → Redirect URLs~~ → updated to `/callback`
 
 ---
 
@@ -32,24 +19,35 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 
 ---
 
-## Phase 2 — Setup Wizard
+## ✅ Phase 2 — Setup Wizard
 
-- [ ] Scaffold wizard shell: full-screen overlay + sticky header (step counter + progress bar) + sticky footer (Back / Continue)
-- [ ] Step 1 — Vertical selection: grid of cards from registry, 7 active + 1 disabled "other"
-- [ ] Step 2 — Business name + slug (auto-generated, editable, uniqueness check via server action)
-- [ ] Step 3 — First branch: name, address, city, timezone picker
-- [ ] Step 4 — Services catalog: pre-seeded from vertical defaults, add/edit/remove rows
-- [ ] Step 5 — Staff: owner as first staff member (display name, slug)
-- [ ] Step 6 — Availability: weekly grid (Mon–Sun, open/close times per day)
-- [ ] Step 7 — Messaging channel: WhatsApp number input (primary), email fallback
-- [ ] Step 8 — Booking link preview (read-only, shows `/[slug]`)
-- [ ] Step 9 — Review & confirm: summary of all steps
-- [ ] On confirm: set `businesses.onboarding_completed = true`, redirect to `/dashboard`
-- [ ] Persist wizard progress to `localStorage` (survive page refresh mid-wizard)
-- [ ] Add `setup` i18n strings (es + en) for all wizard steps
-- [ ] Unit test: vertical registry resolves defaults for each of the 7 active verticals
-- [ ] Typecheck + lint pass
-- [ ] Commit Phase 2
+- [x] Wizard shell: modal card UI, sticky header (step counter + progress bar), sticky footer (Back / Continue)
+- [x] Step 1 — Vertical selection: 8-card grid from registry
+- [x] Step 2 — Business name + slug (auto-generated, editable)
+- [x] Step 3 — First branch: name, address, city, timezone picker, phone; returns `branchSlug`
+- [x] Step 4 — Services catalog: pre-seeded from vertical defaults, add/edit/remove rows
+- [x] Step 5 — Staff: owner as first staff member (display name, slug)
+- [x] Step 6 — Availability: weekly grid (Mon–Sun, open/close times per day)
+- [x] Step 7 — Messaging channel: WhatsApp number input (primary), email fallback
+- [x] Step 8 — Booking link preview (shows `/[bizSlug]/[branchSlug]/[staffSlug]`)
+- [x] Step 9 — Review & confirm: summary of all steps
+- [x] On confirm: set `businesses.onboarding_completed = true`, redirect to `/dashboard`
+- [x] Persist wizard progress to `localStorage` (survive page refresh mid-wizard)
+- [x] i18n strings for all wizard steps (es + en)
+- [x] Unit tests: vertical registry resolves defaults for each of the 7 active verticals
+
+### Security hardening (post code review)
+- [x] C1: Server actions verify client-supplied `businessId`/`branchId`/`staffId` against DB — prevents cross-tenant writes
+- [x] C2: Zod `safeParse()` added at top of all wizard server actions (server-side validation)
+- [x] I2: Update errors checked in `saveBranchStep`, `saveStaffStep`, `saveMessagingStep`
+- [x] I3: `saveServicesStep` uses atomic `replace_branch_services` RPC (migration `0007`) — no data loss on partial failure
+- [x] I4: `localStorage` restore validates shape with `wizardStorageSchema` before applying
+- [x] I5: Postgres `23505` slug conflict maps to user-friendly error message
+- [x] S1: All label/input pairs have `htmlFor`/`id` associations (Steps 2, 3, 5, 6, 7)
+- [x] S2: Service list rows keyed by stable `clientId` (not array index)
+- [x] S3: WizardShell close button `aria-label` uses i18n `t("closeButton")`
+- [x] S6: Availability time fields validated against `^\d{2}:\d{2}$` regex in schema
+- [x] DB types regenerated — `replace_branch_services` RPC now in `src/types/database.ts`
 
 ---
 

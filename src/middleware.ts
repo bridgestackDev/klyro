@@ -14,6 +14,7 @@ const DASHBOARD_PATHS = [
   "/services",
   "/settings",
   "/links",
+  "/setup",
 ];
 const AUTH_PATHS = ["/login", "/signup"];
 

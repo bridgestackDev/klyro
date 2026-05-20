@@ -1,7 +1,7 @@
 # Klyro — Build Status
 
-**Last updated:** 2026-05-15
-**Active phase:** Phase 1 complete — Phase 2 next
+**Last updated:** 2026-05-19
+**Active phase:** Phase 2 complete — Phase 3 next
 
 ---
 
@@ -11,7 +11,7 @@
 |-------|------|--------|-------|
 | 0 | Foundation | ✅ Done | All 12 tables, RLS, types, brand, CI |
 | 1 | Auth & Onboarding Shell | ✅ Done | Magic link confirmed working end-to-end |
-| 2 | Setup Wizard | ⬜ Not started | 12-step wizard, vertical selection |
+| 2 | Setup Wizard | ✅ Done | 9-step wizard, all DB writes, admin client RLS fix |
 | 3 | Public Booking Flow | ⬜ Not started | `/[biz]/[branch]/[staff]` |
 | 4 | Messaging Engine | ⬜ Not started | WhatsApp + email templates |
 | 5 | Owner Dashboard | ⬜ Not started | Full operational view |
@@ -70,20 +70,59 @@
 
 ---
 
-## Phase 2 — Setup Wizard (next up)
+## Phase 2 — Setup Wizard ✅
 
-**Goal:** Owner completes a 12-step wizard and DB shows a fully configured business.
+**Architecture:** 9-step wizard at `/[locale]/setup` — dedicated full-screen route (no sidebar) with modal-card UI centered on a dark gradient background. Framer Motion step transitions. State persisted to `localStorage` (`klyro_wizard_v1`) and incrementally saved to Supabase at each step.
 
-Key steps:
-1. Vertical selection (reads from registry, pre-loads defaults)
-2. Business name + slug
-3. Branch info (name, address, timezone)
-4. Services catalog (pre-seeded from vertical defaults, editable)
-5. Staff (at least one — the owner)
-6. Availability (weekly schedule per staff)
-7. Messaging channel (WhatsApp number, SMS, or email)
-8. Booking link preview
-9. Confirmation → sets `onboarding_completed = true`
+**Steps implemented:**
+1. Vertical selection — 8-card grid, reads from registry
+2. Business name + slug — auto-generated from name, editable
+3. Branch info — name, address, city, timezone, phone
+4. Services — pre-seeded from vertical registry, add/remove/edit
+5. Staff (owner) — display name + URL slug, pre-filled from auth
+6. Availability — weekly schedule toggle per day, time selects
+7. Messaging channel — WhatsApp (with number) or Email
+8. Booking link preview — shows full URL, copy-to-clipboard
+9. Confirmation — summary table + "Lanzar mi negocio" → sets `onboarding_completed = true`
+
+**Key files:**
+- `src/lib/schemas/wizard.ts` — Zod schemas for all 9 steps
+- `src/lib/actions/wizard.ts` — Server Actions, one per step
+- `src/lib/supabase/admin.ts` — Service role client (bypasses RLS for wizard writes)
+- `src/components/wizard/` — `SetupWizard`, `WizardShell`, `WizardContext`, 9 step components
+- `src/app/[locale]/(setup)/setup/page.tsx` — Wizard page
+- `src/i18n/locales/es.json` + `en.json` — Full wizard copy (ES + EN)
+
+**Bugs fixed during build:**
+- `businesses` INSERT blocked by RLS: `USING (id = get_my_business_id())` returns `NULL` for new users → switched all wizard DB writes to service role admin client after session verification
+- `slugHint` i18n string used `{curly}` syntax → next-intl parsed as interpolation variables → changed to plain strings
+
+**Design decisions:**
+- Separate route (`/[locale]/setup`) chosen over modal-on-dashboard: deep-linkable, full focus, standard SaaS pattern (Vercel/Linear/Notion), simpler layout code
+- No auto-redirect wizard guard in dashboard layout — setup banner on dashboard is the entry point
+- Wizard "×" close button returns to dashboard; progress survives in localStorage, so re-entering `/setup` resumes from the last step
+
+**Exit criteria met:**
+- [x] Any vertical owner can complete wizard end-to-end
+- [x] DB shows fully configured business after step 9: `businesses`, `branches`, `services`, `branch_services`, `staff`, `staff_branches`, `staff_availability` populated; `onboarding_completed = true`
+- [x] `pnpm typecheck` — 0 errors
+- [x] `pnpm lint` — 0 warnings
+- [x] `pnpm test` — 8/8 passing
+
+---
+
+## Phase 3 — Public Booking Flow (next up)
+
+**Goal:** A client opens a booking URL, picks a slot, and books in <60s.
+
+URL structure: `/[locale]/[businessSlug]/[branchSlug]/[staffSlug]`
+
+Key work:
+1. Slot calculation engine — `staff_availability` minus existing `appointments` minus buffer
+2. `GET /api/booking/slots` route handler
+3. `POST /api/booking/create` route handler (creates `appointments` + `clients` rows)
+4. Public booking page UI (mobile-first, light surface tokens)
+5. Booking confirmation screen with code (`KLY-XXXX`)
 
 ---
 
@@ -111,9 +150,13 @@ Key steps:
 | Logo asset | `public/klyro_logo_w.png` |
 | Vertical registry | `src/lib/verticals/registry.ts` |
 | Env validation | `src/lib/env.ts` |
-| Supabase clients | `src/lib/supabase/` |
+| Supabase clients | `src/lib/supabase/` (client, server, admin) |
 | Auth actions | `src/lib/actions/auth.ts` |
+| Wizard actions | `src/lib/actions/wizard.ts` |
+| Wizard schemas | `src/lib/schemas/wizard.ts` |
+| Wizard components | `src/components/wizard/` |
 | Auth callback | `src/app/[locale]/(auth)/callback/route.ts` |
+| Setup wizard page | `src/app/[locale]/(setup)/setup/page.tsx` |
 | Middleware | `src/middleware.ts` |
 | DB migrations | `supabase/migrations/` |
 | i18n strings | `src/i18n/locales/` |

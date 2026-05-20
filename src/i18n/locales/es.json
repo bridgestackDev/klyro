@@ -48,5 +48,131 @@
     "title": "Dashboard",
     "welcome": "Bienvenido",
     "placeholder": "Tu dashboard aparecerá aquí en la Fase 5."
+  },
+  "errors": {
+    "UNAUTHORIZED": "Debes iniciar sesión para continuar.",
+    "NOT_AUTHORIZED": "No tienes permiso para realizar esta acción.",
+    "BUSINESS_NOT_FOUND": "Negocio no encontrado.",
+    "BRANCH_NOT_FOUND": "Sucursal no encontrada.",
+    "STAFF_NOT_FOUND": "Miembro del equipo no encontrado.",
+    "INTERNAL_ERROR": "Algo salió mal. Intenta de nuevo.",
+    "MISSING_IDS": "Faltan datos requeridos. Reinicia el asistente.",
+    "SLUG_TAKEN": "Esta URL ya está en uso. Elige una diferente.",
+    "WHATSAPP_INVALID": "Ingresa un número de WhatsApp válido.",
+    "TIME_END_BEFORE_START": "La hora de fin debe ser posterior a la hora de inicio."
+  },
+  "wizard": {
+    "stepLabel": "Paso {current} de {total}",
+    "saving": "Guardando...",
+    "errorSaving": "Error al guardar. Intenta de nuevo.",
+    "closeButton": "Cerrar",
+    "steps": {
+      "vertical": {
+        "title": "¿Qué tipo de negocio tienes?",
+        "subtitle": "Elige tu categoría y pre-llenaremos los servicios y configuraciones ideales para ti.",
+        "hint": "Selecciona una categoría para continuar"
+      },
+      "business": {
+        "title": "Cuéntanos sobre tu negocio",
+        "subtitle": "Este nombre y URL serán visibles para tus clientes.",
+        "nameLabel": "Nombre del negocio",
+        "namePlaceholder": "Ej. Barbería Don José",
+        "slugLabel": "URL de tu negocio",
+        "slugPrefix": "klyro.app/",
+        "slugHint": "Solo letras minúsculas, números y guiones",
+        "slugError": "Solo letras minúsculas, números y guiones"
+      },
+      "branch": {
+        "title": "Tu primera sucursal",
+        "subtitle": "Agrega la información de tu ubicación principal.",
+        "nameLabel": "Nombre de la sucursal",
+        "namePlaceholder": "Ej. Sucursal Central",
+        "addressLabel": "Dirección",
+        "addressPlaceholder": "Ej. Col. Palmira, Blvd. Morazán",
+        "cityLabel": "Ciudad",
+        "cityPlaceholder": "Ej. Tegucigalpa",
+        "timezoneLabel": "Zona horaria",
+        "phoneLabel": "Teléfono (opcional)",
+        "phonePlaceholder": "+504 9999-9999"
+      },
+      "services": {
+        "title": "Tus servicios",
+        "subtitle": "Hemos pre-llenado los servicios típicos. Edítalos o agrega los tuyos.",
+        "addService": "+ Agregar servicio",
+        "nameLabel": "Nombre",
+        "namePlaceholder": "Ej. Corte de cabello",
+        "durationLabel": "Duración (min)",
+        "priceLabel": "Precio",
+        "noServices": "Agrega al menos un servicio para continuar.",
+        "removeService": "Eliminar servicio"
+      },
+      "staff": {
+        "title": "Tu perfil como proveedor",
+        "subtitle": "Los clientes te verán con este nombre al reservar citas.",
+        "nameLabel": "Nombre para mostrar",
+        "namePlaceholder": "Ej. Carlos García",
+        "slugLabel": "URL de tu perfil",
+        "slugHint": "Los clientes usarán este link para reservar contigo directamente"
+      },
+      "availability": {
+        "title": "Tu horario de trabajo",
+        "subtitle": "¿En qué días y horarios estás disponible para citas?",
+        "from": "Desde",
+        "to": "Hasta",
+        "days": {
+          "0": "Domingo",
+          "1": "Lunes",
+          "2": "Martes",
+          "3": "Miércoles",
+          "4": "Jueves",
+          "5": "Viernes",
+          "6": "Sábado"
+        },
+        "noSlots": "Selecciona al menos un día de trabajo."
+      },
+      "messaging": {
+        "title": "Canal de comunicación",
+        "subtitle": "¿Cómo quieres enviar confirmaciones y recordatorios a tus clientes?",
+        "whatsapp": "WhatsApp",
+        "whatsappDesc": "Envía confirmaciones automáticas por WhatsApp. Recomendado.",
+        "whatsappBadge": "Recomendado",
+        "email": "Email",
+        "emailDesc": "Usa el email de tu cuenta para enviar confirmaciones.",
+        "whatsappNumberLabel": "Número de WhatsApp del negocio",
+        "whatsappNumberPlaceholder": "+504 9999-9999",
+        "whatsappRequired": "Ingresa tu número de WhatsApp"
+      },
+      "preview": {
+        "title": "Tu link de reservas",
+        "subtitle": "Este es el enlace que compartirás con tus clientes.",
+        "bookingLinkLabel": "Tu booking link",
+        "copyLink": "Copiar link",
+        "copied": "¡Copiado!",
+        "readyLabel": "Tu negocio está casi listo",
+        "readyDesc": "En el siguiente paso confirmarás tu configuración y lanzarás tu negocio.",
+        "defaultBizSlug": "tu-negocio",
+        "defaultBranchSlug": "principal",
+        "defaultStaffSlug": "tu-perfil"
+      },
+      "confirm": {
+        "title": "¡Todo listo para lanzar!",
+        "subtitle": "Revisa tu configuración y lanza tu negocio.",
+        "launchButton": "Lanzar mi negocio",
+        "launching": "Lanzando...",
+        "sections": {
+          "vertical": "Categoría",
+          "business": "Negocio",
+          "branch": "Sucursal",
+          "services": "Servicios",
+          "staff": "Perfil",
+          "availability": "Horario",
+          "messaging": "Canal"
+        },
+        "servicesCount": "{count} servicio(s)",
+        "availabilityCount": "{count} día(s) por semana",
+        "channelWhatsapp": "WhatsApp",
+        "channelEmail": "Email"
+      }
+    }
   }
 }

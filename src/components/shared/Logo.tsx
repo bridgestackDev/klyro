@@ -9,9 +9,8 @@ interface LogoProps {
   className?: string;
 }
 
-// Geometric placeholder — swap for dedicated mark asset when available.
 function CatMark({ theme }: { theme: LogoTheme }) {
-  const bodyFill = theme === "dark" ? "url(#grad-brand)" : "#14143A";
+  const bodyFill = theme === "dark" ? "url(#grad-body)" : "#14143A";
 
   return (
     <svg
@@ -23,22 +22,28 @@ function CatMark({ theme }: { theme: LogoTheme }) {
       aria-hidden="true"
     >
       <defs>
-        <linearGradient id="grad-brand" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#6D64FB" />
+        <linearGradient id="grad-body" x1="2" y1="2" x2="38" y2="38" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#221F58" />
           <stop offset="100%" stopColor="#14143A" />
         </linearGradient>
       </defs>
-      <rect x="2" y="6" width="36" height="32" rx="10" fill={bodyFill} />
-      <polygon points="8,6 4,0 12,0" fill="#6D64FB" />
-      <polygon points="32,6 28,0 36,0" fill="#6D64FB" />
-      <ellipse cx="14" cy="17" rx="2.5" ry="1.5" fill="#FFFFFF" opacity="0.9" />
-      <ellipse cx="26" cy="17" rx="2.5" ry="1.5" fill="#FFFFFF" opacity="0.9" />
-      <path d="M18.5 22 L20 23.5 L21.5 22 L20 21 Z" fill="#6D64FB" />
-      <rect x="6" y="29" width="28" height="3.5" rx="1.75" fill="#6D64FB" />
+
+      {/* Left ear */}
+      <path d="M 6.5 13 L 10 1.5 L 18 11" fill="#6D64FB" />
+      <path d="M 8.5 12.5 L 11 5.5 L 16 11" fill="#B8B0FE" opacity="0.45" />
+
+      {/* Right ear */}
+      <path d="M 22 11 L 30 1.5 L 33.5 13" fill="#6D64FB" />
+      <path d="M 24 11 L 29 5.5 L 31.5 12.5" fill="#B8B0FE" opacity="0.45" />
+
+      {/* Body */}
+      <rect x="3" y="9" width="34" height="29" rx="10" fill={bodyFill} />
+
+      {/* Checkmark */}
       <path
-        d="M14 21.5 L18 25.5 L26 17.5"
-        stroke="#FFFFFF"
-        strokeWidth="2.5"
+        d="M 12.5 23 L 18 28.5 L 27.5 17.5"
+        stroke="white"
+        strokeWidth="2.8"
         strokeLinecap="round"
         strokeLinejoin="round"
       />

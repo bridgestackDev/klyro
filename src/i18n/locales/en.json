@@ -48,5 +48,131 @@
     "title": "Dashboard",
     "welcome": "Welcome",
     "placeholder": "Your dashboard will appear here in Phase 5."
+  },
+  "errors": {
+    "UNAUTHORIZED": "You must be signed in to continue.",
+    "NOT_AUTHORIZED": "You don't have permission to perform this action.",
+    "BUSINESS_NOT_FOUND": "Business not found.",
+    "BRANCH_NOT_FOUND": "Location not found.",
+    "STAFF_NOT_FOUND": "Staff member not found.",
+    "INTERNAL_ERROR": "Something went wrong. Please try again.",
+    "MISSING_IDS": "Missing required data. Please restart the wizard.",
+    "SLUG_TAKEN": "This URL is already taken. Please choose a different one.",
+    "WHATSAPP_INVALID": "Enter a valid WhatsApp number.",
+    "TIME_END_BEFORE_START": "End time must be after start time."
+  },
+  "wizard": {
+    "stepLabel": "Step {current} of {total}",
+    "saving": "Saving...",
+    "errorSaving": "Error saving. Please try again.",
+    "closeButton": "Close",
+    "steps": {
+      "vertical": {
+        "title": "What type of business do you have?",
+        "subtitle": "Choose your category and we'll pre-fill ideal services and settings for you.",
+        "hint": "Select a category to continue"
+      },
+      "business": {
+        "title": "Tell us about your business",
+        "subtitle": "This name and URL will be visible to your clients.",
+        "nameLabel": "Business name",
+        "namePlaceholder": "E.g. José's Barbershop",
+        "slugLabel": "Your business URL",
+        "slugPrefix": "klyro.app/",
+        "slugHint": "Only lowercase letters, numbers and dashes",
+        "slugError": "Only lowercase letters, numbers and dashes"
+      },
+      "branch": {
+        "title": "Your first location",
+        "subtitle": "Add the details for your main location.",
+        "nameLabel": "Location name",
+        "namePlaceholder": "E.g. Main Branch",
+        "addressLabel": "Address",
+        "addressPlaceholder": "E.g. 123 Main St",
+        "cityLabel": "City",
+        "cityPlaceholder": "E.g. Tegucigalpa",
+        "timezoneLabel": "Timezone",
+        "phoneLabel": "Phone (optional)",
+        "phonePlaceholder": "+504 9999-9999"
+      },
+      "services": {
+        "title": "Your services",
+        "subtitle": "We pre-filled typical services for your category. Edit them or add your own.",
+        "addService": "+ Add service",
+        "nameLabel": "Name",
+        "namePlaceholder": "E.g. Haircut",
+        "durationLabel": "Duration (min)",
+        "priceLabel": "Price",
+        "noServices": "Add at least one service to continue.",
+        "removeService": "Remove service"
+      },
+      "staff": {
+        "title": "Your provider profile",
+        "subtitle": "Clients will see this name when booking appointments.",
+        "nameLabel": "Display name",
+        "namePlaceholder": "E.g. Carlos García",
+        "slugLabel": "Your profile URL",
+        "slugHint": "Clients will use this link to book directly with you"
+      },
+      "availability": {
+        "title": "Your work schedule",
+        "subtitle": "Which days and hours are you available for appointments?",
+        "from": "From",
+        "to": "To",
+        "days": {
+          "0": "Sunday",
+          "1": "Monday",
+          "2": "Tuesday",
+          "3": "Wednesday",
+          "4": "Thursday",
+          "5": "Friday",
+          "6": "Saturday"
+        },
+        "noSlots": "Select at least one working day."
+      },
+      "messaging": {
+        "title": "Communication channel",
+        "subtitle": "How do you want to send confirmations and reminders to your clients?",
+        "whatsapp": "WhatsApp",
+        "whatsappDesc": "Send automatic confirmations via WhatsApp. Recommended.",
+        "whatsappBadge": "Recommended",
+        "email": "Email",
+        "emailDesc": "Use your account email to send confirmations.",
+        "whatsappNumberLabel": "Business WhatsApp number",
+        "whatsappNumberPlaceholder": "+504 9999-9999",
+        "whatsappRequired": "Enter your WhatsApp number"
+      },
+      "preview": {
+        "title": "Your booking link",
+        "subtitle": "This is the link you'll share with your clients.",
+        "bookingLinkLabel": "Your booking link",
+        "copyLink": "Copy link",
+        "copied": "Copied!",
+        "readyLabel": "Your business is almost ready",
+        "readyDesc": "In the next step you'll confirm your setup and launch your business.",
+        "defaultBizSlug": "your-business",
+        "defaultBranchSlug": "main",
+        "defaultStaffSlug": "your-profile"
+      },
+      "confirm": {
+        "title": "Ready to launch!",
+        "subtitle": "Review your setup and launch your business.",
+        "launchButton": "Launch my business",
+        "launching": "Launching...",
+        "sections": {
+          "vertical": "Category",
+          "business": "Business",
+          "branch": "Location",
+          "services": "Services",
+          "staff": "Profile",
+          "availability": "Schedule",
+          "messaging": "Channel"
+        },
+        "servicesCount": "{count} service(s)",
+        "availabilityCount": "{count} day(s) per week",
+        "channelWhatsapp": "WhatsApp",
+        "channelEmail": "Email"
+      }
+    }
   }
 }

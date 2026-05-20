@@ -20,19 +20,20 @@ export default async function DashboardLayout({
     redirect(`/${locale}/login`);
   }
 
-  const email = user.email ?? "";
-  const userInitial = (
-    user.user_metadata?.["full_name"] ??
-    user.user_metadata?.["name"] ??
-    email
-  )
-    .charAt(0)
-    .toUpperCase();
+  const displayName =
+    (user.user_metadata?.["full_name"] as string | undefined) ??
+    (user.user_metadata?.["name"] as string | undefined) ??
+    user.email ??
+    "";
+  const userInitial = displayName.charAt(0).toUpperCase();
 
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--color-bg-base)]">
-      <Sidebar locale={locale} userEmail={email} userInitial={userInitial} />
-
+      <Sidebar
+        locale={locale}
+        userEmail={user.email ?? ""}
+        userInitial={userInitial}
+      />
       <div className="flex flex-1 flex-col overflow-hidden">
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>

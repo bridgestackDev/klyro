@@ -576,7 +576,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      replace_branch_services: {
+        Args: { p_branch_id: string; p_business_id: string; p_services: Json }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

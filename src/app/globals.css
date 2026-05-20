@@ -64,6 +64,7 @@
   /* Gradients */
   --grad-brand: linear-gradient(135deg, #6d64fb 0%, #14143a 100%);
   --grad-surface: linear-gradient(180deg, #111131 0%, #0a0a1f 100%);
+  --grad-wizard-bg: radial-gradient(ellipse 80% 50% at 50% -10%, color-mix(in srgb, #6d64fb 18%, transparent) 0%, transparent 70%);
 
   /* Shadows */
   --shadow-violet: 0 8px 32px rgba(109, 100, 251, 0.16);
