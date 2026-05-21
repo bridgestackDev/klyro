@@ -178,20 +178,42 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 
 ## Phase 3 — Public Booking Flow
 
-- [ ] Route: `/[businessSlug]` — business landing (name, branches list)
-- [ ] Route: `/[businessSlug]/[branchSlug]` — branch page (staff list, services)
-- [ ] Route: `/[businessSlug]/[branchSlug]/[staffSlug]` — booking page (calendar + slot picker)
-- [ ] Slot calculation engine: `staff_availability` minus existing `appointments` minus buffer
-- [ ] Booking form: client name + WhatsApp number + service picker + slot confirm
-- [ ] `POST /api/booking/create` route handler
-- [ ] `GET /api/booking/slots` route handler
-- [ ] Booking page copy adapts to vertical (`bookingPageHints` from registry)
-- [ ] Mobile-first layout (WCAG AA target)
-- [ ] Success screen with booking code (`KLY-XXXX`)
-- [ ] E2E test: full booking journey for barbershop vertical
-- [ ] E2E test: full booking journey for fitness vertical (vertical coverage check)
-- [ ] Typecheck + lint pass
-- [ ] Commit Phase 3
+### Block A — Public Route Access + Routing ✅
+- [x] A1: `src/middleware.ts` — SYSTEM_SEGMENTS + isPublicBookingPath(); booking paths always pass through
+- [x] A2: Scaffold pages: [businessSlug]/page.tsx, [businessSlug]/[branchSlug]/page.tsx, [businessSlug]/[branchSlug]/[staffSlug]/page.tsx
+- [x] A3: `src/lib/booking/queries.ts` — getBusinessBySlug, getBranchByBizAndSlug, getStaffByBranchAndSlug, getActiveServicesForStaff, getBranchCountForBusiness
+- [x] A4: 404 handling via notFound() in each scaffold page (uses existing [locale]/not-found.tsx)
+- [x] Migration 0008: anon read RLS policies for all booking-relevant tables
+
+### Block B — Slot Calculation Engine ⬜
+- [ ] B1: `src/lib/booking/slots.ts` — getAvailableSlots(inputs): Slot[]
+- [ ] B2: Edge cases: no availability, service longer than window, all slots taken, DST
+- [ ] B3: `tests/booking/slots.test.ts` — 4 scenario tests
+- [ ] B4: Index check on appointments table (staff_id, starts_at)
+
+### Block C — Booking API Endpoints ⬜
+- [ ] C1: `src/lib/schemas/booking.ts` — slotsQuerySchema + createBookingSchema
+- [ ] C2: `src/app/api/booking/slots/route.ts` — GET with rate limiting + logging
+- [ ] C3: `src/app/api/booking/create/route.ts` — POST with slot race guard + client upsert
+- [ ] C4: `src/lib/booking/booking-code.ts` — KLY-XXXX generator
+- [ ] C5: Migration for `appointments.booking_code` column + unique index
+- [ ] C6: Tests: happy path, phone validation, slot taken, collision retry, rate limit
+
+### Block D — Public UI ⬜
+- [ ] D1: Business landing page — branches list, vertical-aware H1, auto-redirect for single-branch
+- [ ] D2: Branch page — services + staff cards, "Reservar con X" CTAs
+- [ ] D3: Booking page — 5-step flow (service → date → slot → form → confirmation)
+- [ ] D4: Light surface tokens throughout
+- [ ] D5: i18n keys under booking.* namespace (es + en)
+- [ ] D6: Error/loading states with skeletons
+- [ ] D7: Tests: vertical copy, booking form validation
+
+### Block E — E2E + Vertical Coverage ⬜
+- [ ] E1: `tests/e2e/booking.spec.ts` — barbershop + fitness journeys + slot-taken race
+- [ ] E2: Test helpers: seedBusiness, cleanupBusiness
+- [ ] E3: CI integration
+- [ ] E4: Manual verification 7 steps
+- [ ] E5: git tag phase-3-done
 
 ---
 
