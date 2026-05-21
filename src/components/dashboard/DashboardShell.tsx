@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navbar } from "./Navbar";
 import { Sidebar } from "./Sidebar";
 import { Toaster } from "@/components/ui/sonner";
@@ -17,22 +17,23 @@ interface DashboardShellProps {
   userInitial?: string;
 }
 
-function readSavedMode(): SidebarMode {
-  if (typeof window === "undefined") return "collapsed";
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY) as SidebarMode | null;
-    if (saved && VALID_MODES.includes(saved)) return saved;
-  } catch {}
-  return "collapsed";
-}
-
 export function DashboardShell({
   children,
   locale,
   userEmail,
   userInitial,
 }: DashboardShellProps) {
-  const [mode, setMode] = useState<SidebarMode>(readSavedMode);
+  // Default "collapsed" matches server render; localStorage read happens after
+  // hydration so server/client HTML stays in sync on first paint.
+  const [mode, setMode] = useState<SidebarMode>("collapsed");
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY) as SidebarMode | null;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (saved && VALID_MODES.includes(saved)) setMode(saved);
+    } catch {}
+  }, []);
 
   const handleModeChange = (next: SidebarMode) => {
     setMode(next);
