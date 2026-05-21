@@ -2,9 +2,8 @@
 
 **Project:** Klyro
 **Phase:** 3 — Public Booking Flow
-**Branch base:** `development` (after Phase 2.5 PR merged)
+**Branch base:** `development` (Phase 2.5 fully merged, including Block F)
 **Your feature branch:** `feature/phase-3-public-booking`
-**Parallel work:** A teammate is doing Phase 2.5 Block F (wizard polish) on `feature/phase-2.5-block-f-wizard-polish`. This prompt is designed to avoid conflicts.
 **Spec:** `Klyro_Technical_PRD.md` v2.0 §4.4 (booking flow), §5.1 (schema), §7 Phase 3, §9 (API contracts)
 **Workflow rules:** `CLAUDE_CODE_WORKFLOW.md`
 
@@ -23,7 +22,7 @@ This phase introduces the first **public, unauthenticated** routes in Klyro. Pha
 Paste the block below into Claude Code from the `klyro/` repo root, **on a fresh branch off `development`**.
 
 ```
-You are executing Phase 3 — Public Booking Flow — on a feature branch. Phases 0, 1, 2, and 2.5 are complete and merged to development. A teammate is doing Phase 2.5 Block F (wizard polish) in parallel on feature/phase-2.5-block-f-wizard-polish. Your work is designed to merge cleanly alongside theirs.
+You are executing Phase 3 — Public Booking Flow — on a feature branch. Phases 0, 1, 2, and 2.5 (including Block F) are complete and merged to development.
 
 Workflow rules in CLAUDE_CODE_WORKFLOW.md apply.
 
@@ -49,11 +48,10 @@ BRANCH SETUP (do this BEFORE editing any code)
 Confirm with `git status` that you're on the new branch and clean.
 
 ================================================================
-CONFLICT-AVOIDANCE BOUNDARIES (read carefully)
+FILE-SCOPE BOUNDARIES (read carefully)
 ================================================================
 
-A teammate is doing Phase 2.5 Block F (wizard polish: launch loader + phone prefix) in parallel.
-To merge cleanly, this phase follows strict file-scope rules:
+To keep this phase atomic and reviewable, follow strict file-scope rules:
 
 ALLOWED to modify:
   src/i18n/locales/es.json                         (ONLY under namespace `booking.*` and `errors.booking.*`)
@@ -80,14 +78,13 @@ ALLOWED to create (everything else is in fresh files/folders):
   tests/e2e/booking.spec.ts                         (E2E happy path)
   supabase/migrations/0008_<name>.sql               (only if schema changes required — see Block B)
 
-FORBIDDEN to touch (your teammate owns these in Block F):
-  src/components/wizard/**                         (entire wizard tree)
-  src/components/ui/LaunchLoader.tsx                (new, theirs)
-  src/components/wizard/CountryPhoneInput.tsx       (new, theirs)
+FORBIDDEN to touch (out of Phase 3 scope):
+  src/components/wizard/**                         (entire wizard tree — owned by setup)
   src/app/[locale]/(setup)/**                      (wizard route)
   Any i18n keys under `wizard.*` namespace
 
 ALLOWED to consume (read-only — do NOT edit):
+  src/components/wizard/CountryPhoneInput.tsx       (reusable phone input from Block F — import for client form)
   src/lib/validation/phone.ts                       (Phase 2.5 Block B — use it for client phone validation)
   src/lib/format/phone.ts                           (use formatPhoneE164 / formatPhoneDisplay)
   src/lib/format/currency.ts                        (use formatCurrency for service prices)
@@ -320,11 +317,10 @@ D3. /[locale]/[bizSlug]/[branchSlug]/[staffSlug]/page.tsx — Booking page:
     - Step 1 (visual): pick a service from the services this staff offers
     - Step 2: pick a date — calendar widget showing the next 28 days
     - Step 3: pick a slot — calls GET /api/booking/slots on date selection; shows slot grid
-    - Step 4: client form — fullName + whatsappNumber (use the same CountryPhoneInput approach
-      conceptually, BUT YOUR TEAMMATE OWNS THAT COMPONENT — create a parallel local version in
-      this route's _components folder, OR if they've already pushed Block F, import it. Coordinate
-      with the founder if the timing is tight; default plan is to ship a local copy in
-      _components/BookingPhoneInput.tsx that you'll later delete in a cleanup PR.)
+    - Step 4: client form — fullName + whatsappNumber. Use the existing CountryPhoneInput
+      from src/components/wizard/CountryPhoneInput.tsx (Phase 2.5 Block F). Pass the
+      business's country as the `country` prop so the prefix matches the business.
+      Import: import { CountryPhoneInput } from "@/components/wizard/CountryPhoneInput"
     - Step 5: confirmation screen with KLY-XXXX, summary, "Guardar este código" hint
 
 D4. Brand:
@@ -429,10 +425,10 @@ REPORTING TEMPLATE (use after each block)
 **Manual verification (where applicable):**
 - <results>
 
-**Conflict avoidance check:**
+**File-scope check:**
 - Files modified outside allowlist? (must be NO)
 - i18n keys added only under `booking.*` namespace? (must be YES)
-- Wizard files (src/components/wizard/**) untouched? (must be YES)
+- Wizard files (src/components/wizard/**) untouched, except CountryPhoneInput imported read-only? (must be YES)
 
 **Ready for next block?** Yes / No
 
@@ -442,7 +438,7 @@ START NOW
 Read Klyro_Technical_PRD.md (§4.4 booking flow, §5.1 schema, §7 Phase 3 plan, §9 API contracts, §8.1 light-surface tokens), STATUS.md, TASKS.md, DECISIONS.md. Summarize Phase 3 in 5–8 bullets including:
 - The 3 public routes and 2 API endpoints
 - The light-surface theme requirement
-- The conflict-avoidance boundaries
+- The file-scope boundaries
 - The 3 locked decisions (client country = business country, language follows business not URL, booking code format)
 
 Then begin with the branch setup, then BLOCK A.
@@ -452,8 +448,8 @@ Then begin with the branch setup, then BLOCK A.
 
 ## 📋 Notes for your teammate
 
-1. **Branch off latest `development`.** Block F may merge before or after — either way, base off the freshest `development` SHA at the time you start.
-2. **The CountryPhoneInput coordination point** is in Block D. If Block F has merged when you reach Block D, import their `CountryPhoneInput`. If not, ship a local `BookingPhoneInput` in `_components/` and clean it up in a follow-up PR. Don't wait blocked on them.
+1. **Branch off latest `development`.** Phase 2.5 is fully merged, including Block F. Pull the freshest SHA before creating your feature branch.
+2. **`CountryPhoneInput` is ready to use.** It lives at `src/components/wizard/CountryPhoneInput.tsx`. Import it directly in Block D for the client form. Pass the business's country as the `country` prop.
 3. **Light surface, not dark.** The booking page is the public face of Klyro — it must match the marketing site's surface treatment. The PRD §8.1 light tokens are real, not optional.
 4. **Don't preempt Phase 4.** Booking code generation is here; sending the confirmation message via WhatsApp is Phase 4. The success screen displays the code; that's it.
-5. **One commit per block, stop-and-report after each.** Even if a block goes fast, do the report. The merge conflict surface stays small as long as we keep blocks atomic.
+5. **One commit per block, stop-and-report after each.** Even if a block goes fast, do the report. Atomic blocks keep reviews fast and revertable.
