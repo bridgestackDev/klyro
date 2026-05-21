@@ -158,6 +158,7 @@ export async function saveBranchStep(
           country,
         })
         .eq("id", existingBranchId);
+      if (error?.code === "23505") return { branchId: "", branchSlug: "", error: ApiError.slugTaken(slug).code };
       if (error) return { branchId: "", branchSlug: "", error: error.message };
 
       // Propagate country + currency to the business
@@ -188,6 +189,21 @@ export async function saveBranchStep(
       .select("id")
       .single();
 
+    if (error?.code === "23505") {
+      // Branch with this slug already exists for this business — most likely a
+      // retry after the response was lost. Fetch and return the existing branch
+      // so the wizard can continue without surfacing a confusing error.
+      const { data: existing } = await admin
+        .from("branches")
+        .select("id")
+        .eq("business_id", businessId)
+        .eq("slug", slug)
+        .single();
+      if (existing) {
+        return { branchId: existing.id, branchSlug: slug };
+      }
+      return { branchId: "", branchSlug: "", error: ApiError.slugTaken(slug).code };
+    }
     if (error || !branch) return { branchId: "", branchSlug: "", error: error?.message };
 
     // Propagate country + currency to the business
@@ -196,7 +212,7 @@ export async function saveBranchStep(
       .update({ country, default_currency: currency })
       .eq("id", ownBusinessId);
     if (bizError) {
-      console.error("saveBranchStep: failed to update business country", bizError);
+      logger.error("saveBranchStep: failed to update business country", { error: bizError.message });
       return { branchId: "", branchSlug: "", error: ApiError.internal().code };
     }
 
