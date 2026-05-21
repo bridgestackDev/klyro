@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Navbar } from "./Navbar";
 import { Sidebar } from "./Sidebar";
 
@@ -16,20 +16,22 @@ interface DashboardShellProps {
   userInitial?: string;
 }
 
+function readSavedMode(): SidebarMode {
+  if (typeof window === "undefined") return "collapsed";
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY) as SidebarMode | null;
+    if (saved && VALID_MODES.includes(saved)) return saved;
+  } catch {}
+  return "collapsed";
+}
+
 export function DashboardShell({
   children,
   locale,
   userEmail,
   userInitial,
 }: DashboardShellProps) {
-  const [mode, setMode] = useState<SidebarMode>("collapsed");
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY) as SidebarMode | null;
-      if (saved && VALID_MODES.includes(saved)) setMode(saved);
-    } catch {}
-  }, []);
+  const [mode, setMode] = useState<SidebarMode>(readSavedMode);
 
   const handleModeChange = (next: SidebarMode) => {
     setMode(next);

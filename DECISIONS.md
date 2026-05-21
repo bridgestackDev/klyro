@@ -116,6 +116,28 @@ This file records non-obvious design decisions and their rationale. Never delete
 
 ### ADR-012: LaunchLoader conditionally rendered (not always-mounted with open prop)
 
+---
+
+## Phase 3 — Block A
+
+### ADR-013: Public booking requires a new RLS migration (no pre-existing anon read policies)
+
+**Decision:** Migration `0008_booking_public_read_rls.sql` adds anon `SELECT` policies on businesses, branches, staff, staff_branches, services, branch_services, staff_availability, and appointments. The booking CREATE endpoint uses the service-role (admin) client for all writes, matching the wizard pattern.
+
+**Why:** All tables had RLS enabled since Phase 0 with no anon policies — every query required an authenticated session. Phase 3 is the first public-facing surface. Anon read is the minimum needed to display business/branch/staff data without auth. Write operations (create clients, insert appointments) use the admin client because: (a) it follows the same secure pattern as the wizard, (b) our validation + rate limiting + phone check are the application-layer controls, and (c) it avoids complex anon INSERT policies with business_id verification.
+
+**Trade-off:** Service role used for public writes means a bug in our validation could allow unexpected inserts. Mitigated by Zod schema validation, rate limiting, phone validation, and slot availability check in the route handler. Revisit with stricter RLS INSERT policies in Phase 7 hardening.
+
+---
+
+### ADR-014: Booking pages live in the existing (booking) route group, not flat [bizSlug]
+
+**Decision:** Scaffold pages are created at `src/app/[locale]/(booking)/[businessSlug]/…` (matching the PRD §3.1 folder spec and the pre-created empty directories) rather than the flat `[bizSlug]` path listed in the Phase 3 prompt's file-scope section.
+
+**Why:** The `(booking)` route group was pre-created as empty directories in the codebase. Creating pages at `[locale]/[bizSlug]/` alongside the existing `[locale]/(booking)/[businessSlug]/` would cause an ambiguous route conflict (Next.js cannot resolve two dynamic segments at the same URL depth). The (booking) group is also consistent with PRD §3.1 and adds organizational clarity. The URL structure is identical since route group names are parenthesized and don't appear in the URL.
+
+**How to apply:** All Phase 3 page files go under `src/app/[locale]/(booking)/[businessSlug]/…`. Private components go under `…/[staffSlug]/_components/`.
+
 **Decision:** `WizardInner` renders `{isLaunching && <LaunchLoader open ... />}` rather than always rendering `<LaunchLoader open={isLaunching} ... />`.
 
 **Why:** The conditional render causes the component to mount fresh on each launch attempt, automatically resetting `messageIndex` to 0. The alternative (always-mounted with a reset in `useEffect`) would require calling `setState` synchronously inside an effect body, which violates the `react-hooks/set-state-in-effect` lint rule and can cause cascading renders.

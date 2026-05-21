@@ -18,6 +18,29 @@ const DASHBOARD_PATHS = [
 ];
 const AUTH_PATHS = ["/login", "/signup"];
 
+// First path segment values that are owned by the app.
+// Anything else is treated as a business slug (public booking route).
+// /api/booking/** is excluded from the middleware matcher entirely.
+const SYSTEM_SEGMENTS = new Set([
+  "dashboard",
+  "agenda",
+  "team",
+  "branches",
+  "services",
+  "settings",
+  "links",
+  "setup",
+  "login",
+  "signup",
+  "callback",
+]);
+
+function isPublicBookingPath(bare: string): boolean {
+  const segments = bare.split("/").filter(Boolean);
+  if (segments.length < 1 || segments.length > 3) return false;
+  return !SYSTEM_SEGMENTS.has(segments[0] ?? "");
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -59,6 +82,14 @@ export async function middleware(request: NextRequest) {
 
   const locale =
     pathname.match(/^\/(es|en)/)?.[1] ?? routing.defaultLocale;
+
+  // Public booking routes: /:bizSlug, /:bizSlug/:branchSlug, /:bizSlug/:branchSlug/:staffSlug
+  // Always pass through — no auth check, no redirect.
+  if (isPublicBookingPath(bare)) {
+    const intlResponse = handleI18n(request);
+    supabaseResponse.cookies.getAll().forEach((c) => intlResponse.cookies.set(c));
+    return intlResponse;
+  }
 
   // Unauthenticated → redirect to login
   if (isDashboard && !user) {

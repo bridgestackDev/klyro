@@ -1,7 +1,7 @@
 # Klyro — Build Status
 
-**Last updated:** 2026-05-20
-**Active phase:** Phase 2.5 — Hardening & Localization (Blocks A+B+C+D+F done; Block E pending)
+**Last updated:** 2026-05-21
+**Active phase:** Phase 3 — Public Booking Flow (Block A in progress)
 
 ---
 
@@ -12,8 +12,8 @@
 | 0 | Foundation | ✅ Done | All 12 tables, RLS, types, brand, CI |
 | 1 | Auth & Onboarding Shell | ✅ Done | Magic link confirmed working end-to-end |
 | 2 | Setup Wizard | ✅ Done | 9-step wizard, all DB writes, admin client RLS fix |
-| 2.5 | Hardening & Localization | 🟡 In progress | Block A done; B–E pending |
-| 3 | Public Booking Flow | ⬜ Not started | `/[biz]/[branch]/[staff]` |
+| 2.5 | Hardening & Localization | 🟡 In progress | Blocks A–F done; Block E (e2e) deferred to Phase 7 |
+| 3 | Public Booking Flow | 🟡 In progress | Block A done; B–E pending |
 | 4 | Messaging Engine | ⬜ Not started | WhatsApp + email templates |
 | 5 | Owner Dashboard | ⬜ Not started | Full operational view |
 | 6 | Staff Dashboard | ⬜ Not started | RLS-scoped own-day view |
@@ -224,18 +224,36 @@ Tests: 125/125 passing (110 existing + 15 new)
 
 ---
 
-## Phase 3 — Public Booking Flow (next up)
+## Phase 3 — Public Booking Flow 🟡
 
 **Goal:** A client opens a booking URL, picks a slot, and books in <60s.
 
 URL structure: `/[locale]/[businessSlug]/[branchSlug]/[staffSlug]`
 
-Key work:
-1. Slot calculation engine — `staff_availability` minus existing `appointments` minus buffer
-2. `GET /api/booking/slots` route handler
-3. `POST /api/booking/create` route handler (creates `appointments` + `clients` rows)
-4. Public booking page UI (mobile-first, light surface tokens)
-5. Booking confirmation screen with code (`KLY-XXXX`)
+**Block A — Public Route Access + Routing** ✅ Done
+
+Files added:
+- `supabase/migrations/0008_booking_public_read_rls.sql` — anon read policies for businesses, branches, staff, services, branch_services, staff_branches, staff_availability, appointments
+- `src/lib/booking/queries.ts` — getBusinessBySlug, getBranchByBizAndSlug, getStaffByBranchAndSlug, getActiveServicesForStaff, getBranchCountForBusiness
+- `src/app/[locale]/(booking)/[businessSlug]/page.tsx` — business landing scaffold
+- `src/app/[locale]/(booking)/[businessSlug]/[branchSlug]/page.tsx` — branch page scaffold
+- `src/app/[locale]/(booking)/[businessSlug]/[branchSlug]/[staffSlug]/page.tsx` — booking page scaffold
+
+Files changed:
+- `src/middleware.ts` — added SYSTEM_SEGMENTS set + isPublicBookingPath(); booking paths explicitly pass through before auth check
+- `src/components/dashboard/DashboardShell.tsx` — fixed pre-existing lint error (setState in useEffect → lazy initializer)
+
+Key decisions:
+- ADR-013: RLS migration required (no pre-existing anon read policies)
+- ADR-014: Booking pages use existing (booking) route group, not flat [bizSlug] structure
+
+**Block B — Slot Calculation Engine** ⬜ Next
+
+**Block C — Booking API Endpoints** ⬜
+
+**Block D — Public UI** ⬜
+
+**Block E — E2E + Vertical Coverage** ⬜
 
 ---
 
