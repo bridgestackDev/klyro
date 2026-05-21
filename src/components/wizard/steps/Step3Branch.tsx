@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { validatePhone } from "@/lib/validation";
 import { COUNTRIES, type CountryCode } from "@/lib/i18n/countries";
+import { CountryPhoneInput } from "../CountryPhoneInput";
 import { useWizard } from "../WizardContext";
 
 const COUNTRY_FLAGS: Record<CountryCode, string> = {
@@ -17,17 +18,6 @@ const COUNTRY_FLAGS: Record<CountryCode, string> = {
   US: "🇺🇸",
 };
 
-/** Example phone numbers in national format — shown as placeholder text. */
-const PHONE_EXAMPLE: Record<CountryCode, string> = {
-  HN: "+504 9876-5432",
-  SV: "+503 7890-1234",
-  GT: "+502 5678-9012",
-  NI: "+505 8123-4567",
-  CR: "+506 8765-4321",
-  MX: "+52 55 1234-5678",
-  CO: "+57 300 123-4567",
-  US: "+1 (555) 123-4567",
-};
 
 const TIMEZONES = [
   { value: "America/Tegucigalpa", label: "Tegucigalpa (UTC-6)" },
@@ -180,18 +170,15 @@ export function Step3Branch() {
           >
             {t("phoneLabel")}
           </label>
-          <input
+          <CountryPhoneInput
             id="branch-phone"
-            type="tel"
+            country={step3.country as CountryCode}
             value={step3.phone}
-            onChange={(e) => update("phone", e.target.value)}
+            onChange={(e164) => update("phone", e164)}
             onBlur={handlePhoneBlur}
-            placeholder={PHONE_EXAMPLE[step3.country as CountryCode] ?? t("phonePlaceholder")}
-            className="w-full rounded-[var(--radius-button)] border border-[var(--border-subtle)] bg-[var(--color-bg-surface)] px-4 py-2.5 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition-colors focus:border-[var(--color-violet)] focus:ring-1 focus:ring-[var(--color-violet)]"
+            ariaLabel={t("phone.prefixAriaLabel")}
+            error={phoneError ?? undefined}
           />
-          {phoneError && (
-            <p className="text-xs text-[var(--color-danger)]">{phoneError}</p>
-          )}
         </div>
       </div>
     </div>

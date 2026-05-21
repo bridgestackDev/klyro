@@ -1,7 +1,7 @@
 # Klyro — Build Status
 
 **Last updated:** 2026-05-20
-**Active phase:** Phase 2.5 — Hardening & Localization (Blocks A+B+C+D done, awaiting approval for Block E)
+**Active phase:** Phase 2.5 — Hardening & Localization (Blocks A+B+C+D+F done; Block E pending)
 
 ---
 
@@ -202,6 +202,23 @@ Files changed:
 - `src/lib/errors/__tests__/to-response.test.ts` — updated spy from `console.error` → `logger.error`
 
 Tests: 110/110 passing (101 existing + 9 new)
+
+**Block F — Wizard Polish (LaunchLoader + Fixed Phone Prefix)** ✅ Done
+
+Files added:
+- `src/components/ui/LaunchLoader.tsx` — full-screen branded overlay with framer-motion cat mark pulse + 4 rotating status messages (900ms each); shown while completeSetup() runs; unmounts naturally on redirect
+- `src/components/wizard/CountryPhoneInput.tsx` — fixed read-only country dial code chip + national number input; emits E.164 on every keystroke; handles country-change re-assembly
+- `src/components/ui/__tests__/LaunchLoader.test.tsx` — 6 unit tests (open/closed, message sequence, last-message persistence, aria attributes)
+- `src/components/wizard/__tests__/CountryPhoneInput.test.tsx` — 8 unit tests (HN/MX E.164 assembly, mount split, country change, aria, error display, input filtering)
+
+Files changed:
+- `src/components/wizard/SetupWizard.tsx` — `isLaunching` state; step-9 sets it before completeSetup(), resets on error, stays true until redirect unmounts; `<LaunchLoader>` conditionally rendered
+- `src/components/wizard/steps/Step3Branch.tsx` — phone field swapped to `<CountryPhoneInput>` with fixed prefix from `step3.country`; removed now-redundant PHONE_EXAMPLE const
+- `src/components/wizard/steps/Step7Messaging.tsx` — WhatsApp field swapped to `<CountryPhoneInput>` reading country from `data.step3.country`; removed DEFAULT_COUNTRY dependency and handleWaCommit (E.164 assembled by CountryPhoneInput)
+- `src/i18n/locales/es.json` + `en.json` — added keys under `wizard.confirm.launching.*` and `wizard.steps.{branch,messaging}.phone.*`
+- `DECISIONS.md` — ADR-006 (phone prefix fixed from business country), ADR-007 (LaunchLoader presentation-only)
+
+Tests: 125/125 passing (110 existing + 15 new)
 
 **Block E** — Not started
 
