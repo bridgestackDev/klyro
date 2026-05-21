@@ -3,170 +3,177 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import {
-  LayoutDashboard,
-  Calendar,
-  Users,
-  MapPin,
-  Scissors,
-  Settings,
-  Link as LinkIcon,
-  LogOut,
-  Menu,
-  X,
-} from "lucide-react";
-import { useState } from "react";
-import { Logo } from "@/components/shared/Logo";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { signOut } from "@/lib/actions/auth";
+import { PanelLeft } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-
-interface NavItem {
-  key: string;
-  href: string;
-  icon: React.ElementType;
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { key: "dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { key: "agenda", href: "/agenda", icon: Calendar },
-  { key: "team", href: "/team", icon: Users },
-  { key: "branches", href: "/branches", icon: MapPin },
-  { key: "services", href: "/services", icon: Scissors },
-  { key: "links", href: "/links", icon: LinkIcon },
-  { key: "settings", href: "/settings", icon: Settings },
-];
+import { NAV_ITEMS } from "./nav-items";
+import type { SidebarMode } from "./DashboardShell";
 
 interface SidebarProps {
   locale: string;
-  userEmail?: string;
-  userInitial?: string;
+  mode: SidebarMode;
+  onModeChange: (mode: SidebarMode) => void;
 }
 
-function NavLinks({ locale, closeSheet }: { locale: string; closeSheet?: () => void }) {
+const MODES: { key: SidebarMode; labelKey: string }[] = [
+  { key: "expanded", labelKey: "sidebarExpanded" },
+  { key: "collapsed", labelKey: "sidebarCollapsed" },
+  { key: "hover", labelKey: "sidebarHover" },
+];
+
+export function Sidebar({ locale, mode, onModeChange }: SidebarProps) {
   const t = useTranslations("dashboard.nav");
   const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [popoverPos, setPopoverPos] = useState<{ bottom: number; left: number } | null>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      const target = e.target as Node;
+      if (
+        btnRef.current?.contains(target) ||
+        popoverRef.current?.contains(target)
+      ) return;
+      setMenuOpen(false);
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
+
+  function handleToggle() {
+    if (!menuOpen && btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setPopoverPos({
+        bottom: window.innerHeight - rect.top + 6,
+        left: rect.left,
+      });
+    }
+    setMenuOpen((v) => !v);
+  }
+
+  const isExpanded = mode === "expanded";
+  const isHover = mode === "hover";
 
   return (
-    <nav className="flex flex-col gap-1">
-      {NAV_ITEMS.map(({ key, href, icon: Icon }) => {
-        const fullHref = `/${locale}${href}`;
-        const isActive = pathname === fullHref || pathname.startsWith(`${fullHref}/`);
-        return (
-          <Link
-            key={key}
-            href={fullHref}
-            onClick={closeSheet}
-            className={cn(
-              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-              isActive
-                ? "bg-[var(--color-violet)]/15 text-[var(--color-violet-soft)]"
-                : "text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)]"
-            )}
+    <div
+      className={cn(
+        "relative hidden shrink-0 lg:block",
+        isExpanded ? "w-56" : "w-14"
+      )}
+    >
+      <aside
+        className={cn(
+          "absolute inset-y-0 left-0 z-10 flex flex-col border-r border-[var(--border-subtle)] bg-[var(--color-bg-surface)] transition-[width] duration-200 ease-in-out",
+          isExpanded ? "w-56" : "w-14",
+          isHover && "group hover:w-56"
+        )}
+      >
+        {/* Nav — overflow-hidden clips invisible labels */}
+        <nav className="flex flex-1 flex-col gap-0.5 overflow-hidden px-1.5 py-3">
+          {NAV_ITEMS.map(({ key, href, icon: Icon }) => {
+            const fullHref = `/${locale}${href}`;
+            const isActive =
+              pathname === fullHref || pathname.startsWith(`${fullHref}/`);
+            return (
+              <Link
+                key={key}
+                href={fullHref}
+                title={mode === "collapsed" ? t(key as Parameters<typeof t>[0]) : undefined}
+                className={cn(
+                  "flex h-11 items-center gap-3 rounded-xl px-3 transition-colors",
+                  isActive
+                    ? "bg-[var(--color-violet)]/15 text-[var(--color-violet-soft)]"
+                    : "text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)]"
+                )}
+              >
+                <Icon className="h-[18px] w-[18px] shrink-0" />
+                <span
+                  className={cn(
+                    "truncate text-sm font-medium transition-opacity duration-150",
+                    isExpanded
+                      ? "opacity-100"
+                      : isHover
+                        ? "opacity-0 group-hover:opacity-100"
+                        : "opacity-0"
+                  )}
+                >
+                  {t(key as Parameters<typeof t>[0])}
+                </span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Sidebar control button */}
+        <div className="border-t border-[var(--border-subtle)] px-1.5 py-2">
+          <button
+            ref={btnRef}
+            onClick={handleToggle}
+            title={t("sidebarControl")}
+            className="flex h-9 w-full items-center gap-3 rounded-xl px-3 text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)]"
           >
-            <Icon
+            <PanelLeft className="h-[18px] w-[18px] shrink-0" />
+            <span
               className={cn(
-                "h-4 w-4 shrink-0",
-                isActive ? "text-[var(--color-violet-soft)]" : ""
+                "truncate text-sm transition-opacity duration-150",
+                isExpanded
+                  ? "opacity-100"
+                  : isHover
+                    ? "opacity-0 group-hover:opacity-100"
+                    : "opacity-0"
               )}
-            />
-            {t(key as Parameters<typeof t>[0])}
-          </Link>
-        );
-      })}
-    </nav>
-  );
-}
-
-function SidebarContent({
-  locale,
-  userEmail,
-  userInitial,
-  closeSheet,
-}: SidebarProps & { closeSheet?: () => void }) {
-  const t = useTranslations("dashboard.nav");
-
-  return (
-    <div className="flex h-full flex-col gap-4 p-4">
-      {/* Logo */}
-      <div className="flex h-14 items-center px-1">
-        <Logo variant="lockup" theme="dark" className="h-7" />
-      </div>
-
-      {/* Nav */}
-      <div className="flex-1 overflow-y-auto">
-        <NavLinks locale={locale} closeSheet={closeSheet} />
-      </div>
-
-      {/* User + logout */}
-      <div className="border-t border-[var(--border-subtle)] pt-4">
-        <div className="flex items-center gap-3 rounded-xl px-3 py-2">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-violet)]/20 text-xs font-bold text-[var(--color-violet-soft)]">
-            {userInitial ?? "?"}
-          </div>
-          <span className="flex-1 truncate text-xs text-[var(--color-text-muted)]">
-            {userEmail}
-          </span>
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="rounded-lg p-1.5 text-[var(--color-text-muted)] hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)] transition-colors"
-              aria-label={t("signOut")}
             >
-              <LogOut className="h-4 w-4" />
-            </button>
-          </form>
+              {t("sidebarControl")}
+            </span>
+          </button>
         </div>
-      </div>
-    </div>
-  );
-}
-
-export function Sidebar({ locale, userEmail, userInitial }: SidebarProps) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <>
-      {/* Mobile trigger */}
-      <div className="flex h-14 items-center border-b border-[var(--border-subtle)] bg-[var(--color-bg-surface)] px-4 lg:hidden">
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-[var(--color-text-muted)]"
-              />
-            }
-          >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </SheetTrigger>
-          <SheetContent
-            side="left"
-            className="w-64 border-r border-[var(--border-subtle)] bg-[var(--color-bg-surface)] p-0"
-          >
-            <SidebarContent
-              locale={locale}
-              userEmail={userEmail}
-              userInitial={userInitial}
-              closeSheet={() => setOpen(false)}
-            />
-          </SheetContent>
-        </Sheet>
-        <div className="ml-3">
-          <Logo variant="lockup" theme="dark" className="h-6" />
-        </div>
-      </div>
-
-      {/* Desktop sidebar */}
-      <aside className="hidden w-60 shrink-0 border-r border-[var(--border-subtle)] bg-[var(--color-bg-surface)] lg:flex lg:flex-col">
-        <SidebarContent
-          locale={locale}
-          userEmail={userEmail}
-          userInitial={userInitial}
-        />
       </aside>
-    </>
+
+      {/* Popover rendered with fixed positioning to escape all overflow-hidden ancestors */}
+      {menuOpen && popoverPos && (
+        <div
+          ref={popoverRef}
+          style={{
+            position: "fixed",
+            bottom: popoverPos.bottom,
+            left: popoverPos.left,
+            zIndex: 9999,
+          }}
+          className="w-52 overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--color-bg-elevated)] shadow-xl"
+        >
+          <div className="border-b border-[var(--border-subtle)] px-3 py-2.5">
+            <p className="text-xs font-medium text-[var(--color-text-muted)]">
+              {t("sidebarControl")}
+            </p>
+          </div>
+          {MODES.map(({ key, labelKey }) => (
+            <button
+              key={key}
+              onClick={() => {
+                onModeChange(key);
+                setMenuOpen(false);
+              }}
+              className="flex w-full items-center gap-3 px-3 py-2.5 text-sm text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-hover)]"
+            >
+              <span
+                className={cn(
+                  "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                  mode === key
+                    ? "border-[var(--color-violet-soft)] bg-[var(--color-violet-soft)]"
+                    : "border-[var(--border-subtle)]"
+                )}
+              >
+                {mode === key && (
+                  <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                )}
+              </span>
+              {t(labelKey as Parameters<typeof t>[0])}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

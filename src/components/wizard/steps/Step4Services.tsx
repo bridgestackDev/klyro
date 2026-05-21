@@ -76,8 +76,8 @@ export function Step4Services() {
       </div>
 
       <div className="space-y-3">
-        {/* Column headers */}
-        <div className="grid grid-cols-[1fr_100px_100px_32px] gap-2 px-1">
+        {/* Column headers — only visible on sm+ where grid layout applies */}
+        <div className="hidden sm:grid sm:grid-cols-[1fr_100px_100px_32px] sm:gap-2 sm:px-1">
           <span className="text-xs font-medium text-[var(--color-text-muted)]">
             {t("nameLabel")}
           </span>
@@ -93,57 +93,61 @@ export function Step4Services() {
         {services.map((service, i) => (
           <div
             key={service.clientId ?? `svc-${i}`}
-            className="grid grid-cols-[1fr_100px_100px_32px] items-center gap-2"
+            className="space-y-2 rounded-[var(--radius-card)] border border-[var(--border-subtle)] p-3 sm:space-y-0 sm:rounded-none sm:border-0 sm:p-0 sm:grid sm:grid-cols-[1fr_100px_100px_32px] sm:items-center sm:gap-2"
           >
+            {/* Service name — full width on both layouts */}
             <input
               type="text"
               value={service.name}
               onChange={(e) => updateService(i, { name: e.target.value })}
               placeholder={t("namePlaceholder")}
               aria-label={t("nameLabel")}
-              className="rounded-[var(--radius-button)] border border-[var(--border-subtle)] bg-[var(--color-bg-surface)] px-3 py-2 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition-colors focus:border-[var(--color-violet)] focus:ring-1 focus:ring-[var(--color-violet)]"
+              className="w-full rounded-[var(--radius-button)] border border-[var(--border-subtle)] bg-[var(--color-bg-surface)] px-3 py-2 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition-colors focus:border-[var(--color-violet)] focus:ring-1 focus:ring-[var(--color-violet)]"
             />
-            <select
-              value={service.durationMinutes}
-              onChange={(e) =>
-                updateService(i, { durationMinutes: Number(e.target.value) })
-              }
-              aria-label={t("durationLabel")}
-              className="rounded-[var(--radius-button)] border border-[var(--border-subtle)] bg-[var(--color-bg-surface)] px-2 py-2 text-sm text-[var(--color-text-primary)] outline-none transition-colors focus:border-[var(--color-violet)]"
-            >
-              {DURATION_OPTIONS.map((d) => (
-                <option key={d} value={d}>
-                  {d} min
-                </option>
-              ))}
-            </select>
-            <div className="space-y-0.5">
-              <input
-                type="number"
-                value={service.price === 0 ? "" : service.price}
+            {/* On mobile: row with duration + price + delete. On sm+: sm:contents makes children direct grid items */}
+            <div className="flex items-center gap-2 sm:contents">
+              <select
+                value={service.durationMinutes}
                 onChange={(e) =>
-                  updateService(i, { price: Number(e.target.value) || 0 })
+                  updateService(i, { durationMinutes: Number(e.target.value) })
                 }
-                placeholder="0"
-                min={0}
-                aria-label={t("priceLabel")}
-                className="w-full rounded-[var(--radius-button)] border border-[var(--border-subtle)] bg-[var(--color-bg-surface)] px-3 py-2 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition-colors focus:border-[var(--color-violet)] focus:ring-1 focus:ring-[var(--color-violet)]"
-              />
-              {service.price > 0 && (
-                <p className="text-[10px] text-[var(--color-text-muted)]">
-                  {formatCurrency(service.price, service.currency || DEFAULT_CURRENCY, DEFAULT_LOCALE)}
-                </p>
-              )}
+                aria-label={t("durationLabel")}
+                className="flex-1 rounded-[var(--radius-button)] border border-[var(--border-subtle)] bg-[var(--color-bg-surface)] px-2 py-2 text-sm text-[var(--color-text-primary)] outline-none transition-colors focus:border-[var(--color-violet)] sm:flex-none"
+              >
+                {DURATION_OPTIONS.map((d) => (
+                  <option key={d} value={d}>
+                    {d} min
+                  </option>
+                ))}
+              </select>
+              <div className="flex-1 space-y-0.5 sm:flex-none">
+                <input
+                  type="number"
+                  value={service.price === 0 ? "" : service.price}
+                  onChange={(e) =>
+                    updateService(i, { price: Number(e.target.value) || 0 })
+                  }
+                  placeholder="0"
+                  min={0}
+                  aria-label={t("priceLabel")}
+                  className="w-full rounded-[var(--radius-button)] border border-[var(--border-subtle)] bg-[var(--color-bg-surface)] px-3 py-2 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition-colors focus:border-[var(--color-violet)] focus:ring-1 focus:ring-[var(--color-violet)]"
+                />
+                {service.price > 0 && (
+                  <p className="text-[10px] text-[var(--color-text-muted)]">
+                    {formatCurrency(service.price, service.currency || DEFAULT_CURRENCY, DEFAULT_LOCALE)}
+                  </p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => removeService(i)}
+                disabled={services.length === 1}
+                aria-label={t("removeService")}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-danger)]/10 hover:text-[var(--color-danger)] disabled:pointer-events-none disabled:opacity-30"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => removeService(i)}
-              disabled={services.length === 1}
-              aria-label={t("removeService")}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-danger)]/10 hover:text-[var(--color-danger)] disabled:pointer-events-none disabled:opacity-30"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
           </div>
         ))}
 

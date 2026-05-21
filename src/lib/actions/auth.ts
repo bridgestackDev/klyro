@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 
 function callbackUrl() {
@@ -57,5 +58,6 @@ export async function signInWithMagicLink(
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/login");
+  const locale = await getLocale();
+  redirect(`/${locale}/login`);
 }

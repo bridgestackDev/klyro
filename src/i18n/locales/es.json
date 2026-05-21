@@ -35,7 +35,13 @@
       "services": "Servicios",
       "settings": "Configuración",
       "links": "Links",
-      "signOut": "Cerrar sesión"
+      "signOut": "Cerrar sesión",
+      "collapseSidebar": "Colapsar menú",
+      "expandSidebar": "Expandir menú",
+      "sidebarControl": "Control del menú",
+      "sidebarExpanded": "Expandido",
+      "sidebarCollapsed": "Contraído",
+      "sidebarHover": "Expandir al pasar"
     },
     "setup": {
       "bannerTitle": "Configura tu negocio",

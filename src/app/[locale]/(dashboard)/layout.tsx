@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Sidebar } from "@/components/dashboard/Sidebar";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
 
 export default async function DashboardLayout({
   children,
@@ -28,15 +28,12 @@ export default async function DashboardLayout({
   const userInitial = displayName.charAt(0).toUpperCase();
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--color-bg-base)]">
-      <Sidebar
-        locale={locale}
-        userEmail={user.email ?? ""}
-        userInitial={userInitial}
-      />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
-      </div>
-    </div>
+    <DashboardShell
+      locale={locale}
+      userEmail={user.email ?? ""}
+      userInitial={userInitial}
+    >
+      {children}
+    </DashboardShell>
   );
 }

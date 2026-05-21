@@ -35,7 +35,13 @@
       "services": "Services",
       "settings": "Settings",
       "links": "Links",
-      "signOut": "Sign out"
+      "signOut": "Sign out",
+      "collapseSidebar": "Collapse sidebar",
+      "expandSidebar": "Expand sidebar",
+      "sidebarControl": "Sidebar control",
+      "sidebarExpanded": "Expanded",
+      "sidebarCollapsed": "Collapsed",
+      "sidebarHover": "Expand on hover"
     },
     "setup": {
       "bannerTitle": "Set up your business",

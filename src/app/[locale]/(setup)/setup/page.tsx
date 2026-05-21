@@ -22,7 +22,7 @@ export default async function SetupPage({
 
   return (
     <div
-      className="flex min-h-dvh items-center justify-center px-4 py-10"
+      className="flex min-h-dvh items-center justify-center px-4 py-4 sm:py-10"
       style={{
         background: "var(--grad-wizard-bg), var(--color-bg-base)",
       }}
