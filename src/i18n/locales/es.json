@@ -115,6 +115,10 @@
         "country": {
           "label": "País",
           "help": "Define la moneda y el formato de teléfono"
+        },
+        "phone": {
+          "prefixAriaLabel": "Código de país",
+          "nationalPlaceholder": "9999-9999"
         }
       },
       "services": {
@@ -163,7 +167,11 @@
         "whatsappNumberLabel": "Número de WhatsApp del negocio",
         "whatsappNumberPlaceholder": "+504 9999-9999",
         "whatsappRequired": "Ingresa tu número de WhatsApp",
-        "whatsappInvalid": "Ingresa un número de WhatsApp válido"
+        "whatsappInvalid": "Ingresa un número de WhatsApp válido",
+        "phone": {
+          "prefixAriaLabel": "Código de país",
+          "nationalPlaceholder": "9999-9999"
+        }
       },
       "preview": {
         "title": "Tu link de reservas",
@@ -195,6 +203,15 @@
         "availabilityCount": "{count} día(s) por semana",
         "channelWhatsapp": "WhatsApp",
         "channelEmail": "Email"
+      }
+    },
+    "confirm": {
+      "launching": {
+        "message1": "Configurando tu negocio...",
+        "message2": "Creando tu equipo...",
+        "message3": "Generando tus enlaces...",
+        "message4": "¡Listo!",
+        "ariaLabel": "Lanzando tu negocio"
       }
     }
   }

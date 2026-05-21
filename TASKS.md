@@ -95,6 +95,15 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 - [x] D4: Sentry breadcrumbs for warn+ logs via try/catch dynamic hook (no-ops until @sentry/nextjs installed)
 - [x] D5: Unit tests (9 tests — logger methods, getRequestLogger, withRequestLogging pass/fail)
 
+### Block F — Wizard Polish (LaunchLoader + Phone Prefix) ✅
+- [x] F1: `src/components/ui/LaunchLoader.tsx` — branded overlay with framer-motion pulse + 4 rotating messages (900ms), aria-live/aria-busy
+- [x] F2: Wire `isLaunching` state in SetupWizard; step 9 sets it before `completeSetup()`, resets on error
+- [x] F3: `src/components/wizard/CountryPhoneInput.tsx` — fixed dial code chip + national input, emits E.164, handles country-change re-assembly
+- [x] F4: `Step3Branch.tsx` — phone swapped to `<CountryPhoneInput>` using `step3.country`
+- [x] F5: `Step7Messaging.tsx` — WhatsApp swapped to `<CountryPhoneInput>` reading country from `data.step3.country`
+- [x] F6: i18n keys added under `wizard.confirm.launching.*` and `wizard.steps.{branch,messaging}.phone.*` (es + en)
+- [x] F7: Unit tests — LaunchLoader (6 tests) + CountryPhoneInput (8 tests); pnpm test 125/125 green
+
 ### Block E — Wizard E2E Test ⬜
 - [ ] E1: `tests/e2e/wizard.spec.ts` — full wizard journey for barbershop
 - [ ] E2: `tests/e2e/helpers/` — createTestUser, test-db, wizard-page POM

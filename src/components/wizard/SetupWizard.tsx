@@ -20,6 +20,7 @@ import {
   saveMessagingStep,
   completeSetup,
 } from "@/lib/actions/wizard";
+import { LaunchLoader } from "@/components/ui/LaunchLoader";
 import { WizardProvider, useWizard } from "./WizardContext";
 import { WizardShell } from "./WizardShell";
 import { Step1Vertical } from "./steps/Step1Vertical";
@@ -93,6 +94,7 @@ function WizardInner({
 }) {
   const { data, currentStep, updateData, goNext } = useWizard();
   const [isSaving, setIsSaving] = useState(false);
+  const [isLaunching, setIsLaunching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const tErrors = useTranslations("errors");
@@ -155,11 +157,22 @@ function WizardInner({
 
       if (currentStep === 9) {
         if (!data.businessId) { setError(tErrors("MISSING_IDS")); return; }
-        const r = await completeSetup(data.businessId);
-        if (r.error) { setError(resolveError(r.error, tErrors)); return; }
-        try { localStorage.removeItem("klyro_wizard_v1"); } catch {}
-        router.push(`/${locale}/dashboard`);
-        router.refresh();
+        setIsLaunching(true);
+        try {
+          const r = await completeSetup(data.businessId);
+          if (r.error) {
+            setIsLaunching(false);
+            setError(resolveError(r.error, tErrors));
+            return;
+          }
+          try { localStorage.removeItem("klyro_wizard_v1"); } catch {}
+          // isLaunching stays true — the redirect will unmount the component
+          router.push(`/${locale}/dashboard`);
+          router.refresh();
+        } catch (launchErr) {
+          setIsLaunching(false);
+          throw launchErr;
+        }
         return;
       }
 
@@ -185,16 +198,19 @@ function WizardInner({
   };
 
   return (
-    <WizardShell
-      canContinue={isStepValid(currentStep, data)}
-      isSaving={isSaving}
-      isLastStep={currentStep === 9}
-      onNext={handleNext}
-      onClose={handleClose}
-      error={error}
-    >
-      {stepContent[currentStep] ?? null}
-    </WizardShell>
+    <>
+      <WizardShell
+        canContinue={isStepValid(currentStep, data)}
+        isSaving={isSaving || isLaunching}
+        isLastStep={currentStep === 9}
+        onNext={handleNext}
+        onClose={handleClose}
+        error={error}
+      >
+        {stepContent[currentStep] ?? null}
+      </WizardShell>
+      {isLaunching && <LaunchLoader open locale={locale as "es" | "en"} />}
+    </>
   );
 }
 

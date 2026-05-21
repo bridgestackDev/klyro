@@ -93,3 +93,31 @@ This file records non-obvious design decisions and their rationale. Never delete
 **Why:** Local dev and CI should work without provisioning an Upstash Redis instance. The fallback is intentionally not an in-memory sliding window — a real in-memory limiter would give false confidence that rate limiting is working when it isn't (e.g. a single Vercel serverless instance vs. multiple), and it would reset on every deploy. The passthrough is honest about its behavior: rate limiting is only active in production when Redis credentials are configured.
 
 ---
+
+## Phase 2.5 — Block F
+
+### ADR-010: Phone prefix is fixed (read-only) from business country, not editable per field
+
+**Decision:** The phone fields in Steps 3 (Branch) and 7 (Messaging) render a fixed, read-only country dial code chip derived from the country selected in Step 3. The user types only the national portion; the component assembles E.164 by prepending the dial code.
+
+**Why:** For the MVP wedge (Honduras barbershops), 100% of phone numbers are local. Adding a country picker on each phone field creates unnecessary friction. Country is already set in Step 3 (Block B.1) as the single source of truth for the business. Having all phone fields read from it prevents cross-country accidents (e.g. business WhatsApp from a different country than the branch).
+
+**Trade-off:** A business owner whose personal WhatsApp is in a different country than the branch cannot represent this in the wizard. Edge case; unblockable later via the Settings page (Phase 5) if it surfaces.
+
+---
+
+### ADR-011: LaunchLoader is presentation-only; no API calls inside
+
+**Decision:** `LaunchLoader` animates a fixed sequence of status messages on a timer and renders the cat mark pulse. It does not orchestrate the confirm flow or poll for action completion.
+
+**Why:** Decouples the visual feedback from the action lifecycle. `completeSetup()` already redirects on success and returns an error object on failure — the parent (`WizardInner`) handles both. Keeping LaunchLoader stateless makes it trivially testable in isolation. The redirect naturally unmounts it on success; the parent resets `isLaunching` on error so the wizard error UI appears.
+
+---
+
+### ADR-012: LaunchLoader conditionally rendered (not always-mounted with open prop)
+
+**Decision:** `WizardInner` renders `{isLaunching && <LaunchLoader open ... />}` rather than always rendering `<LaunchLoader open={isLaunching} ... />`.
+
+**Why:** The conditional render causes the component to mount fresh on each launch attempt, automatically resetting `messageIndex` to 0. The alternative (always-mounted with a reset in `useEffect`) would require calling `setState` synchronously inside an effect body, which violates the `react-hooks/set-state-in-effect` lint rule and can cause cascading renders.
+
+---

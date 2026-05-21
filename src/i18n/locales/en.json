@@ -115,6 +115,10 @@
         "country": {
           "label": "Country",
           "help": "Sets the currency and phone format"
+        },
+        "phone": {
+          "prefixAriaLabel": "Country code",
+          "nationalPlaceholder": "9999-9999"
         }
       },
       "services": {
@@ -163,7 +167,11 @@
         "whatsappNumberLabel": "Business WhatsApp number",
         "whatsappNumberPlaceholder": "+504 9999-9999",
         "whatsappRequired": "Enter your WhatsApp number",
-        "whatsappInvalid": "Enter a valid WhatsApp number"
+        "whatsappInvalid": "Enter a valid WhatsApp number",
+        "phone": {
+          "prefixAriaLabel": "Country code",
+          "nationalPlaceholder": "9999-9999"
+        }
       },
       "preview": {
         "title": "Your booking link",
@@ -195,6 +203,15 @@
         "availabilityCount": "{count} day(s) per week",
         "channelWhatsapp": "WhatsApp",
         "channelEmail": "Email"
+      }
+    },
+    "confirm": {
+      "launching": {
+        "message1": "Setting up your business...",
+        "message2": "Creating your team...",
+        "message3": "Generating your links...",
+        "message4": "Ready!",
+        "ariaLabel": "Launching your business"
       }
     }
   }
