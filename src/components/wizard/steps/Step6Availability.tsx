@@ -92,41 +92,44 @@ export function Step6Availability() {
                   : "border-[var(--border-subtle)] bg-[var(--color-bg-surface)]/50",
               ].join(" ")}
             >
-              <div className="flex items-center gap-3">
-                {/* Toggle */}
-                <button
-                  type="button"
-                  onClick={() => toggleDay(day)}
-                  role="switch"
-                  aria-checked={active}
-                  className={[
-                    "relative h-5 w-9 shrink-0 rounded-full transition-colors",
-                    active
-                      ? "bg-[var(--color-violet)]"
-                      : "bg-[var(--color-bg-elevated)]",
-                  ].join(" ")}
-                >
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                {/* Toggle + day name */}
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => toggleDay(day)}
+                    role="switch"
+                    aria-checked={active}
+                    className={[
+                      "relative h-5 w-9 shrink-0 rounded-full transition-colors",
+                      active
+                        ? "bg-[var(--color-violet)]"
+                        : "bg-[var(--color-bg-elevated)]",
+                    ].join(" ")}
+                  >
+                    <span
+                      className={[
+                        "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform",
+                        active ? "left-4.5 translate-x-0" : "left-0.5",
+                      ].join(" ")}
+                    />
+                  </button>
+
                   <span
                     className={[
-                      "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform",
-                      active ? "left-4.5 translate-x-0" : "left-0.5",
+                      "text-sm font-medium",
+                      active
+                        ? "text-[var(--color-text-primary)]"
+                        : "text-[var(--color-text-muted)]",
                     ].join(" ")}
-                  />
-                </button>
+                  >
+                    {dayNames[day]}
+                  </span>
+                </div>
 
-                <span
-                  className={[
-                    "w-24 text-sm font-medium",
-                    active
-                      ? "text-[var(--color-text-primary)]"
-                      : "text-[var(--color-text-muted)]",
-                  ].join(" ")}
-                >
-                  {dayNames[day]}
-                </span>
-
+                {/* Time selects — below toggle on mobile, inline on sm+ */}
                 {active && slot && (
-                  <div className="ml-auto flex items-center gap-2">
+                  <div className="flex items-center gap-2 sm:ml-auto">
                     <span className="text-xs text-[var(--color-text-muted)]">
                       {t("from")}
                     </span>

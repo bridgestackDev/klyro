@@ -74,7 +74,7 @@ export function WizardShell({
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto px-6 py-7">
+      <div className="flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-7">
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={currentStep}

@@ -85,11 +85,11 @@ export function Step9Confirm() {
 
       <div className="divide-y divide-[var(--border-subtle)] rounded-[var(--radius-card)] border border-[var(--border-subtle)] bg-[var(--color-bg-surface)] overflow-hidden">
         {rows.map(({ label, value }) => (
-          <div key={label} className="flex items-center justify-between px-4 py-3">
-            <span className="text-sm text-[var(--color-text-muted)]">
+          <div key={label} className="flex items-start justify-between gap-3 px-4 py-3">
+            <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
               {label}
             </span>
-            <span className="text-sm font-medium text-[var(--color-text-primary)]">
+            <span className="text-right text-sm font-medium text-[var(--color-text-primary)]">
               {value}
             </span>
           </div>

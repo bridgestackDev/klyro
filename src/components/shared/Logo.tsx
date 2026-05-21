@@ -109,14 +109,17 @@ export function Logo({ variant = "lockup", theme = "dark", className }: LogoProp
 
   // lockup: production PNG asset
   return (
-    <span className={`inline-flex items-center ${className ?? ""}`} aria-label="Klyro">
+    <span
+      className={`inline-flex items-center overflow-hidden ${className ?? ""}`}
+      aria-label="Klyro"
+    >
       <Image
         src="/klyro_logo_w.png"
         alt="Klyro"
-        width={280}
-        height={102}
+        width={140}
+        height={140}
         priority
-      
+ 
       />
     </span>
   );
