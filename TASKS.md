@@ -1,6 +1,6 @@
 # Klyro — Task List
 
-**Last updated:** 2026-05-21
+**Last updated:** 2026-05-22
 
 Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 
@@ -130,6 +130,15 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 - [x] LP13: `pnpm test` — 192/192 passing
 - [x] LP14: DECISIONS.md — ADR-LP-001 + ADR-LP-002 appended
 - [x] LP15: Single commit: `feat(landing): MVP marketing page — hero + features + CTA + footer`
+
+### Landing Hero Animation ✅
+- [x] LP-A1: Create `src/components/landing/HeroAnimation.tsx` — 'use client', inline SVG Booking Flow (Client → Booking → Confirmed), framer-motion `useAnimate` loop, `useReducedMotion` honored
+- [x] LP-A2: Refactor `src/components/landing/Hero.tsx` — remove Logo mark pulse, import and render `<HeroAnimation />`
+- [x] LP-A3: Create `src/components/landing/__tests__/HeroAnimation.test.tsx` — 6 tests (aria-hidden, circles, paths, particle shown/hidden per reduced-motion, text labels)
+- [x] LP-A4: Update `Hero.test.tsx` — extend framer-motion mock with new hooks; fix Logo label assertion (mark removed, wordmark aria-label is lowercase "klyro")
+- [x] LP-A5: DECISIONS.md — ADR-LP-004, ADR-LP-005, ADR-LP-006 appended
+- [x] LP-A6: pnpm typecheck + lint (pre-existing DashboardShell error only) + test 198/198 green
+- [x] LP-A7: Single commit: `feat(landing): animated SVG hero`
 
 ---
 

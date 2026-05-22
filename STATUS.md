@@ -1,6 +1,6 @@
 # Klyro — Build Status
 
-**Last updated:** 2026-05-21
+**Last updated:** 2026-05-22
 **Active phase:** Phase 2.5 — Hardening & Localization (Blocks A+B+C+D+F done; Block E pending) | Landing Page ✅ Done (parallel deliverable)
 
 ---
@@ -232,24 +232,25 @@ Tests: 125/125 passing (110 existing + 15 new)
 **Goal:** MVP marketing landing at `/[locale]` — replaces Phase 0 smoke test. Fully static, dark surface, no Supabase calls.
 
 **Sections shipped:**
-1. Hero — sticky nav + Logo mark pulse (framer-motion) + headline + 2 CTAs → `/[locale]/login`
+1. Hero — sticky nav + animated SVG booking-flow illustration (framer-motion) + headline + 2 CTAs → `/[locale]/login`
 2. Features — 3-column responsive grid, lucide icons, violet-faint icon containers
 3. CTASection — eyebrow + H2 + CTA + footnote on `--color-bg-surface`
 4. Footer — 3-column layout + language switcher (ES | EN) + copyright
 
 **Key files:**
 - `src/app/[locale]/page.tsx` — smoke test removed; assembles 4 landing components
-- `src/components/landing/Hero.tsx` — client component (framer-motion pulse)
+- `src/components/landing/Hero.tsx` — client component (entrance animations, imports HeroAnimation)
+- `src/components/landing/HeroAnimation.tsx` — 'use client', inline SVG Booking Flow animation, `useReducedMotion` honored
 - `src/components/landing/Features.tsx` — server component
 - `src/components/landing/CTASection.tsx` — server component
 - `src/components/landing/Footer.tsx` — server component
 - `src/components/landing/LanguageSwitcher.tsx` — client component (useRouter)
-- `src/components/landing/__tests__/` — 5 test files, 67 new tests
-- `src/i18n/locales/es.json` + `en.json` — all `landing.*` keys added
+- `src/components/landing/__tests__/` — 6 test files, 73 new tests
+- `src/i18n/locales/es.json` + `en.json` — all `landing.*` keys (0 new keys for animation)
 
-**Tests:** 192/192 passing (125 existing + 67 new)
+**Tests:** 198/198 passing (125 existing + 73 new)
 
-**Decisions:** ADR-LP-001 (landing at /[locale], not route group), ADR-LP-002 (fully static)
+**Decisions:** ADR-LP-001 (landing at /[locale], not route group), ADR-LP-002 (fully static), ADR-LP-004 (inline SVG + framer-motion, no new deps), ADR-LP-005 (Booking Flow concept), ADR-LP-006 (aria-hidden decorative)
 
 ---
 

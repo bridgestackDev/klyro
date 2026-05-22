@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { Logo } from "@/components/shared/Logo";
+import { HeroAnimation } from "./HeroAnimation";
 
 export function Hero() {
   const t = useTranslations("landing");
@@ -36,28 +37,14 @@ export function Hero() {
             "linear-gradient(135deg, var(--color-bg-base) 0%, #0F0F2A 100%)",
         }}
       >
-        {/* Cat mark with pulse */}
+        {/* Booking flow animation */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.85 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="mb-8"
+          className="mb-10 flex justify-center"
         >
-          <motion.div
-            animate={{ scale: [1, 1.06, 1] }}
-            transition={{
-              duration: 2.4,
-              ease: "easeOut",
-              repeat: Infinity,
-              repeatDelay: 1.6,
-            }}
-          >
-            <Logo
-              variant="mark"
-              theme="dark"
-              className="[&_svg]:w-24 [&_svg]:h-24"
-            />
-          </motion.div>
+          <HeroAnimation />
         </motion.div>
 
         <motion.h1

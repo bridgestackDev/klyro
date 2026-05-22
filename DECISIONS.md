@@ -142,6 +142,36 @@ This file records non-obvious design decisions and their rationale. Never delete
 
 ---
 
+## Landing Page — Hero Animation
+
+### ADR-LP-004: Hero animation is inline SVG + framer-motion (no Lottie / GSAP / Rive)
+
+**Decision:** The hero animation is built with inline SVG driven by framer-motion primitives (`motion.path`, `motion.circle`, `motion.text`, `useAnimate`). No new animation library was introduced.
+
+**Why:** framer-motion is already in the stack and already in the landing bundle. Adding Lottie would mean shipping a runtime + a JSON payload for a single decoration. GSAP would overlap heavily with what framer-motion already does. Inline SVG keeps the asset version-controlled, themable via CSS variables, and accessible (a11y attributes work on real DOM).
+
+**Trade-off:** Complex character animation (e.g. illustrated mascots) would be painful in this setup. We don't need that — Klyro's brand voice is geometric and minimal (PRD §8.2). If we ever need richer illustration, we'll revisit Lottie then.
+
+---
+
+### ADR-LP-005: Hero animation concept — Booking Flow (Option C)
+
+**Decision:** The hero uses the "Booking Flow" concept: three geometric nodes (Client → Booking → Confirmed) connected by paths, with a violet particle traveling between them on a ~3.5 s loop.
+
+**Why:** Klyro's entire value proposition is one automated chain — a client finds the link, books in 60 s, gets instant confirmation. Option C shows that chain as a live diagram, so a visitor who doesn't read the copy can still understand the product in the first second. Option A (calendar fills up) shows the end-state but not the mechanism. Option B (message orbit) shows only the output channel, missing the booking step.
+
+**Trade-off:** It does not communicate multi-vertical support or the 24 h reminder. Those are handled by the subheadline text and the Features section below.
+
+---
+
+### ADR-LP-006: Hero animation SVG is decorative (aria-hidden="true")
+
+**Decision:** The hero SVG is treated as decorative with `aria-hidden="true"`. No aria-label key was added to the i18n files.
+
+**Why:** The surrounding hero copy (headline + subheadline) fully communicates what Klyro does. The animation is visual reinforcement only — a screen reader user already gets the message from the text. Using `aria-hidden` keeps the SVG out of the accessibility tree without forcing a label that would need to describe abstract animation states.
+
+---
+
 ### ADR-LP-003: LanguageSwitcher extracted as a separate client component; Footer stays server
 
 **Decision:** `Footer.tsx` is a server component. The language-switching logic lives in a dedicated `LanguageSwitcher.tsx` client component that receives `currentLocale` as a prop.
