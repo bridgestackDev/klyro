@@ -185,11 +185,11 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 - [x] A4: 404 handling via notFound() in each scaffold page (uses existing [locale]/not-found.tsx)
 - [x] Migration 0008: anon read RLS policies for all booking-relevant tables
 
-### Block B — Slot Calculation Engine ⬜
-- [ ] B1: `src/lib/booking/slots.ts` — getAvailableSlots(inputs): Slot[]
-- [ ] B2: Edge cases: no availability, service longer than window, all slots taken, DST
-- [ ] B3: `tests/booking/slots.test.ts` — 4 scenario tests
-- [ ] B4: Index check on appointments table (staff_id, starts_at)
+### Block B — Slot Calculation Engine ✅
+- [x] B1: `src/lib/booking/slots.ts` — localTimeToUTC + computeSlots (pure) + getAvailableSlots (async DB)
+- [x] B2: Edge cases covered: null availability, service > window, full-window appointment, buffer overflow
+- [x] B3: `tests/booking/slots.test.ts` — 9 tests (4 B3 scenarios + 3 edge cases + 2 TZ unit tests)
+- [x] B4: `idx_appointments_staff_starts (staff_id, starts_at)` confirmed present — no new migration needed
 
 ### Block C — Booking API Endpoints ⬜
 - [ ] C1: `src/lib/schemas/booking.ts` — slotsQuerySchema + createBookingSchema

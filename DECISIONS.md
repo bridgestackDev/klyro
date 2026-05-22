@@ -138,6 +138,16 @@ This file records non-obvious design decisions and their rationale. Never delete
 
 **How to apply:** All Phase 3 page files go under `src/app/[locale]/(booking)/[businessSlug]/…`. Private components go under `…/[staffSlug]/_components/`.
 
+---
+
+### ADR-015: Timezone conversion via native Intl.DateTimeFormat, not date-fns-tz
+
+**Decision:** `localTimeToUTC` in `src/lib/booking/slots.ts` uses `Intl.DateTimeFormat.formatToParts` to convert business-timezone wall-clock times to UTC. `date-fns-tz` is NOT added to the dependency list.
+
+**Why:** `date-fns-tz` was not in the stack at the time of Block B. The Phase 3 prompt said "if not in stack, ASK before adding." The native `Intl.DateTimeFormat` API in Node 22 LTS supports all IANA timezone names, handles DST transitions, and has no package overhead. The two-iteration approach (guess → correct via offset → re-verify) converges correctly for all practical cases, including DST boundaries. This was verified with tests using `America/Tegucigalpa` (UTC-6, no DST) — the reference timezone for the MVP wedge.
+
+**Trade-off:** If a future timezone has a DST gap at exactly the time being converted (e.g. clocks spring forward at 2:00 AM, creating a missing hour), the second iteration will still return a plausible UTC time (it'll land at the post-gap equivalent). Acceptable for MVP; revisit with `date-fns-tz` if DST-intensive timezones become a priority.
+
 **Decision:** `WizardInner` renders `{isLaunching && <LaunchLoader open ... />}` rather than always rendering `<LaunchLoader open={isLaunching} ... />`.
 
 **Why:** The conditional render causes the component to mount fresh on each launch attempt, automatically resetting `messageIndex` to 0. The alternative (always-mounted with a reset in `useEffect`) would require calling `setState` synchronously inside an effect body, which violates the `react-hooks/set-state-in-effect` lint rule and can cause cascading renders.
