@@ -121,3 +121,31 @@ This file records non-obvious design decisions and their rationale. Never delete
 **Why:** The conditional render causes the component to mount fresh on each launch attempt, automatically resetting `messageIndex` to 0. The alternative (always-mounted with a reset in `useEffect`) would require calling `setState` synchronously inside an effect body, which violates the `react-hooks/set-state-in-effect` lint rule and can cause cascading renders.
 
 ---
+
+## Landing Page
+
+### ADR-LP-001: Landing lives at /[locale]/page.tsx, not in a (marketing) route group
+
+**Decision:** The landing page replaces the existing smoke test at `src/app/[locale]/page.tsx` rather than being placed in a `(marketing)` route group as suggested in the PRD §3.1 folder structure.
+
+**Why:** Phase 3 already mounted the public booking routes directly under `[locale]` (`/[locale]/[businessSlug]`) without a `(booking)` route group. Mirroring that pattern keeps the file layout consistent and avoids speculative routing infrastructure (a route group buys us a separate layout, which we don't need yet — the landing and the booking pages can both use the dark and light surfaces respectively via inline composition).
+
+**Trade-off:** If we later want a distinct marketing layout (e.g. with a different header or different analytics tracking), we'll move to `(marketing)/page.tsx` then. Cheap refactor when needed; pay nothing today.
+
+---
+
+### ADR-LP-002: Landing is fully static — no Supabase calls, no auth checks
+
+**Decision:** The landing makes zero DB calls and skips auth entirely. The Phase 0 smoke test that fetched a businesses count is removed.
+
+**Why:** The landing is a marketing page. It must render fast (Lighthouse Performance ≥ 90), work without a Supabase connection during outages, and never expose auth state. Visitors who are already signed in still see the marketing page — they can click "Sign in" and land on the existing logged-in redirect to `/dashboard`.
+
+---
+
+### ADR-LP-003: LanguageSwitcher extracted as a separate client component; Footer stays server
+
+**Decision:** `Footer.tsx` is a server component. The language-switching logic lives in a dedicated `LanguageSwitcher.tsx` client component that receives `currentLocale` as a prop.
+
+**Why:** The footer has no interactivity except for the locale toggle. Keeping the footer as a server component avoids shipping the Next.js router and `usePathname` hook bundle for the full footer tree. The `LanguageSwitcher` is the minimal client island — it uses `useRouter().replace()` and `usePathname()` to toggle `/es ↔ /en` by replacing the locale prefix in the current URL.
+
+---

@@ -9,7 +9,52 @@
   },
   "landing": {
     "title": "Klyro",
-    "tagline": "Tu negocio. Tus clientes. Tu marca."
+    "tagline": "Tu negocio. Tus clientes. Tu marca.",
+    "nav": {
+      "signIn": "Iniciar sesión"
+    },
+    "hero": {
+      "headline": "Tu negocio de citas, sin caos",
+      "subheadline": "Las reservas dobles, las interrupciones y los no-shows son cosa del pasado. Comparte un enlace: tus clientes reservan en 60 segundos y reciben confirmación por WhatsApp al instante. Klyro les recuerda 24 horas antes — para que tú no tengas que hacerlo.",
+      "ctaPrimary": "Crear cuenta gratis",
+      "ctaSecondary": "¿Ya tienes cuenta? Iniciar sesión"
+    },
+    "features": {
+      "sectionTitle": "Tres cosas. Solo tres.",
+      "link": {
+        "title": "Un enlace para todo",
+        "body": "Comparte tu enlace y tus clientes reservan en menos de 60 segundos, desde cualquier dispositivo."
+      },
+      "confirm": {
+        "title": "Confirmación por WhatsApp",
+        "body": "Al reservar, tu cliente recibe un mensaje automático con todos los detalles de su cita."
+      },
+      "reminder": {
+        "title": "Recordatorio automático",
+        "body": "Klyro avisa a tus clientes 24 horas antes, reduciendo las ausencias sin que tengas que hacer nada."
+      }
+    },
+    "cta": {
+      "eyebrow": "EMPIEZA HOY",
+      "headline": "Tu agenda bajo control desde el primer día",
+      "sub": "Sin comisiones por cita. Sin marketplaces. Tus clientes, tu marca.",
+      "ctaPrimary": "Crear cuenta gratis",
+      "footnote": "Configuración en menos de 15 minutos."
+    },
+    "footer": {
+      "tagline": "Tu negocio. Tus clientes. Tu marca.",
+      "productHeading": "Producto",
+      "productLinks": {
+        "signIn": "Iniciar sesión",
+        "signUp": "Crear cuenta"
+      },
+      "companyHeading": "Empresa",
+      "companyLinks": {
+        "about": "Acerca de",
+        "contact": "Contacto"
+      },
+      "copyright": "© 2026 BridgeStack Dev · Klyro"
+    }
   },
   "auth": {
     "login": {

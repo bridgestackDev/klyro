@@ -1,7 +1,7 @@
 # Klyro — Build Status
 
-**Last updated:** 2026-05-20
-**Active phase:** Phase 2.5 — Hardening & Localization (Blocks A+B+C+D+F done; Block E pending)
+**Last updated:** 2026-05-21
+**Active phase:** Phase 2.5 — Hardening & Localization (Blocks A+B+C+D+F done; Block E pending) | Landing Page ✅ Done (parallel deliverable)
 
 ---
 
@@ -13,6 +13,7 @@
 | 1 | Auth & Onboarding Shell | ✅ Done | Magic link confirmed working end-to-end |
 | 2 | Setup Wizard | ✅ Done | 9-step wizard, all DB writes, admin client RLS fix |
 | 2.5 | Hardening & Localization | 🟡 In progress | Block A done; B–E pending |
+| LP | Landing Page (parallel) | ✅ Done | `/[locale]` — 4 sections, fully static, dark surface |
 | 3 | Public Booking Flow | ⬜ Not started | `/[biz]/[branch]/[staff]` |
 | 4 | Messaging Engine | ⬜ Not started | WhatsApp + email templates |
 | 5 | Owner Dashboard | ⬜ Not started | Full operational view |
@@ -221,6 +222,34 @@ Files changed:
 Tests: 125/125 passing (110 existing + 15 new)
 
 **Block E** — Not started
+
+---
+
+## Landing Page (Parallel Deliverable) ✅
+
+**Branch:** `feature/landing-page` (based on `development`)
+
+**Goal:** MVP marketing landing at `/[locale]` — replaces Phase 0 smoke test. Fully static, dark surface, no Supabase calls.
+
+**Sections shipped:**
+1. Hero — sticky nav + Logo mark pulse (framer-motion) + headline + 2 CTAs → `/[locale]/login`
+2. Features — 3-column responsive grid, lucide icons, violet-faint icon containers
+3. CTASection — eyebrow + H2 + CTA + footnote on `--color-bg-surface`
+4. Footer — 3-column layout + language switcher (ES | EN) + copyright
+
+**Key files:**
+- `src/app/[locale]/page.tsx` — smoke test removed; assembles 4 landing components
+- `src/components/landing/Hero.tsx` — client component (framer-motion pulse)
+- `src/components/landing/Features.tsx` — server component
+- `src/components/landing/CTASection.tsx` — server component
+- `src/components/landing/Footer.tsx` — server component
+- `src/components/landing/LanguageSwitcher.tsx` — client component (useRouter)
+- `src/components/landing/__tests__/` — 5 test files, 67 new tests
+- `src/i18n/locales/es.json` + `en.json` — all `landing.*` keys added
+
+**Tests:** 192/192 passing (125 existing + 67 new)
+
+**Decisions:** ADR-LP-001 (landing at /[locale], not route group), ADR-LP-002 (fully static)
 
 ---
 
