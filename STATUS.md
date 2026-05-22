@@ -247,7 +247,16 @@ Key decisions:
 - ADR-013: RLS migration required (no pre-existing anon read policies)
 - ADR-014: Booking pages use existing (booking) route group, not flat [bizSlug] structure
 
-**Block B — Slot Calculation Engine** ⬜ Next
+**Block B — Slot Calculation Engine** ✅ Done
+
+Files added:
+- `src/lib/booking/slots.ts` — `localTimeToUTC`, `computeSlots` (exported pure function), `getAvailableSlots` (async, loads from DB)
+- `tests/booking/slots.test.ts` — 9 tests: 4 B3 scenarios + 3 B2 edge cases + 2 TZ unit tests
+
+No DB migration needed — `idx_appointments_staff_starts (staff_id, starts_at)` already exists (migration 0001).
+DST handling via native `Intl.DateTimeFormat` (Node 22 built-in) — `date-fns-tz` not required; see ADR-015.
+
+**Block C — Booking API Endpoints** ⬜ Next
 
 **Block C — Booking API Endpoints** ⬜
 
