@@ -191,13 +191,13 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 - [x] B3: `tests/booking/slots.test.ts` — 9 tests (4 B3 scenarios + 3 edge cases + 2 TZ unit tests)
 - [x] B4: `idx_appointments_staff_starts (staff_id, starts_at)` confirmed present — no new migration needed
 
-### Block C — Booking API Endpoints ⬜
-- [ ] C1: `src/lib/schemas/booking.ts` — slotsQuerySchema + createBookingSchema
-- [ ] C2: `src/app/api/booking/slots/route.ts` — GET with rate limiting + logging
-- [ ] C3: `src/app/api/booking/create/route.ts` — POST with slot race guard + client upsert
-- [ ] C4: `src/lib/booking/booking-code.ts` — KLY-XXXX generator
-- [ ] C5: Migration for `appointments.booking_code` column + unique index
-- [ ] C6: Tests: happy path, phone validation, slot taken, collision retry, rate limit
+### Block C — Booking API Endpoints ✅
+- [x] C1: `src/lib/schemas/booking.ts` — slotsQuerySchema + createBookingSchema
+- [x] C2: `src/app/api/booking/slots/route.ts` — GET with rate limiting + logging
+- [x] C3: `src/app/api/booking/create/route.ts` — POST with slot race guard + client upsert
+- [x] C4: `src/lib/booking/booking-code.ts` — KLY-XXXX generator
+- [x] C5: Migration 0009 — `appointments.booking_code` column + idx_appointments_booking_code + idx_appointments_no_slot_overlap
+- [x] C6: Tests: happy path, phone validation, slot taken, collision retry, rate limit (168/168 green)
 
 ### Block D — Public UI ⬜
 - [ ] D1: Business landing page — branches list, vertical-aware H1, auto-redirect for single-branch
