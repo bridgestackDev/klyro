@@ -17,7 +17,12 @@
       "headline": "Tu negocio de citas, sin caos",
       "subheadline": "Las reservas dobles, las interrupciones y los no-shows son cosa del pasado. Comparte un enlace: tus clientes reservan en 60 segundos y reciben confirmación por WhatsApp al instante. Klyro les recuerda 24 horas antes — para que tú no tengas que hacerlo.",
       "ctaPrimary": "Crear cuenta gratis",
-      "ctaSecondary": "¿Ya tienes cuenta? Iniciar sesión"
+      "ctaSecondary": "¿Ya tienes cuenta? Iniciar sesión",
+      "animation": {
+        "client": "Cliente",
+        "booking": "Reserva",
+        "confirmed": "Confirmado"
+      }
     },
     "features": {
       "sectionTitle": "Tres cosas. Solo tres.",

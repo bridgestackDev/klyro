@@ -36,40 +36,40 @@ describe("HeroAnimation", () => {
   });
 
   it("renders an SVG with aria-hidden='true'", () => {
-    render(<HeroAnimation />);
+    render(<HeroAnimation labels={{ client: "Client", booking: "Booking", confirmed: "Confirmed" }} />);
     const svgs = document.querySelectorAll("svg");
     const animSvg = Array.from(svgs).find((el) => el.getAttribute("aria-hidden") === "true");
     expect(animSvg).toBeTruthy();
   });
 
   it("renders at least three node circles", () => {
-    render(<HeroAnimation />);
+    render(<HeroAnimation labels={{ client: "Client", booking: "Booking", confirmed: "Confirmed" }} />);
     const circles = document.querySelectorAll("circle");
     expect(circles.length).toBeGreaterThanOrEqual(3);
   });
 
   it("renders the two connector paths", () => {
-    render(<HeroAnimation />);
+    render(<HeroAnimation labels={{ client: "Client", booking: "Booking", confirmed: "Confirmed" }} />);
     const paths = document.querySelectorAll("path");
     expect(paths.length).toBeGreaterThanOrEqual(2);
   });
 
   it("does NOT render the traveling particle when useReducedMotion is true", () => {
     vi.mocked(useReducedMotion).mockReturnValue(true);
-    render(<HeroAnimation />);
+    render(<HeroAnimation labels={{ client: "Client", booking: "Booking", confirmed: "Confirmed" }} />);
     const particle = document.querySelector("#particle");
     expect(particle).toBeNull();
   });
 
   it("renders the traveling particle when useReducedMotion is false", () => {
     vi.mocked(useReducedMotion).mockReturnValue(false);
-    render(<HeroAnimation />);
+    render(<HeroAnimation labels={{ client: "Client", booking: "Booking", confirmed: "Confirmed" }} />);
     const particle = document.querySelector("#particle");
     expect(particle).not.toBeNull();
   });
 
   it("renders three text label elements", () => {
-    render(<HeroAnimation />);
+    render(<HeroAnimation labels={{ client: "Client", booking: "Booking", confirmed: "Confirmed" }} />);
     const texts = document.querySelectorAll("text");
     expect(texts.length).toBe(3);
   });

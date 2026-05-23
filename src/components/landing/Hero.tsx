@@ -31,7 +31,7 @@ export function Hero() {
       <section
         id="hero"
         aria-labelledby="hero-headline"
-        className="relative flex min-h-[80vh] flex-col items-center justify-center px-6 pt-24 pb-16 text-center"
+        className="relative flex min-h-screen flex-col items-center justify-center px-6 pt-24 pb-16 text-center"
         style={{
           background:
             "linear-gradient(135deg, var(--color-bg-base) 0%, #0F0F2A 100%)",
@@ -44,7 +44,13 @@ export function Hero() {
           transition={{ duration: 0.5, ease: "easeOut" }}
           className="mb-10 flex justify-center"
         >
-          <HeroAnimation />
+          <HeroAnimation
+            labels={{
+              client: t("hero.animation.client"),
+              booking: t("hero.animation.booking"),
+              confirmed: t("hero.animation.confirmed"),
+            }}
+          />
         </motion.div>
 
         <motion.h1

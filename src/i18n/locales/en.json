@@ -17,7 +17,12 @@
       "headline": "Your appointment business, without the chaos",
       "subheadline": "Double bookings, constant interruptions, and no-shows are a thing of the past. Share one link: clients book in 60 seconds and get an instant WhatsApp confirmation. Klyro reminds them 24 hours before — so you never have to.",
       "ctaPrimary": "Create free account",
-      "ctaSecondary": "Already have an account? Sign in"
+      "ctaSecondary": "Already have an account? Sign in",
+      "animation": {
+        "client": "Client",
+        "booking": "Booking",
+        "confirmed": "Confirmed"
+      }
     },
     "features": {
       "sectionTitle": "Three things. Just three.",

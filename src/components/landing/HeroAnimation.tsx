@@ -16,7 +16,11 @@ const PATH_2 = `M ${NODE_MID.cx + NODE_R} ${NODE_MID.cy} L ${NODE_RIGHT.cx - NOD
 // Checkmark path inside the rightmost node (relative to node center 280,65)
 const CHECK_D = "M 267 65 l 7 7 l 13 -13";
 
-export function HeroAnimation() {
+interface HeroAnimationProps {
+  labels: { client: string; booking: string; confirmed: string };
+}
+
+export function HeroAnimation({ labels }: HeroAnimationProps) {
   const reduced = useReducedMotion() ?? false;
   const [scope, animate] = useAnimate();
 
@@ -226,7 +230,7 @@ export function HeroAnimation() {
         transition={{ duration: 0.3, delay: 0.5 }}
         className="font-sans"
       >
-        Cliente
+        {labels.client}
       </motion.text>
       <motion.text
         x={NODE_MID.cx}
@@ -239,7 +243,7 @@ export function HeroAnimation() {
         transition={{ duration: 0.3, delay: 0.6 }}
         className="font-sans"
       >
-        Reserva
+        {labels.booking}
       </motion.text>
       <motion.text
         x={NODE_RIGHT.cx}
@@ -252,7 +256,7 @@ export function HeroAnimation() {
         transition={{ duration: 0.3, delay: 0.7 }}
         className="font-sans"
       >
-        Confirmado
+        {labels.confirmed}
       </motion.text>
     </svg>
   );
