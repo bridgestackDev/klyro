@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Logo } from "@/components/shared/Logo";
+import { HeroBackground } from "@/components/landing/HeroBackground";
 import { LoginForm } from "./LoginForm";
 
 export async function generateMetadata() {
@@ -16,8 +17,9 @@ export default async function LoginPage({
   const { error } = await searchParams;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[var(--color-bg-base)] p-4">
-      <div className="w-full max-w-sm space-y-8">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--color-bg-base)] p-4">
+      <HeroBackground />
+      <div className="relative z-10 w-full max-w-sm space-y-8">
         <div className="flex justify-center">
           <Logo variant="lockup" theme="dark" />
         </div>

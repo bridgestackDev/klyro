@@ -55,50 +55,59 @@ export function HeroAnimation({ labels }: HeroAnimationProps) {
 
     async function runLoop() {
       while (!cancelled) {
-        // Reset particle to start
-        await animate("#particle", { cx: NODE_LEFT.cx + NODE_R, cy: NODE_LEFT.cy, opacity: 1 }, { duration: 0 });
-        await animate("#node-mid-circle", { scale: 1 }, { duration: 0 });
-        await animate("#node-right-circle", { scale: 1 }, { duration: 0 });
-        await animate("#check-path", { pathLength: 0, opacity: 0 }, { duration: 0 });
-        await animate("#node-right-fill", { opacity: 0 }, { duration: 0 });
+        try {
+          // Reset particle to start
+          await animate("#particle", { cx: NODE_LEFT.cx + NODE_R, cy: NODE_LEFT.cy, opacity: 1 }, { duration: 0 });
+          await animate("#node-mid-circle", { scale: 1 }, { duration: 0 });
+          await animate("#node-right-circle", { scale: 1 }, { duration: 0 });
+          await animate("#check-path", { pathLength: 0, opacity: 0 }, { duration: 0 });
+          await animate("#node-right-fill", { opacity: 0 }, { duration: 0 });
 
-        // Travel seg 1
-        await animate(
-          "#particle",
-          { cx: NODE_MID.cx - NODE_R },
-          { duration: 0.65, ease: "easeInOut" }
-        );
+          if (cancelled) break;
 
-        if (cancelled) break;
+          // Travel seg 1
+          await animate(
+            "#particle",
+            { cx: NODE_MID.cx - NODE_R },
+            { duration: 0.65, ease: "easeInOut" }
+          );
 
-        // Pulse node mid
-        await animate("#node-mid-circle", { scale: [1, 1.14, 1] }, { duration: 0.22, ease: "easeOut" });
+          if (cancelled) break;
 
-        // Travel seg 2
-        await animate(
-          "#particle",
-          { cx: NODE_RIGHT.cx - NODE_R },
-          { duration: 0.65, ease: "easeInOut" }
-        );
+          // Pulse node mid
+          await animate("#node-mid-circle", { scale: [1, 1.14, 1] }, { duration: 0.22, ease: "easeOut" });
 
-        if (cancelled) break;
+          if (cancelled) break;
 
-        // Fade particle, pulse right node, draw check
-        await animate("#particle", { opacity: 0 }, { duration: 0.15 });
-        await animate("#node-right-circle", { scale: [1, 1.14, 1] }, { duration: 0.22, ease: "easeOut" });
-        await animate("#node-right-fill", { opacity: 1 }, { duration: 0.2 });
-        await animate("#check-path", { pathLength: [0, 1], opacity: 1 }, { duration: 0.3, ease: "easeOut" });
+          // Travel seg 2
+          await animate(
+            "#particle",
+            { cx: NODE_RIGHT.cx - NODE_R },
+            { duration: 0.65, ease: "easeInOut" }
+          );
 
-        if (cancelled) break;
+          if (cancelled) break;
 
-        // Hold confirmed state
-        await new Promise((r) => setTimeout(r, 1500));
+          // Fade particle, pulse right node, draw check
+          await animate("#particle", { opacity: 0 }, { duration: 0.15 });
+          await animate("#node-right-circle", { scale: [1, 1.14, 1] }, { duration: 0.22, ease: "easeOut" });
+          await animate("#node-right-fill", { opacity: 1 }, { duration: 0.2 });
+          await animate("#check-path", { pathLength: [0, 1], opacity: 1 }, { duration: 0.3, ease: "easeOut" });
 
-        if (cancelled) break;
+          if (cancelled) break;
 
-        // Fade out right fill + check, reset
-        await animate("#node-right-fill", { opacity: 0 }, { duration: 0.3 });
-        await animate("#check-path", { pathLength: 0, opacity: 0 }, { duration: 0.2 });
+          // Hold confirmed state
+          await new Promise((r) => setTimeout(r, 1500));
+
+          if (cancelled) break;
+
+          // Fade out right fill + check, reset
+          await animate("#node-right-fill", { opacity: 0 }, { duration: 0.3 });
+          await animate("#check-path", { pathLength: 0, opacity: 0 }, { duration: 0.2 });
+        } catch {
+          // Component unmounted mid-animation — exit cleanly
+          break;
+        }
       }
     }
 
