@@ -1,7 +1,7 @@
 # Klyro — Build Status
 
-**Last updated:** 2026-05-22
-**Active phase:** Phase 2.5 — Hardening & Localization (Blocks A+B+C+D+F done; Block E pending) | Landing Page ✅ Done (parallel deliverable)
+**Last updated:** 2026-05-24
+**Active phase:** Phase 2.6 — Business & Staff Media (Block A done) | Phase 2.5 Block E pending
 
 ---
 
@@ -12,7 +12,8 @@
 | 0 | Foundation | ✅ Done | All 12 tables, RLS, types, brand, CI |
 | 1 | Auth & Onboarding Shell | ✅ Done | Magic link confirmed working end-to-end |
 | 2 | Setup Wizard | ✅ Done | 9-step wizard, all DB writes, admin client RLS fix |
-| 2.5 | Hardening & Localization | 🟡 In progress | Block A done; B–E pending |
+| 2.5 | Hardening & Localization | 🟡 In progress | Blocks A–D+F done; Block E pending |
+| 2.6 | Business & Staff Media | 🟡 In progress | Block A done; B–C pending |
 | LP | Landing Page (parallel) | ✅ Done | `/[locale]` — 4 sections, fully static, dark surface |
 | 3 | Public Booking Flow | ⬜ Not started | `/[biz]/[branch]/[staff]` |
 | 4 | Messaging Engine | ⬜ Not started | WhatsApp + email templates |
@@ -222,6 +223,29 @@ Files changed:
 Tests: 125/125 passing (110 existing + 15 new)
 
 **Block E** — Not started
+
+---
+
+## Phase 2.6 — Business & Staff Media 🟡
+
+**Branch:** `feature/media-upload` (based on `development`)
+
+**Goal:** Let owners upload a business logo and a photo per staff member. Foundation only in Block A — no UI yet.
+
+**Block A — Storage Infrastructure** ✅ Done
+
+Files added:
+- `supabase/migrations/0008_storage_buckets.sql` — `business-logos` (2 MB) + `staff-avatars` (1 MB) buckets with RLS policies
+- `src/components/shared/ImageUpload.tsx` — reusable `'use client'` upload component (MIME + size validation, canvas resize ≤ 1024px, upsert to Storage, public URL emission)
+- `src/components/shared/__tests__/ImageUpload.test.tsx` — 7 tests (placeholder, img render, size rejection, MIME rejection, upload path, aria-label, disabled)
+- `src/i18n/locales/es.json` + `en.json` — `media.upload.*` keys (button, change, uploading, tooLarge, wrongType, failed)
+- `DECISIONS.md` — ADR-013 (storage path convention), ADR-014 (no crop library)
+
+Tests: 206/206 passing (198 existing + 7 new, 1 updated for img query fix)
+
+**Block B — Business Logo Upload** ⬜ Not started
+
+**Block C — Staff Avatar Upload** ⬜ Not started
 
 ---
 

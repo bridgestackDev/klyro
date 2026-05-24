@@ -134,6 +134,16 @@
       "cta": "Ir al inicio"
     }
   },
+  "media": {
+    "upload": {
+      "button": "Subir imagen",
+      "change": "Cambiar imagen",
+      "uploading": "Subiendo...",
+      "tooLarge": "Imagen demasiado grande (máx {max} MB)",
+      "wrongType": "Formato no soportado. Usa PNG, JPG o WebP.",
+      "failed": "No se pudo subir la imagen."
+    }
+  },
   "wizard": {
     "stepLabel": "Paso {current} de {total}",
     "saving": "Guardando...",

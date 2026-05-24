@@ -134,6 +134,16 @@
       "cta": "Go home"
     }
   },
+  "media": {
+    "upload": {
+      "button": "Upload image",
+      "change": "Change image",
+      "uploading": "Uploading...",
+      "tooLarge": "Image too large (max {max} MB)",
+      "wrongType": "Unsupported format. Use PNG, JPG or WebP.",
+      "failed": "Couldn't upload the image."
+    }
+  },
   "wizard": {
     "stepLabel": "Step {current} of {total}",
     "saving": "Saving...",
