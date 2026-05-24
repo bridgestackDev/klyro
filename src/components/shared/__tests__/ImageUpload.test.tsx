@@ -154,4 +154,18 @@ describe('ImageUpload', () => {
     const button = screen.getByRole('button');
     expect(button).toBeDisabled();
   });
+
+  // [M3] Previously missing: Supabase upload returns { error } (not a thrown exception)
+  it('shows failed error and does not call onUploaded when Supabase upload returns an error', async () => {
+    mockUpload.mockResolvedValue({ error: { message: 'storage quota exceeded' } });
+    const onUploaded = vi.fn();
+    render(<ImageUpload {...defaultProps} onUploaded={onUploaded} />);
+    uploadFile(makeFile('photo.png', 'image/png', 0.1));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toBeInTheDocument();
+    });
+    expect(screen.getByRole('alert').textContent).toContain('failed');
+    expect(onUploaded).not.toHaveBeenCalled();
+  });
 });

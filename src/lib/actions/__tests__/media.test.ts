@@ -106,14 +106,28 @@ describe('updateStaffAvatar', () => {
   it('succeeds when the owner updates a staff avatar', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
     mockFrom
-      // getSessionAndBusiness → users.select business_id
       .mockReturnValueOnce({ select: vi.fn().mockReturnValue(eqChain({ business_id: 'biz1' })) })
-      // staff ownership check → same business
       .mockReturnValueOnce({
         select: vi.fn().mockReturnValue(eqChain({ id: staffId, user_id: 'staff-user', business_id: 'biz1' })),
       })
-      // role check → owner
       .mockReturnValueOnce({ select: vi.fn().mockReturnValue(eqChain({ role: 'owner' })) })
+      .mockReturnValueOnce(updateChain(null));
+
+    await expect(updateStaffAvatar(staffId, avatarUrl)).resolves.toBeUndefined();
+  });
+
+  // [M2] Previously missing: staff member updating their own avatar (isSelf=true, isOwner=false)
+  it('succeeds when a staff member updates their own avatar', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+    mockFrom
+      // getSessionAndBusiness → business_id
+      .mockReturnValueOnce({ select: vi.fn().mockReturnValue(eqChain({ business_id: 'biz1' })) })
+      // staff row: belongs to same business, user_id matches the caller
+      .mockReturnValueOnce({
+        select: vi.fn().mockReturnValue(eqChain({ id: staffId, user_id: 'u1', business_id: 'biz1' })),
+      })
+      // role check → not owner
+      .mockReturnValueOnce({ select: vi.fn().mockReturnValue(eqChain({ role: 'staff' })) })
       // staff update
       .mockReturnValueOnce(updateChain(null));
 

@@ -6,6 +6,9 @@
 --
 -- RLS uses (storage.foldername(name))[1] to extract the business_id folder
 -- and compares it against get_my_business_id() from migration 0002.
+--
+-- For staff-avatars, non-owner staff are additionally restricted to their
+-- own subfolder via (storage.foldername(name))[2] = own staff id.
 
 -- ── Buckets ───────────────────────────────────────────────────────────────────
 
@@ -43,9 +46,15 @@ create policy "owner can upload business logo"
     and get_my_role() = 'owner'
   );
 
+-- [M1] WITH CHECK mirrors USING so the new-row state is validated too
 create policy "owner can update business logo"
   on storage.objects for update
   using (
+    bucket_id = 'business-logos'
+    and (storage.foldername(name))[1] = get_my_business_id()::text
+    and get_my_role() = 'owner'
+  )
+  with check (
     bucket_id = 'business-logos'
     and (storage.foldername(name))[1] = get_my_business_id()::text
     and get_my_role() = 'owner'
@@ -66,8 +75,11 @@ create policy "public can view staff avatars"
   on storage.objects for select
   using (bucket_id = 'staff-avatars');
 
--- Owner may upload/replace/delete any avatar for their business
--- Staff may upload/replace/delete their own avatar (user_id match on staff table)
+-- Owner may upload/replace/delete any avatar for their business.
+-- Staff may only upload to their own subfolder:
+--   (storage.foldername(name))[2] must equal their own staff id.
+-- [C1] The non-owner branch now checks the staff_id path segment to prevent
+--      one staff member from overwriting another's avatar.
 create policy "owner or self can upload staff avatar"
   on storage.objects for insert
   with check (
@@ -75,14 +87,15 @@ create policy "owner or self can upload staff avatar"
     and (storage.foldername(name))[1] = get_my_business_id()::text
     and (
       get_my_role() = 'owner'
-      or exists (
-        select 1 from staff
+      or (storage.foldername(name))[2] = (
+        select id::text from staff
         where user_id = auth.uid()
           and business_id = get_my_business_id()
       )
     )
   );
 
+-- [C1] + [M1]: non-owner path restricts to own staff_id; WITH CHECK mirrors USING
 create policy "owner or self can update staff avatar"
   on storage.objects for update
   using (
@@ -90,14 +103,27 @@ create policy "owner or self can update staff avatar"
     and (storage.foldername(name))[1] = get_my_business_id()::text
     and (
       get_my_role() = 'owner'
-      or exists (
-        select 1 from staff
+      or (storage.foldername(name))[2] = (
+        select id::text from staff
+        where user_id = auth.uid()
+          and business_id = get_my_business_id()
+      )
+    )
+  )
+  with check (
+    bucket_id = 'staff-avatars'
+    and (storage.foldername(name))[1] = get_my_business_id()::text
+    and (
+      get_my_role() = 'owner'
+      or (storage.foldername(name))[2] = (
+        select id::text from staff
         where user_id = auth.uid()
           and business_id = get_my_business_id()
       )
     )
   );
 
+-- [C1]: non-owner path restricts to own staff_id
 create policy "owner or self can delete staff avatar"
   on storage.objects for delete
   using (
@@ -105,8 +131,8 @@ create policy "owner or self can delete staff avatar"
     and (storage.foldername(name))[1] = get_my_business_id()::text
     and (
       get_my_role() = 'owner'
-      or exists (
-        select 1 from staff
+      or (storage.foldername(name))[2] = (
+        select id::text from staff
         where user_id = auth.uid()
           and business_id = get_my_business_id()
       )
