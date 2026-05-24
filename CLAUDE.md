@@ -2,6 +2,28 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+
+## Workflow
+
+**At the start of every session, before doing anything else, read these files in order:**
+
+1. `CLAUDE_CODE_WORKFLOW.md` — the block pattern, the 10 critical rules, anti-patterns, commit format. These rules apply to every block in every phase.
+2. `STATUS.md` — what's done, what's in progress, what's blocked.
+3. `TASKS.md` — the checkbox list for the current phase.
+4. `DECISIONS.md` — architectural decisions log (ADRs).
+
+If the user's request maps to a phase spec (e.g. `PHASE_2_6_MEDIA.md`), read that too.
+
+Then summarize in 5–8 bullets what you understood about the current block before writing any code. Wait for the user to confirm the summary before proceeding.
+
+**Operating mode for every task:**
+- One block per session. One commit per block.
+- Run `pnpm typecheck && pnpm lint && pnpm test` before every commit.
+- After committing, STOP and report. Do not begin the next block.
+- Update `STATUS.md` and `TASKS.md` as part of every commit.
+- Append non-obvious decisions to `DECISIONS.md` in the same commit.
+- Never push. Local commits only.
+
 ## Commands
 
 All commands run from the `klyro/` subdirectory:
