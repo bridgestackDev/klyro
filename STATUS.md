@@ -1,7 +1,7 @@
 # Klyro — Build Status
 
 **Last updated:** 2026-05-24
-**Active phase:** Phase 2.6 — Business & Staff Media (Block A done) | Phase 2.5 Block E pending
+**Active phase:** Phase 3 — Public Booking Flow | Phase 2.5 Block E pending
 
 ---
 
@@ -13,7 +13,7 @@
 | 1 | Auth & Onboarding Shell | ✅ Done | Magic link confirmed working end-to-end |
 | 2 | Setup Wizard | ✅ Done | 9-step wizard, all DB writes, admin client RLS fix |
 | 2.5 | Hardening & Localization | 🟡 In progress | Blocks A–D+F done; Block E pending |
-| 2.6 | Business & Staff Media | 🟡 In progress | Block A done; B–C pending |
+| 2.6 | Business & Staff Media | ✅ Done | All blocks shipped; full team management in Phase 5 |
 | LP | Landing Page (parallel) | ✅ Done | `/[locale]` — 4 sections, fully static, dark surface |
 | 3 | Public Booking Flow | ⬜ Not started | `/[biz]/[branch]/[staff]` |
 | 4 | Messaging Engine | ⬜ Not started | WhatsApp + email templates |
@@ -262,7 +262,33 @@ Files changed:
 
 Tests: 223/223 passing (206 existing + 17 new)
 
-**Block C — Staff Avatar Upload** ⬜ Not started
+**Block C — Staff Avatar Upload** ✅ Done
+
+Files added:
+- `src/app/[locale]/(dashboard)/team/page.tsx` — server component, responsive grid of active staff
+- `src/components/dashboard/team/StaffCard.tsx` — avatar or initials placeholder + Dialog trigger
+- `src/components/dashboard/team/EditStaffDialog.tsx` — Dialog with `<ImageUpload />` wired to `updateStaffAvatar`
+- `src/lib/format/initials.ts` — `getInitials(displayName)` helper
+- `src/lib/format/__tests__/initials.test.ts` — 8 tests
+- `src/components/dashboard/team/__tests__/StaffCard.test.tsx` — 5 tests
+- `src/components/dashboard/team/__tests__/EditStaffDialog.test.tsx` — 7 tests
+- `src/i18n/locales/es.json` + `en.json` — `team.*` keys
+- `DECISIONS.md` — ADR-016 (avatar-only team page for Phase 2.6)
+
+Files changed:
+- `src/lib/format/index.ts` — barrel export for `getInitials`
+
+Tests: 245/245 passing (225 existing + 20 new)
+
+---
+
+### Phase 2.6 Retro
+
+**What shipped:** Business logo upload from `/dashboard/settings` (Block B) and staff avatar upload from `/dashboard/team` (Block C), built on a shared `<ImageUpload />` component and Supabase Storage buckets with RLS (Block A). The reusable component absorbed canvas resize, MIME validation, and loading state — Blocks B and C consumed it with zero duplication.
+
+**What surprised us:** The ADR numbers in the phase spec (ADR-008/009) were already occupied by Phase 2.5 decisions, requiring renumbering to ADR-013/014. The code review (after Blocks A+B) caught a real security gap in the staff-avatars RLS — non-owner staff could overwrite each other's avatars by only checking the business_id folder, not the staff_id subfolder. Fixed before Block C.
+
+**What to revisit in Phase 5:** Full team management (invite, deactivate, role assignment, schedule editing). The team page in Phase 2.6 is intentionally minimal — avatar-only edit as defined in ADR-016. The `updateStaffAvatar` action is already in `media.ts` ready for Phase 5 to consume.
 
 ---
 

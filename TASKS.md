@@ -133,15 +133,17 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 - [x] B7: Tests: media.test.ts (action), BrandSettingsForm.test.tsx, SetupLogoBanner.test.tsx
 - [x] B8: `<Toaster />` mounted in DashboardShell
 
-### Block C — Staff Avatar Upload ⬜
-- [ ] C1: `src/app/[locale]/(dashboard)/team/page.tsx` — server component, grid of active staff
-- [ ] C2: `src/components/dashboard/team/StaffCard.tsx` — avatar or initials placeholder + "Editar" button
-- [ ] C3: `src/components/dashboard/team/EditStaffDialog.tsx` — shadcn Dialog with `<ImageUpload />`
-- [ ] C4: `src/lib/actions/media.ts` — extend with `updateStaffAvatar(staffId, avatarUrl)`
-- [ ] C5: `src/lib/format/initials.ts` — `getInitials(displayName)` helper
-- [ ] C6: i18n keys: `team.*`
-- [ ] C7: Tests: media.test.ts (action), initials.test.ts, StaffCard.test.tsx, EditStaffDialog.test.tsx
-- [ ] C8: `git tag phase-2.6-done`
+### Block C — Staff Avatar Upload ✅
+- [x] C1: `src/app/[locale]/(dashboard)/team/page.tsx` — server component, grid of active staff
+- [x] C2: `src/components/dashboard/team/StaffCard.tsx` — avatar or initials placeholder + "Editar" button
+- [x] C3: `src/components/dashboard/team/EditStaffDialog.tsx` — base-ui Dialog with `<ImageUpload />`
+- [x] C4: `src/lib/actions/media.ts` — `updateStaffAvatar` already shipped in Block B
+- [x] C5: `src/lib/format/initials.ts` — `getInitials(displayName)` helper
+- [x] C6: i18n keys: `team.*`
+- [x] C7: Tests: initials.test.ts (8), StaffCard.test.tsx (5), EditStaffDialog.test.tsx (7)
+- [x] C8: `git tag phase-2.6-done`
+
+> **Phase 5 reminder:** Full team management (invite, deactivate, role, schedule) deferred from Phase 2.6 per ADR-016. The team page is avatar-only for now.
 
 ---
 

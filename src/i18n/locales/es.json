@@ -142,6 +142,23 @@
       "cta": "Ir al inicio"
     }
   },
+  "team": {
+    "title": "Mi equipo",
+    "empty": "Aún no tienes miembros en tu equipo.",
+    "edit": "Editar",
+    "dialog": {
+      "title": "Editar miembro del equipo",
+      "avatar": {
+        "label": "Foto de perfil",
+        "help": "Cuadrada, máximo 1 MB. PNG, JPG o WebP."
+      },
+      "close": "Cerrar"
+    },
+    "avatar": {
+      "updated": "Foto actualizada",
+      "failed": "No se pudo actualizar la foto"
+    }
+  },
   "settings": {
     "brand": {
       "pageTitle": "Configuración",

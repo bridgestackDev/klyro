@@ -180,6 +180,18 @@ This file records non-obvious design decisions and their rationale. Never delete
 
 ---
 
+## Phase 2.6 — Block C
+
+### ADR-016: Team page in Phase 2.6 is intentionally avatar-only
+
+**Decision:** The `/dashboard/team` page built in Block C shows only the staff list with avatar upload. Invite, deactivate, role assignment, schedule editing, and branch assignment are not included.
+
+**Why:** The goal of Phase 2.6 is to populate `businesses.logo_url` and `staff.avatar_url` — the two schema fields that have existed since Phase 0 but were never surfaced. Building full team management in this phase would mix two unrelated scopes (media upload and team operations), bloat the block file count past the ~12-file limit, and require auth flows (invitation emails) that belong in Phase 5.
+
+**Trade-off:** Owners cannot invite or deactivate staff from the dashboard until Phase 5. For the closed beta cohort (pioneer barbershops), the owner is typically the only staff member, so this is not a blocker for the initial launch.
+
+---
+
 ## Phase 2.6 — Block B
 
 ### ADR-015: SetupLogoBanner dismiss is session-only (no localStorage persistence)
