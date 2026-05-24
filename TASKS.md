@@ -1,6 +1,6 @@
 # Klyro — Task List
 
-**Last updated:** 2026-05-20
+**Last updated:** 2026-05-22
 
 Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 
@@ -110,6 +110,35 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 - [ ] E3: `playwright.config.ts` — baseURL, headless, retries, webserver
 - [ ] E4: CI integration — `.github/workflows/ci.yml`
 - [ ] E5: `package.json` scripts — test:e2e, test:e2e:ui, test:e2e:install
+
+---
+
+## Landing Page (Parallel Deliverable) ✅
+
+- [x] LP1: Branch `feature/landing-page` off `development`
+- [x] LP2: `src/components/landing/Hero.tsx` — client component, framer-motion pulse, nav + headline + 2 CTAs
+- [x] LP3: `src/components/landing/Features.tsx` — server component, 3-card grid with lucide icons
+- [x] LP4: `src/components/landing/CTASection.tsx` — server component, eyebrow + H2 + CTA + footnote
+- [x] LP5: `src/components/landing/Footer.tsx` — server component, 3-column + copyright
+- [x] LP6: `src/components/landing/LanguageSwitcher.tsx` — client component, ES | EN toggle via next/navigation
+- [x] LP7: `src/app/[locale]/page.tsx` — smoke test removed, 4 landing components wired
+- [x] LP8: `src/i18n/locales/es.json` — all `landing.*` keys added (25 keys)
+- [x] LP9: `src/i18n/locales/en.json` — all `landing.*` keys added (25 keys)
+- [x] LP10: Unit tests — Hero (5), Features (3), CTASection (4), Footer (5), i18n (50) = 67 new tests
+- [x] LP11: `pnpm typecheck` — 0 new errors (3 pre-existing `.next/dev/types` errors unchanged)
+- [x] LP12: `pnpm lint` — 0 new errors (1 pre-existing `DashboardShell.tsx` error unchanged)
+- [x] LP13: `pnpm test` — 192/192 passing
+- [x] LP14: DECISIONS.md — ADR-LP-001 + ADR-LP-002 appended
+- [x] LP15: Single commit: `feat(landing): MVP marketing page — hero + features + CTA + footer`
+
+### Landing Hero Animation ✅
+- [x] LP-A1: Create `src/components/landing/HeroAnimation.tsx` — 'use client', inline SVG Booking Flow (Client → Booking → Confirmed), framer-motion `useAnimate` loop, `useReducedMotion` honored
+- [x] LP-A2: Refactor `src/components/landing/Hero.tsx` — remove Logo mark pulse, import and render `<HeroAnimation />`
+- [x] LP-A3: Create `src/components/landing/__tests__/HeroAnimation.test.tsx` — 6 tests (aria-hidden, circles, paths, particle shown/hidden per reduced-motion, text labels)
+- [x] LP-A4: Update `Hero.test.tsx` — extend framer-motion mock with new hooks; fix Logo label assertion (mark removed, wordmark aria-label is lowercase "klyro")
+- [x] LP-A5: DECISIONS.md — ADR-LP-004, ADR-LP-005, ADR-LP-006 appended
+- [x] LP-A6: pnpm typecheck + lint (pre-existing DashboardShell error only) + test 198/198 green
+- [x] LP-A7: Single commit: `feat(landing): animated SVG hero`
 
 ---
 

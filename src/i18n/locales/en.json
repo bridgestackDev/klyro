@@ -9,7 +9,57 @@
   },
   "landing": {
     "title": "Klyro",
-    "tagline": "Your business. Your clients. Your brand."
+    "tagline": "Your business. Your clients. Your brand.",
+    "nav": {
+      "signIn": "Sign in"
+    },
+    "hero": {
+      "headline": "Your appointment business, without the chaos",
+      "subheadline": "Double bookings, constant interruptions, and no-shows are a thing of the past. Share one link: clients book in 60 seconds and get an instant WhatsApp confirmation. Klyro reminds them 24 hours before — so you never have to.",
+      "ctaPrimary": "Create free account",
+      "ctaSecondary": "Already have an account? Sign in",
+      "animation": {
+        "client": "Client",
+        "booking": "Booking",
+        "confirmed": "Confirmed"
+      }
+    },
+    "features": {
+      "sectionTitle": "Three things. Just three.",
+      "link": {
+        "title": "One link for everything",
+        "body": "Share your link and clients book in under 60 seconds, from any device."
+      },
+      "confirm": {
+        "title": "WhatsApp confirmation",
+        "body": "When a client books, they instantly get an automatic message with all their appointment details."
+      },
+      "reminder": {
+        "title": "Automatic reminder",
+        "body": "Klyro alerts your clients 24 hours before, cutting no-shows without any effort on your part."
+      }
+    },
+    "cta": {
+      "eyebrow": "START TODAY",
+      "headline": "Your schedule under control from day one",
+      "sub": "No commission per booking. No marketplaces. Your clients, your brand.",
+      "ctaPrimary": "Create free account",
+      "footnote": "Setup in under 15 minutes."
+    },
+    "footer": {
+      "tagline": "Your business. Your clients. Your brand.",
+      "productHeading": "Product",
+      "productLinks": {
+        "signIn": "Sign in",
+        "signUp": "Create account"
+      },
+      "companyHeading": "Company",
+      "companyLinks": {
+        "about": "About",
+        "contact": "Contact"
+      },
+      "copyright": "© 2026 BridgeStack Dev · Klyro"
+    }
   },
   "auth": {
     "login": {
