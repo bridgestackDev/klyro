@@ -2,20 +2,25 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { ArrowRight, CheckCircle } from "lucide-react";
+import { SetupLogoBanner } from "@/components/dashboard/SetupLogoBanner";
 
 async function getSetupStatus(userId: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("users")
-    .select("business_id, businesses(onboarding_completed)")
+    .select("business_id, businesses(onboarding_completed, logo_url)")
     .eq("id", userId)
     .single();
 
-  if (!data?.business_id) return { needsSetup: true };
+  if (!data?.business_id) return { needsSetup: true, logoUrl: null, onboardingCompleted: false };
   const biz = Array.isArray(data.businesses)
     ? data.businesses[0]
     : data.businesses;
-  return { needsSetup: !biz?.onboarding_completed };
+  return {
+    needsSetup: !biz?.onboarding_completed,
+    logoUrl: (biz?.logo_url as string | null) ?? null,
+    onboardingCompleted: biz?.onboarding_completed ?? false,
+  };
 }
 
 export default async function DashboardPage({
@@ -31,9 +36,9 @@ export default async function DashboardPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { needsSetup } = user
+  const { needsSetup, logoUrl, onboardingCompleted } = user
     ? await getSetupStatus(user.id)
-    : { needsSetup: false };
+    : { needsSetup: false, logoUrl: null, onboardingCompleted: false };
 
   const displayName =
     user?.user_metadata?.["full_name"] ??
@@ -52,6 +57,13 @@ export default async function DashboardPage({
           {t("title")}
         </p>
       </div>
+
+      {/* Logo nudge — shown when onboarding is done but logo hasn't been uploaded */}
+      <SetupLogoBanner
+        logoUrl={logoUrl}
+        onboardingCompleted={onboardingCompleted}
+        locale={locale}
+      />
 
       {/* Setup banner */}
       {needsSetup && (

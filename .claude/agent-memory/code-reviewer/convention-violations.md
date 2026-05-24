@@ -45,6 +45,22 @@ Recurring convention issues found in Phase 1 code:
 
 18. **No wizard tests** — Only `registry.test.ts` exists. Wizard server actions (`wizard.ts`) and schemas (`wizard.ts`) are completely untested.
 
+**Phase 2.6 (Media Upload) convention findings:**
+
+19. **Inline `var(--token)` is the established pattern** — All components from Phase 1 through 2.6 use `className="text-[var(--color-text-primary)]"` not `className="text-text-primary"`. Do not flag this as a violation in future reviews. The CLAUDE.md "use token names" means use CSS custom properties, not raw hex.
+
+20. **Raw Tailwind color classes in `ImageUpload.tsx`** — `text-red-400` (line 212), `bg-black/40` (line 166), `text-white` (line 170) are not design system tokens. Error text should use a semantic error token; spinner overlay and text should use tokens or a CSS var.
+
+21. **Hardcoded `rgba(109,100,251,0.12)` shadow** in `dashboard/page.tsx` line 70 — pre-existing pattern (same issue as `setup/page.tsx`). Should be `var(--shadow-violet)` or a token, but this is a pre-existing unresolved issue.
+
+22. **Emoji `👋` in `dashboard/page.tsx` line 54** — hardcoded emoji in JSX. The CLAUDE.md says only use emojis when explicitly requested. Minor; pre-existing in dashboard page.
+
+23. **`settings/page.tsx` returns `null` for unauthenticated users** — Acceptable since middleware guards `/settings`, but worth noting as a silent failure mode during debugging. The middleware protection makes `return null` a dead code path in production.
+
+24. **Missing test: `ImageUpload` upload failure path** — No test covers `mockUpload.mockResolvedValue({ error: someError })`. The `setError(t('failed'))` branch is untested.
+
+25. **Missing test: `updateStaffAvatar` with `isSelf=true, isOwner=false`** — `media.test.ts` has no test for a staff member successfully updating their own avatar. This is an untested success path.
+
 **Why:** Documenting for consistent enforcement in Phase 2 reviews.
 **How to apply:** Flag any new hardcoded strings and the missing test setup as blockers. The label/input association issue affects all wizard step inputs.
 

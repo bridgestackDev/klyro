@@ -179,3 +179,49 @@ This file records non-obvious design decisions and their rationale. Never delete
 **Why:** The footer has no interactivity except for the locale toggle. Keeping the footer as a server component avoids shipping the Next.js router and `usePathname` hook bundle for the full footer tree. The `LanguageSwitcher` is the minimal client island — it uses `useRouter().replace()` and `usePathname()` to toggle `/es ↔ /en` by replacing the locale prefix in the current URL.
 
 ---
+
+## Phase 2.6 — Block C
+
+### ADR-016: Team page in Phase 2.6 is intentionally avatar-only
+
+**Decision:** The `/dashboard/team` page built in Block C shows only the staff list with avatar upload. Invite, deactivate, role assignment, schedule editing, and branch assignment are not included.
+
+**Why:** The goal of Phase 2.6 is to populate `businesses.logo_url` and `staff.avatar_url` — the two schema fields that have existed since Phase 0 but were never surfaced. Building full team management in this phase would mix two unrelated scopes (media upload and team operations), bloat the block file count past the ~12-file limit, and require auth flows (invitation emails) that belong in Phase 5.
+
+**Trade-off:** Owners cannot invite or deactivate staff from the dashboard until Phase 5. For the closed beta cohort (pioneer barbershops), the owner is typically the only staff member, so this is not a blocker for the initial launch.
+
+---
+
+## Phase 2.6 — Block B
+
+### ADR-015: SetupLogoBanner dismiss is session-only (no localStorage persistence)
+
+**Decision:** `SetupLogoBanner` is a client component that uses `useState` for dismiss. Clicking the X button sets `dismissed = true` in local React state. On the next page load, the banner reappears (until the logo is uploaded).
+
+**Why:** The banner is a low-urgency nudge — it disappears automatically once `logo_url` is set, which is its own natural exit condition. Persisting dismissal in localStorage would require a dedicated key, a hydration guard to avoid SSR mismatch, and cleanup logic for when the user eventually uploads a logo. For an MVP nudge where the intended action takes <30 seconds, a session-only dismiss is both simpler and sufficient.
+
+**Trade-off:** A user who dismisses without uploading will see the banner again next session. Acceptable — the nudge is intentional. If user feedback indicates dismissal should persist, add a `localStorage.setItem('klyro_logo_banner_dismissed', '1')` check in Phase 5/6 cleanup.
+
+---
+
+## Phase 2.6 — Block A
+
+### ADR-013: Storage path convention — business_id as first folder segment
+
+**Decision:** Storage object paths follow the convention `{bucket}/{business_id}/{filename}`. For logos: `business-logos/{business_id}/logo.{ext}`. For avatars: `staff-avatars/{business_id}/{staff_id}.{ext}`.
+
+**Why:** Supabase Storage RLS can only inspect the object name, not join to other tables. Using `(storage.foldername(name))[1]` to extract the first path segment and comparing it to `get_my_business_id()` is the idiomatic Supabase pattern for tenant-scoped storage authorization. The business_id-as-folder convention means a single, readable RLS expression covers every file in a bucket without needing a separate lookup table.
+
+**Trade-off:** The path is fixed per business+staff combination (no versioned URLs). Cache-busting on re-upload requires a query string timestamp at the call site (Blocks B and C will handle this). Acceptable for MVP.
+
+---
+
+### ADR-014: No third-party image crop library in Phase 2.6
+
+**Decision:** `<ImageUpload />` uses a plain HTML `<canvas>` to resize images that exceed 1024px on their longest side. No `react-image-crop`, `react-easy-crop`, `sharp` (client), or similar library is introduced.
+
+**Why:** A crop UI adds significant bundle weight and UX complexity (modal, drag handles, aspect ratio controls) for marginal value in an MVP where the primary use case is a logo or headshot that the owner already has in a reasonable format. The canvas resize is lossless in aspect ratio, runs in the browser with zero new dependencies, and is sufficient for 2 MB / 1 MB upload limits.
+
+**Trade-off:** Users cannot crop within the app — they must pre-crop externally. If user research in Phase 5/6 shows crop friction is a blocker, we revisit with a proper crop library at that point.
+
+---

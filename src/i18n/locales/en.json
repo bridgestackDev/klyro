@@ -77,6 +77,14 @@
     }
   },
   "dashboard": {
+    "banners": {
+      "logo": {
+        "title": "Add your business logo",
+        "body": "It will appear on your public booking page and in messages to your clients.",
+        "cta": "Go to Settings",
+        "dismiss": "Dismiss"
+      }
+    },
     "nav": {
       "dashboard": "Dashboard",
       "agenda": "Agenda",
@@ -132,6 +140,42 @@
       "title": "Page not found",
       "body": "The page you're looking for doesn't exist or has been moved.",
       "cta": "Go home"
+    }
+  },
+  "team": {
+    "title": "My team",
+    "empty": "You don't have any team members yet.",
+    "edit": "Edit",
+    "dialog": {
+      "title": "Edit team member",
+      "avatar": {
+        "label": "Profile photo",
+        "help": "Square, max 1 MB. PNG, JPG or WebP."
+      },
+      "close": "Close"
+    },
+    "avatar": {
+      "updated": "Photo updated",
+      "failed": "Couldn't update the photo"
+    }
+  },
+  "settings": {
+    "brand": {
+      "pageTitle": "Settings",
+      "title": "Your business brand",
+      "help": "This image will appear on your public booking page.",
+      "updated": "Logo updated",
+      "failed": "Couldn't update the logo"
+    }
+  },
+  "media": {
+    "upload": {
+      "button": "Upload image",
+      "change": "Change image",
+      "uploading": "Uploading...",
+      "tooLarge": "Image too large (max {max} MB)",
+      "wrongType": "Unsupported format. Use PNG, JPG or WebP.",
+      "failed": "Couldn't upload the image."
     }
   },
   "wizard": {

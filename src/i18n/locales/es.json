@@ -77,6 +77,14 @@
     }
   },
   "dashboard": {
+    "banners": {
+      "logo": {
+        "title": "Sube el logo de tu negocio",
+        "body": "Aparecerá en tu página pública de reservas y en los mensajes a tus clientes.",
+        "cta": "Ir a Configuración",
+        "dismiss": "Cerrar"
+      }
+    },
     "nav": {
       "dashboard": "Dashboard",
       "agenda": "Agenda",
@@ -132,6 +140,42 @@
       "title": "Página no encontrada",
       "body": "La página que buscas no existe o fue movida.",
       "cta": "Ir al inicio"
+    }
+  },
+  "team": {
+    "title": "Mi equipo",
+    "empty": "Aún no tienes miembros en tu equipo.",
+    "edit": "Editar",
+    "dialog": {
+      "title": "Editar miembro del equipo",
+      "avatar": {
+        "label": "Foto de perfil",
+        "help": "Cuadrada, máximo 1 MB. PNG, JPG o WebP."
+      },
+      "close": "Cerrar"
+    },
+    "avatar": {
+      "updated": "Foto actualizada",
+      "failed": "No se pudo actualizar la foto"
+    }
+  },
+  "settings": {
+    "brand": {
+      "pageTitle": "Configuración",
+      "title": "Marca de tu negocio",
+      "help": "Esta imagen aparecerá en tu página pública de reservas.",
+      "updated": "Logo actualizado",
+      "failed": "No se pudo actualizar el logo"
+    }
+  },
+  "media": {
+    "upload": {
+      "button": "Subir imagen",
+      "change": "Cambiar imagen",
+      "uploading": "Subiendo...",
+      "tooLarge": "Imagen demasiado grande (máx {max} MB)",
+      "wrongType": "Formato no soportado. Usa PNG, JPG o WebP.",
+      "failed": "No se pudo subir la imagen."
     }
   },
   "wizard": {

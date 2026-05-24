@@ -113,6 +113,40 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 
 ---
 
+## Phase 2.6 — Business & Staff Media
+
+### Block A — Storage Infrastructure ✅
+- [x] A1: `supabase/migrations/0008_storage_buckets.sql` — `business-logos` + `staff-avatars` buckets with file size limits, MIME allowlists, and RLS policies
+- [x] A2: `src/components/shared/ImageUpload.tsx` — reusable `'use client'` component (MIME + size validation, canvas resize ≤ 1024px, upsert upload, public URL emission, loading state, aria-label, keyboard support)
+- [x] A3: `src/i18n/locales/es.json` + `en.json` — `media.upload.*` i18n keys (button, change, uploading, tooLarge, wrongType, failed)
+- [x] A4: `src/components/shared/__tests__/ImageUpload.test.tsx` — 7 unit tests
+- [x] A5: `DECISIONS.md` — ADR-013 (path convention), ADR-014 (no crop library)
+- [x] A6: `STATUS.md` + `TASKS.md` updated
+
+### Block B — Business Logo Upload ✅
+- [x] B1: `src/app/[locale]/(dashboard)/settings/page.tsx` — server component with Brand section
+- [x] B2: `src/components/dashboard/settings/BrandSettingsForm.tsx` — uses `<ImageUpload />`, calls `updateBusinessLogo` server action, shows sonner toast
+- [x] B3: `src/lib/actions/media.ts` — `updateBusinessLogo(logoUrl)` + `updateStaffAvatar(staffId, url)` server actions
+- [x] B4: `src/components/dashboard/SetupLogoBanner.tsx` — session-only dismissible banner when `logo_url` is null
+- [x] B5: Wire `<SetupLogoBanner />` into dashboard home page
+- [x] B6: i18n keys: `settings.brand.*`, `dashboard.banners.logo.*`
+- [x] B7: Tests: media.test.ts (action), BrandSettingsForm.test.tsx, SetupLogoBanner.test.tsx
+- [x] B8: `<Toaster />` mounted in DashboardShell
+
+### Block C — Staff Avatar Upload ✅
+- [x] C1: `src/app/[locale]/(dashboard)/team/page.tsx` — server component, grid of active staff
+- [x] C2: `src/components/dashboard/team/StaffCard.tsx` — avatar or initials placeholder + "Editar" button
+- [x] C3: `src/components/dashboard/team/EditStaffDialog.tsx` — base-ui Dialog with `<ImageUpload />`
+- [x] C4: `src/lib/actions/media.ts` — `updateStaffAvatar` already shipped in Block B
+- [x] C5: `src/lib/format/initials.ts` — `getInitials(displayName)` helper
+- [x] C6: i18n keys: `team.*`
+- [x] C7: Tests: initials.test.ts (8), StaffCard.test.tsx (5), EditStaffDialog.test.tsx (7)
+- [x] C8: `git tag phase-2.6-done`
+
+> **Phase 5 reminder:** Full team management (invite, deactivate, role, schedule) deferred from Phase 2.6 per ADR-016. The team page is avatar-only for now.
+
+---
+
 ## Landing Page (Parallel Deliverable) ✅
 
 - [x] LP1: Branch `feature/landing-page` off `development`

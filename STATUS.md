@@ -1,7 +1,7 @@
 # Klyro — Build Status
 
-**Last updated:** 2026-05-22
-**Active phase:** Phase 2.5 — Hardening & Localization (Blocks A+B+C+D+F done; Block E pending) | Landing Page ✅ Done (parallel deliverable)
+**Last updated:** 2026-05-24
+**Active phase:** Phase 3 — Public Booking Flow | Phase 2.5 Block E pending
 
 ---
 
@@ -12,7 +12,8 @@
 | 0 | Foundation | ✅ Done | All 12 tables, RLS, types, brand, CI |
 | 1 | Auth & Onboarding Shell | ✅ Done | Magic link confirmed working end-to-end |
 | 2 | Setup Wizard | ✅ Done | 9-step wizard, all DB writes, admin client RLS fix |
-| 2.5 | Hardening & Localization | 🟡 In progress | Block A done; B–E pending |
+| 2.5 | Hardening & Localization | 🟡 In progress | Blocks A–D+F done; Block E pending |
+| 2.6 | Business & Staff Media | ✅ Done | All blocks shipped; full team management in Phase 5 |
 | LP | Landing Page (parallel) | ✅ Done | `/[locale]` — 4 sections, fully static, dark surface |
 | 3 | Public Booking Flow | ⬜ Not started | `/[biz]/[branch]/[staff]` |
 | 4 | Messaging Engine | ⬜ Not started | WhatsApp + email templates |
@@ -222,6 +223,72 @@ Files changed:
 Tests: 125/125 passing (110 existing + 15 new)
 
 **Block E** — Not started
+
+---
+
+## Phase 2.6 — Business & Staff Media 🟡
+
+**Branch:** `feature/media-upload` (based on `development`)
+
+**Goal:** Let owners upload a business logo and a photo per staff member. Foundation only in Block A — no UI yet.
+
+**Block A — Storage Infrastructure** ✅ Done
+
+Files added:
+- `supabase/migrations/0008_storage_buckets.sql` — `business-logos` (2 MB) + `staff-avatars` (1 MB) buckets with RLS policies
+- `src/components/shared/ImageUpload.tsx` — reusable `'use client'` upload component (MIME + size validation, canvas resize ≤ 1024px, upsert to Storage, public URL emission)
+- `src/components/shared/__tests__/ImageUpload.test.tsx` — 7 tests (placeholder, img render, size rejection, MIME rejection, upload path, aria-label, disabled)
+- `src/i18n/locales/es.json` + `en.json` — `media.upload.*` keys (button, change, uploading, tooLarge, wrongType, failed)
+- `DECISIONS.md` — ADR-013 (storage path convention), ADR-014 (no crop library)
+
+Tests: 206/206 passing (198 existing + 7 new, 1 updated for img query fix)
+
+**Block B — Business Logo Upload** ✅ Done
+
+Files added:
+- `src/app/[locale]/(dashboard)/settings/page.tsx` — settings server page with Brand section (Card layout)
+- `src/components/dashboard/settings/BrandSettingsForm.tsx` — `'use client'`, wires `<ImageUpload />` to `updateBusinessLogo` server action + sonner toast
+- `src/components/dashboard/SetupLogoBanner.tsx` — `'use client'` nudge banner (session-only dismiss via useState)
+- `src/lib/actions/media.ts` — `updateBusinessLogo` + `updateStaffAvatar` server actions (authed client, RLS-enforced)
+- `src/lib/actions/__tests__/media.test.ts` — 6 tests (UNAUTHORIZED, NOT_FOUND, success for both actions)
+- `src/components/dashboard/settings/__tests__/BrandSettingsForm.test.tsx` — 5 tests
+- `src/components/dashboard/__tests__/SetupLogoBanner.test.tsx` — 6 tests
+
+Files changed:
+- `src/app/[locale]/(dashboard)/dashboard/page.tsx` — fetch `logo_url` + wire `<SetupLogoBanner />`
+- `src/components/dashboard/DashboardShell.tsx` — mount `<Toaster position="bottom-right" />`
+- `src/i18n/locales/es.json` + `en.json` — `settings.brand.*` + `dashboard.banners.logo.*` keys
+- `DECISIONS.md` — ADR-015 (session-only banner dismiss)
+
+Tests: 223/223 passing (206 existing + 17 new)
+
+**Block C — Staff Avatar Upload** ✅ Done
+
+Files added:
+- `src/app/[locale]/(dashboard)/team/page.tsx` — server component, responsive grid of active staff
+- `src/components/dashboard/team/StaffCard.tsx` — avatar or initials placeholder + Dialog trigger
+- `src/components/dashboard/team/EditStaffDialog.tsx` — Dialog with `<ImageUpload />` wired to `updateStaffAvatar`
+- `src/lib/format/initials.ts` — `getInitials(displayName)` helper
+- `src/lib/format/__tests__/initials.test.ts` — 8 tests
+- `src/components/dashboard/team/__tests__/StaffCard.test.tsx` — 5 tests
+- `src/components/dashboard/team/__tests__/EditStaffDialog.test.tsx` — 7 tests
+- `src/i18n/locales/es.json` + `en.json` — `team.*` keys
+- `DECISIONS.md` — ADR-016 (avatar-only team page for Phase 2.6)
+
+Files changed:
+- `src/lib/format/index.ts` — barrel export for `getInitials`
+
+Tests: 245/245 passing (225 existing + 20 new)
+
+---
+
+### Phase 2.6 Retro
+
+**What shipped:** Business logo upload from `/dashboard/settings` (Block B) and staff avatar upload from `/dashboard/team` (Block C), built on a shared `<ImageUpload />` component and Supabase Storage buckets with RLS (Block A). The reusable component absorbed canvas resize, MIME validation, and loading state — Blocks B and C consumed it with zero duplication.
+
+**What surprised us:** The ADR numbers in the phase spec (ADR-008/009) were already occupied by Phase 2.5 decisions, requiring renumbering to ADR-013/014. The code review (after Blocks A+B) caught a real security gap in the staff-avatars RLS — non-owner staff could overwrite each other's avatars by only checking the business_id folder, not the staff_id subfolder. Fixed before Block C.
+
+**What to revisit in Phase 5:** Full team management (invite, deactivate, role assignment, schedule editing). The team page in Phase 2.6 is intentionally minimal — avatar-only edit as defined in ADR-016. The `updateStaffAvatar` action is already in `media.ts` ready for Phase 5 to consume.
 
 ---
 
