@@ -23,7 +23,7 @@ const _pino = pino({
 function trySentryCrumb(level: string, msg: string, data?: object) {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const Sentry = require("@sentry/nextjs") as {
+    const Sentry = require(/* webpackIgnore: true */ "@sentry/nextjs") as {
       addBreadcrumb: (b: {
         level: string;
         message: string;

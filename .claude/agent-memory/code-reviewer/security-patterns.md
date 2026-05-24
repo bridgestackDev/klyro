@@ -33,7 +33,15 @@ Key security findings from Phase 1 review:
 
 11. **`step7Schema.whatsappNumber` has no format validation** — `z.string()` with no `.regex()` or `.min()`. When `channel === "whatsapp"`, a blank or malformed number passes Zod and reaches the DB.
 
+**Phase 2.6 (Media Upload) security findings:**
+
+12. **staff-avatars RLS policy does not restrict to the uploading staff's own subfolder** — `0008_storage_buckets.sql` INSERT/UPDATE/DELETE policies for `staff-avatars` check that the path's business_id folder matches `get_my_business_id()`, but do NOT check that the staff_id segment of the path matches the authenticated staff member's own staff row. A non-owner staff member can therefore overwrite any other staff member's avatar within the same business. Fix: add `and (storage.foldername(name))[2] = (select id::text from staff where user_id = auth.uid() and business_id = get_my_business_id())` to the non-owner branch, or enforce path via server action (preferred).
+
+13. **Established: RLS is enforced even when path is controlled client-side** — `BrandSettingsForm` passes `businessId` as a prop (from RSC) to the client, which constructs the storage path `${businessId}/logo.png`. Even if a malicious client tampers with this, the INSERT `WITH CHECK` policy blocks the write because `get_my_business_id()` would not match the tampered folder. Correct defense-in-depth.
+
+14. **Storage UPDATE policies lack `WITH CHECK`** — All UPDATE policies in 0008 use only `USING`. In Supabase Storage this is acceptable because the `name` column (path) is immutable on update — only object content changes. Not a vulnerability in practice.
+
 **Why:** Documenting for future reviews so these known issues are tracked.
-**How to apply:** Flag the service role key on the public page as critical in any Phase 2+ review. The ownership-check pattern in wizard actions is correct and should be the template for all future admin-client writes.
+**How to apply:** Flag the service role key on the public page as critical in any Phase 2+ review. The ownership-check pattern in wizard actions is correct and should be the template for all future admin-client writes. For storage policies scoped to individual staff, always check both `[1]` (business_id) and `[2]` (staff_id) folder segments.
 
 [[project-architecture]]
