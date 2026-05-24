@@ -180,6 +180,18 @@ This file records non-obvious design decisions and their rationale. Never delete
 
 ---
 
+## Phase 2.6 — Block B
+
+### ADR-015: SetupLogoBanner dismiss is session-only (no localStorage persistence)
+
+**Decision:** `SetupLogoBanner` is a client component that uses `useState` for dismiss. Clicking the X button sets `dismissed = true` in local React state. On the next page load, the banner reappears (until the logo is uploaded).
+
+**Why:** The banner is a low-urgency nudge — it disappears automatically once `logo_url` is set, which is its own natural exit condition. Persisting dismissal in localStorage would require a dedicated key, a hydration guard to avoid SSR mismatch, and cleanup logic for when the user eventually uploads a logo. For an MVP nudge where the intended action takes <30 seconds, a session-only dismiss is both simpler and sufficient.
+
+**Trade-off:** A user who dismisses without uploading will see the banner again next session. Acceptable — the nudge is intentional. If user feedback indicates dismissal should persist, add a `localStorage.setItem('klyro_logo_banner_dismissed', '1')` check in Phase 5/6 cleanup.
+
+---
+
 ## Phase 2.6 — Block A
 
 ### ADR-013: Storage path convention — business_id as first folder segment

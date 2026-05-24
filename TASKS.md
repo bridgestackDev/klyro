@@ -123,14 +123,15 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 - [x] A5: `DECISIONS.md` — ADR-013 (path convention), ADR-014 (no crop library)
 - [x] A6: `STATUS.md` + `TASKS.md` updated
 
-### Block B — Business Logo Upload ⬜
-- [ ] B1: `src/app/[locale]/(dashboard)/settings/page.tsx` — server component with Brand section
-- [ ] B2: `src/components/dashboard/settings/BrandSettingsForm.tsx` — uses `<ImageUpload />`, calls `updateBusinessLogo` server action
-- [ ] B3: `src/lib/actions/media.ts` — `updateBusinessLogo(logoUrl)` server action
-- [ ] B4: `src/components/dashboard/SetupLogoBanner.tsx` — dismissible banner when `logo_url` is null
-- [ ] B5: Wire `<SetupLogoBanner />` into dashboard home page
-- [ ] B6: i18n keys: `settings.brand.*`, `dashboard.banners.logo.*`
-- [ ] B7: Tests: media.test.ts (action), BrandSettingsForm.test.tsx, SetupLogoBanner.test.tsx
+### Block B — Business Logo Upload ✅
+- [x] B1: `src/app/[locale]/(dashboard)/settings/page.tsx` — server component with Brand section
+- [x] B2: `src/components/dashboard/settings/BrandSettingsForm.tsx` — uses `<ImageUpload />`, calls `updateBusinessLogo` server action, shows sonner toast
+- [x] B3: `src/lib/actions/media.ts` — `updateBusinessLogo(logoUrl)` + `updateStaffAvatar(staffId, url)` server actions
+- [x] B4: `src/components/dashboard/SetupLogoBanner.tsx` — session-only dismissible banner when `logo_url` is null
+- [x] B5: Wire `<SetupLogoBanner />` into dashboard home page
+- [x] B6: i18n keys: `settings.brand.*`, `dashboard.banners.logo.*`
+- [x] B7: Tests: media.test.ts (action), BrandSettingsForm.test.tsx, SetupLogoBanner.test.tsx
+- [x] B8: `<Toaster />` mounted in DashboardShell
 
 ### Block C — Staff Avatar Upload ⬜
 - [ ] C1: `src/app/[locale]/(dashboard)/team/page.tsx` — server component, grid of active staff

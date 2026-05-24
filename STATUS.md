@@ -243,7 +243,24 @@ Files added:
 
 Tests: 206/206 passing (198 existing + 7 new, 1 updated for img query fix)
 
-**Block B — Business Logo Upload** ⬜ Not started
+**Block B — Business Logo Upload** ✅ Done
+
+Files added:
+- `src/app/[locale]/(dashboard)/settings/page.tsx` — settings server page with Brand section (Card layout)
+- `src/components/dashboard/settings/BrandSettingsForm.tsx` — `'use client'`, wires `<ImageUpload />` to `updateBusinessLogo` server action + sonner toast
+- `src/components/dashboard/SetupLogoBanner.tsx` — `'use client'` nudge banner (session-only dismiss via useState)
+- `src/lib/actions/media.ts` — `updateBusinessLogo` + `updateStaffAvatar` server actions (authed client, RLS-enforced)
+- `src/lib/actions/__tests__/media.test.ts` — 6 tests (UNAUTHORIZED, NOT_FOUND, success for both actions)
+- `src/components/dashboard/settings/__tests__/BrandSettingsForm.test.tsx` — 5 tests
+- `src/components/dashboard/__tests__/SetupLogoBanner.test.tsx` — 6 tests
+
+Files changed:
+- `src/app/[locale]/(dashboard)/dashboard/page.tsx` — fetch `logo_url` + wire `<SetupLogoBanner />`
+- `src/components/dashboard/DashboardShell.tsx` — mount `<Toaster position="bottom-right" />`
+- `src/i18n/locales/es.json` + `en.json` — `settings.brand.*` + `dashboard.banners.logo.*` keys
+- `DECISIONS.md` — ADR-015 (session-only banner dismiss)
+
+Tests: 223/223 passing (206 existing + 17 new)
 
 **Block C — Staff Avatar Upload** ⬜ Not started
 

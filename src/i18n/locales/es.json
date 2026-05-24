@@ -77,6 +77,14 @@
     }
   },
   "dashboard": {
+    "banners": {
+      "logo": {
+        "title": "Sube el logo de tu negocio",
+        "body": "Aparecerá en tu página pública de reservas y en los mensajes a tus clientes.",
+        "cta": "Ir a Configuración",
+        "dismiss": "Cerrar"
+      }
+    },
     "nav": {
       "dashboard": "Dashboard",
       "agenda": "Agenda",
@@ -132,6 +140,15 @@
       "title": "Página no encontrada",
       "body": "La página que buscas no existe o fue movida.",
       "cta": "Ir al inicio"
+    }
+  },
+  "settings": {
+    "brand": {
+      "pageTitle": "Configuración",
+      "title": "Marca de tu negocio",
+      "help": "Esta imagen aparecerá en tu página pública de reservas.",
+      "updated": "Logo actualizado",
+      "failed": "No se pudo actualizar el logo"
     }
   },
   "media": {

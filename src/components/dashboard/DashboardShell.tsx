@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Navbar } from "./Navbar";
 import { Sidebar } from "./Sidebar";
+import { Toaster } from "@/components/ui/sonner";
 
 export type SidebarMode = "collapsed" | "expanded" | "hover";
 
@@ -49,6 +50,7 @@ export function DashboardShell({
         <Sidebar locale={locale} mode={mode} onModeChange={handleModeChange} />
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
       </div>
+      <Toaster position="bottom-right" />
     </div>
   );
 }

@@ -77,6 +77,14 @@
     }
   },
   "dashboard": {
+    "banners": {
+      "logo": {
+        "title": "Add your business logo",
+        "body": "It will appear on your public booking page and in messages to your clients.",
+        "cta": "Go to Settings",
+        "dismiss": "Dismiss"
+      }
+    },
     "nav": {
       "dashboard": "Dashboard",
       "agenda": "Agenda",
@@ -132,6 +140,15 @@
       "title": "Page not found",
       "body": "The page you're looking for doesn't exist or has been moved.",
       "cta": "Go home"
+    }
+  },
+  "settings": {
+    "brand": {
+      "pageTitle": "Settings",
+      "title": "Your business brand",
+      "help": "This image will appear on your public booking page.",
+      "updated": "Logo updated",
+      "failed": "Couldn't update the logo"
     }
   },
   "media": {
