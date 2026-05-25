@@ -313,3 +313,33 @@ This file records non-obvious design decisions and their rationale. Never delete
 **How to apply:** If the 409 handling logic in `BookingFlow` changes, update the test accordingly. The mock returns the same JSON shape as the real API.
 
 ---
+
+## Phase 3.5 — Block A
+
+### ADR-022: next-openapi-gen over next-swagger-doc — Zod-native schema introspection
+
+**Decision:** `next-openapi-gen@1.4.0` is the OpenAPI generator. `next-swagger-doc` was considered and rejected.
+
+**Why:** `next-openapi-gen` reads Zod schemas directly from the codebase (`schemaType: "zod"`, `schemaDir: "src/lib/schemas"`). It emits correct JSON Schema from Zod v4 validators — including `format: uuid`, `pattern`, `format: date-time`, `minLength`, and optional fields — without any manual schema duplication. `next-swagger-doc` expects JSDoc `@swagger` blocks with inline YAML/JSON, meaning every schema field would need to be written twice (once in Zod, once in JSDoc). Given that we already have `slotsQuerySchema` and `createBookingSchema` as the single source of validation truth, duplication is an anti-pattern that will diverge on the first schema change.
+
+**Config file:** `openapi-gen.config.json` at repo root (the tool's preferred filename; `next.openapi.json` is deprecated as of v1.4.x). `includeOpenApiRoutes: true` restricts generation to handlers explicitly tagged `@openapi`, preventing auto-inclusion of internal admin routes added in future phases.
+
+**JSDoc placement:** Annotations go on the `export const GET/POST = ...` line (not on the inner `handler` function), because the generator scans for JSDoc immediately preceding named HTTP-method exports.
+
+**How to apply:** Every new public route handler MUST include a JSDoc block with `@openapi`, `@tag`, and at minimum one of `@queryParams` / `@body`. Run `pnpm openapi:gen` and commit `public/openapi.json` in the same commit.
+
+---
+
+## Phase 3.5 — Block B
+
+### ADR-023: Swagger UI is dev-only — production returns 404
+
+**Decision:** `src/app/api-docs/page.tsx` calls `notFound()` when `process.env.NODE_ENV === "production"`. The page is a Server Component so `notFound()` is available; SwaggerUI rendering is delegated to a `'use client'` child component loaded via `next/dynamic` with `ssr: false`.
+
+**Why:** Exposing the interactive API explorer in production leaks internal schema details (field names, constraints, endpoint paths) to anyone who visits `/api-docs`. For a multi-tenant SaaS, this is an unnecessary attack surface before we have a deliberate public-API strategy. Dev-only also keeps swagger-ui-react out of the production bundle entirely (the dynamic import only resolves during development builds).
+
+**The `ssr: false` import:** `swagger-ui-react` calls browser APIs (`window`, `document`) at module load time. SSR rendering would throw. `next/dynamic({ ssr: false })` defers the import to the browser, making the page render correctly with Next.js server rendering for the shell and client-side hydration for the Swagger panel.
+
+**`api-docs` in SYSTEM_SEGMENTS:** Added to prevent the booking-path detector in `middleware.ts` from treating `/es/api-docs` as a business slug. The middleware matcher already excludes `/api-docs` (no locale prefix) because it starts with "api", but locale-prefixed navigations (`/es/api-docs`) would otherwise be routed to `isPublicBookingPath`.
+
+---

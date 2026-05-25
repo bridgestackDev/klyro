@@ -33,6 +33,7 @@ const SYSTEM_SEGMENTS = new Set([
   "login",
   "signup",
   "callback",
+  "api-docs",
 ]);
 
 function isPublicBookingPath(bare: string): boolean {

@@ -40,4 +40,11 @@ async function handler(req: NextRequest) {
   });
 }
 
+/**
+ * List available slots for a staff member on a date
+ * @description Returns time slots that are open for booking given a staff member, service, branch, and local date.
+ * @queryParams slotsQuerySchema
+ * @tag Booking
+ * @openapi
+ */
 export const GET = withRequestLogging("/api/booking/slots", handler);

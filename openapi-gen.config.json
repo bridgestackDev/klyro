@@ -1,0 +1,23 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Klyro API",
+    "version": "0.1.0",
+    "description": "Public scheduling API for the Klyro platform."
+  },
+  "servers": [
+    { "url": "https://klyro.app", "description": "Production" },
+    { "url": "http://localhost:3000", "description": "Local dev" }
+  ],
+  "apiDir": "src/app/api",
+  "routerType": "app",
+  "schemaDir": "src/lib/schemas",
+  "schemaType": "zod",
+  "schemaFiles": [],
+  "outputFile": "openapi.json",
+  "outputDir": "./public",
+  "docsUrl": "api-docs",
+  "includeOpenApiRoutes": true,
+  "ignoreRoutes": [],
+  "debug": false
+}

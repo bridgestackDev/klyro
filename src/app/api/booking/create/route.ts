@@ -171,4 +171,11 @@ async function handler(req: NextRequest) {
   );
 }
 
+/**
+ * Create a booking appointment
+ * @description Books a slot for a client. Verifies availability, upserts the client by phone, and creates the appointment with a unique KLY-XXXX booking code.
+ * @body createBookingSchema
+ * @tag Booking
+ * @openapi
+ */
 export const POST = withRequestLogging("/api/booking/create", handler);

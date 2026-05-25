@@ -1,0 +1,173 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Klyro API",
+    "version": "0.1.0",
+    "description": "Public scheduling API for the Klyro platform."
+  },
+  "servers": [
+    {
+      "url": "https://klyro.app",
+      "description": "Production"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Local dev"
+    }
+  ],
+  "paths": {
+    "/booking/create": {
+      "post": {
+        "operationId": "post-booking-create",
+        "summary": "Create a booking appointment",
+        "description": "Books a slot for a client. Verifies availability, upserts the client by phone, and creates the appointment with a unique KLY-XXXX booking code.",
+        "tags": [
+          "Booking"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/createBookingSchema"
+              }
+            }
+          }
+        },
+        "responses": {}
+      }
+    },
+    "/booking/slots": {
+      "get": {
+        "operationId": "get-booking-slots",
+        "summary": "List available slots for a staff member on a date",
+        "description": "Returns time slots that are open for booking given a staff member, service, branch, and local date.",
+        "tags": [
+          "Booking"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "staffId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "serviceId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "branchId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            }
+          }
+        ],
+        "responses": {}
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Booking"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "createBookingSchema": {
+        "type": "object",
+        "properties": {
+          "staffId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "serviceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "branchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "slotStart": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "clientName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "clientPhone": {
+            "type": "string",
+            "pattern": "^\\+\\d{7,15}$"
+          },
+          "clientEmail": {
+            "type": "string",
+            "format": "email"
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "staffId",
+          "serviceId",
+          "branchId",
+          "slotStart",
+          "clientName",
+          "clientPhone"
+        ]
+      },
+      "slotsQuerySchema": {
+        "type": "object",
+        "properties": {
+          "staffId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "serviceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "branchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          }
+        },
+        "required": [
+          "staffId",
+          "serviceId",
+          "branchId",
+          "date"
+        ]
+      }
+    },
+    "responses": {}
+  }
+}

@@ -1,7 +1,7 @@
 # Klyro — Build Status
 
 **Last updated:** 2026-05-25
-**Active phase:** Phase 4 — Messaging Engine (next) | Phase 2.5 Block E (wizard E2E) still pending
+**Active phase:** Phase 3.5 — API Documentation ✅ Done — Phase 4 preflight next
 
 ---
 
@@ -16,7 +16,8 @@
 | 2.6 | Business & Staff Media | ✅ Done | All blocks shipped; full team management in Phase 5 |
 | LP | Landing Page (parallel) | ✅ Done | `/[locale]` — 4 sections, fully static, dark surface |
 | 3 | Public Booking Flow | ✅ Done | All blocks A–E complete |
-| 4 | Messaging Engine | ⬜ Not started | WhatsApp + email templates |
+| 3.5 | API Documentation | ✅ Done | Swagger UI at /api-docs + Postman setup |
+| 4 | Messaging Engine | ⬜ Not started | Blocked on PHASE_4_PREFLIGHT.md — all 6 items open |
 | 5 | Owner Dashboard | ⬜ Not started | Full operational view |
 | 6 | Staff Dashboard | ⬜ Not started | RLS-scoped own-day view |
 | 7 | Polish & QA | ⬜ Not started | WCAG AA, Lighthouse >90, brand pass |
@@ -414,6 +415,56 @@ Key decisions:
 **What surprised us:** The anon RLS policies were never pushed to remote Supabase — the migration existed locally but not on the live DB. All pages 404'd until the migration was applied remotely. Lesson: always verify remote state after adding new RLS migrations, not just local state.
 
 **What to revisit in Phase 4:** Sending the KLY-XXXX code via WhatsApp confirmation message. The booking code is generated and displayed; the messaging dispatch (pg_cron + Edge Function + WhatsApp Cloud API) is Phase 4.
+
+---
+
+## Phase 3.5 — API Documentation 🟡
+
+**Branch:** `feature/api-docs` (off `development`)
+
+**Goal:** Generate an OpenAPI 3.1 spec from existing routes, serve it via Swagger UI at `/api-docs` (dev-only), and provide Postman import instructions.
+
+**Block A — OpenAPI Spec Generation** ✅ Done
+
+Files added:
+- `openapi-gen.config.json` — generator config: `apiDir: src/app/api`, `schemaDir: src/lib/schemas`, `schemaType: zod`, `outputDir: ./public`, `includeOpenApiRoutes: true`
+- `public/openapi.json` — generated OpenAPI 3.1 spec (committed for reviewer visibility of API changes)
+
+Files changed:
+- `src/app/api/booking/slots/route.ts` — `@openapi` JSDoc block on `export const GET` (`@queryParams slotsQuerySchema`, `@tag Booking`)
+- `src/app/api/booking/create/route.ts` — `@openapi` JSDoc block on `export const POST` (`@body createBookingSchema`, `@tag Booking`)
+- `package.json` — added `openapi:gen` script (`openapi-gen generate`)
+- `DECISIONS.md` — ADR-022 (next-openapi-gen over next-swagger-doc)
+
+Key decisions:
+- ADR-022: next-openapi-gen chosen for Zod-native schema introspection — no schema duplication
+- `includeOpenApiRoutes: true` restricts generation to `@openapi`-tagged handlers only
+- Config uses `openapi-gen.config.json` (preferred filename; `next.openapi.json` is deprecated)
+
+**Block B — Swagger UI + Postman Export** ✅ Done
+
+Files added:
+- `src/app/api-docs/page.tsx` — Server Component; calls `notFound()` in production; renders `<SwaggerUi />`
+- `src/app/api-docs/_components/SwaggerUi.tsx` — `'use client'`; dynamic import of swagger-ui-react (`ssr: false`); Klyro dark-surface styles in a scoped `<style>` block
+- `docs/postman.md` — Postman import instructions (local + production URL, environment setup, auth)
+- `docs/postman/klyro-local.postman_environment.json` — Local dev environment (`http://localhost:3000`)
+- `docs/postman/klyro-staging.postman_environment.json` — Staging environment (`https://klyro.app`)
+
+Files changed:
+- `src/middleware.ts` — `api-docs` added to SYSTEM_SEGMENTS (prevents booking-path misclassification for `/es/api-docs`)
+- `package.json` — `swagger-ui-react@5.32.6` added as runtime dep
+
+Key decisions:
+- ADR-023: Swagger UI dev-only — `notFound()` in production; `next/dynamic ssr: false` prevents browser-API crash on server render
+- Metadata `robots: { index: false }` prevents crawlers from indexing the page even if it somehow became accessible
+
+### Phase 3.5 Retro
+
+**What shipped:** OpenAPI 3.1 spec auto-generated from the two existing Zod schemas (Block A), plus an interactive Swagger UI at `http://localhost:3000/api-docs` with Klyro dark-surface branding (Block B). Postman users can import the spec in one click via `http://localhost:3000/openapi.json`. The spec is committed to git so reviewers see API changes in PRs.
+
+**What surprised us:** `next-openapi-gen` v1.4.x deprecated `next.openapi.json` in favour of `openapi-gen.config.json` — the README still references the old name. Used the preferred filename from the start to avoid deprecation warnings. Also: the tool requires JSDoc on the `export const GET/POST = ...` line, not on the inner `handler` function — the HOF wrapping pattern (`withRequestLogging`) required moving annotations to the export assignment.
+
+**What to revisit in Phase 5+:** Add `@response` annotations with explicit status codes and response shapes once the response schemas stabilize. Currently the spec has empty `responses: {}` objects — "Try it out" still works but response schemas aren't documented.
 
 ---
 
