@@ -314,5 +314,53 @@
         "ariaLabel": "Launching your business"
       }
     }
+  },
+  "booking": {
+    "business": {
+      "bookPrefix": "Book your",
+      "chooseBranch": "Choose your location",
+      "viewAvailability": "View availability",
+      "poweredBy": "Powered by"
+    },
+    "branch": {
+      "servicesLabel": "Services",
+      "staffLabel": "Team",
+      "reserveWith": "Book with {name}",
+      "back": "Back",
+      "min": "{count} min"
+    },
+    "flow": {
+      "pickService": "Pick a service",
+      "pickDate": "Pick a date",
+      "pickSlot": "Pick a time",
+      "yourDetails": "Your details",
+      "noSlots": "No times available on this day",
+      "loadingSlots": "Loading times...",
+      "back": "Back",
+      "bookWith": "Book with {name}"
+    },
+    "form": {
+      "name": "Full name",
+      "namePlaceholder": "Your name",
+      "whatsapp": "WhatsApp",
+      "submit": "Confirm booking",
+      "submitting": "Booking...",
+      "nameRequired": "Please enter your name",
+      "nameTooShort": "Name must be at least 2 characters",
+      "nameTooLong": "Name cannot exceed 120 characters",
+      "whatsappRequired": "Please enter your WhatsApp number"
+    },
+    "success": {
+      "title": "Booking confirmed!",
+      "subtitle": "Your appointment has been successfully scheduled.",
+      "codeLabel": "Your booking code",
+      "saveHint": "Save this code — you'll need it to manage your appointment.",
+      "newBooking": "Make another booking"
+    },
+    "errors": {
+      "slotTaken": "This time slot was just taken. Please choose another.",
+      "networkError": "Connection error. Please try again.",
+      "validationFailed": "Please check the fields and try again."
+    }
   }
 }

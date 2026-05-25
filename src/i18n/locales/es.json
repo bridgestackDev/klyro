@@ -314,5 +314,53 @@
         "ariaLabel": "Lanzando tu negocio"
       }
     }
+  },
+  "booking": {
+    "business": {
+      "bookPrefix": "Reserva tu",
+      "chooseBranch": "Elige tu sucursal",
+      "viewAvailability": "Ver disponibilidad",
+      "poweredBy": "Impulsado por"
+    },
+    "branch": {
+      "servicesLabel": "Servicios",
+      "staffLabel": "Equipo",
+      "reserveWith": "Reservar con {name}",
+      "back": "Volver",
+      "min": "{count} min"
+    },
+    "flow": {
+      "pickService": "Elige un servicio",
+      "pickDate": "Elige una fecha",
+      "pickSlot": "Elige un horario",
+      "yourDetails": "Tus datos",
+      "noSlots": "No hay horarios disponibles este día",
+      "loadingSlots": "Cargando horarios...",
+      "back": "Atrás",
+      "bookWith": "Reservar con {name}"
+    },
+    "form": {
+      "name": "Nombre completo",
+      "namePlaceholder": "¿Cómo te llamas?",
+      "whatsapp": "WhatsApp",
+      "submit": "Confirmar reserva",
+      "submitting": "Reservando...",
+      "nameRequired": "Ingresa tu nombre",
+      "nameTooShort": "El nombre debe tener al menos 2 caracteres",
+      "nameTooLong": "El nombre no puede superar 120 caracteres",
+      "whatsappRequired": "Ingresa tu número de WhatsApp"
+    },
+    "success": {
+      "title": "¡Reserva confirmada!",
+      "subtitle": "Tu cita ha sido agendada exitosamente.",
+      "codeLabel": "Tu código de reserva",
+      "saveHint": "Guarda este código — lo necesitarás para gestionar tu cita.",
+      "newBooking": "Hacer otra reserva"
+    },
+    "errors": {
+      "slotTaken": "Este horario ya fue reservado. Por favor elige otro.",
+      "networkError": "Error de conexión. Por favor intenta de nuevo.",
+      "validationFailed": "Revisa los campos e intenta de nuevo."
+    }
   }
 }

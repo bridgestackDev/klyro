@@ -116,6 +116,38 @@ This file records non-obvious design decisions and their rationale. Never delete
 
 ### ADR-012: LaunchLoader conditionally rendered (not always-mounted with open prop)
 
+---
+
+## Phase 3 — Block A
+
+### ADR-013: Public booking requires a new RLS migration (no pre-existing anon read policies)
+
+**Decision:** Migration `0008_booking_public_read_rls.sql` adds anon `SELECT` policies on businesses, branches, staff, staff_branches, services, branch_services, staff_availability, and appointments. The booking CREATE endpoint uses the service-role (admin) client for all writes, matching the wizard pattern.
+
+**Why:** All tables had RLS enabled since Phase 0 with no anon policies — every query required an authenticated session. Phase 3 is the first public-facing surface. Anon read is the minimum needed to display business/branch/staff data without auth. Write operations (create clients, insert appointments) use the admin client because: (a) it follows the same secure pattern as the wizard, (b) our validation + rate limiting + phone check are the application-layer controls, and (c) it avoids complex anon INSERT policies with business_id verification.
+
+**Trade-off:** Service role used for public writes means a bug in our validation could allow unexpected inserts. Mitigated by Zod schema validation, rate limiting, phone validation, and slot availability check in the route handler. Revisit with stricter RLS INSERT policies in Phase 7 hardening.
+
+---
+
+### ADR-014: Booking pages live in the existing (booking) route group, not flat [bizSlug]
+
+**Decision:** Scaffold pages are created at `src/app/[locale]/(booking)/[businessSlug]/…` (matching the PRD §3.1 folder spec and the pre-created empty directories) rather than the flat `[bizSlug]` path listed in the Phase 3 prompt's file-scope section.
+
+**Why:** The `(booking)` route group was pre-created as empty directories in the codebase. Creating pages at `[locale]/[bizSlug]/` alongside the existing `[locale]/(booking)/[businessSlug]/` would cause an ambiguous route conflict (Next.js cannot resolve two dynamic segments at the same URL depth). The (booking) group is also consistent with PRD §3.1 and adds organizational clarity. The URL structure is identical since route group names are parenthesized and don't appear in the URL.
+
+**How to apply:** All Phase 3 page files go under `src/app/[locale]/(booking)/[businessSlug]/…`. Private components go under `…/[staffSlug]/_components/`.
+
+---
+
+### ADR-015: Timezone conversion via native Intl.DateTimeFormat, not date-fns-tz
+
+**Decision:** `localTimeToUTC` in `src/lib/booking/slots.ts` uses `Intl.DateTimeFormat.formatToParts` to convert business-timezone wall-clock times to UTC. `date-fns-tz` is NOT added to the dependency list.
+
+**Why:** `date-fns-tz` was not in the stack at the time of Block B. The Phase 3 prompt said "if not in stack, ASK before adding." The native `Intl.DateTimeFormat` API in Node 22 LTS supports all IANA timezone names, handles DST transitions, and has no package overhead. The two-iteration approach (guess → correct via offset → re-verify) converges correctly for all practical cases, including DST boundaries. This was verified with tests using `America/Tegucigalpa` (UTC-6, no DST) — the reference timezone for the MVP wedge.
+
+**Trade-off:** If a future timezone has a DST gap at exactly the time being converted (e.g. clocks spring forward at 2:00 AM, creating a missing hour), the second iteration will still return a plausible UTC time (it'll land at the post-gap equivalent). Acceptable for MVP; revisit with `date-fns-tz` if DST-intensive timezones become a priority.
+
 **Decision:** `WizardInner` renders `{isLaunching && <LaunchLoader open ... />}` rather than always rendering `<LaunchLoader open={isLaunching} ... />`.
 
 **Why:** The conditional render causes the component to mount fresh on each launch attempt, automatically resetting `messageIndex` to 0. The alternative (always-mounted with a reset in `useEffect`) would require calling `setState` synchronously inside an effect body, which violates the `react-hooks/set-state-in-effect` lint rule and can cause cascading renders.
@@ -223,5 +255,61 @@ This file records non-obvious design decisions and their rationale. Never delete
 **Why:** A crop UI adds significant bundle weight and UX complexity (modal, drag handles, aspect ratio controls) for marginal value in an MVP where the primary use case is a logo or headshot that the owner already has in a reasonable format. The canvas resize is lossless in aspect ratio, runs in the browser with zero new dependencies, and is sufficient for 2 MB / 1 MB upload limits.
 
 **Trade-off:** Users cannot crop within the app — they must pre-crop externally. If user research in Phase 5/6 shows crop friction is a blocker, we revisit with a proper crop library at that point.
+
+---
+
+## Phase 3 — Block D
+
+### ADR-016: Business language overrides URL locale via direct JSON import (no next-intl override)
+
+**Decision:** Booking server pages (`businessSlug/page.tsx`, `branchSlug/page.tsx`, `staffSlug/page.tsx`) import both `es.json` and `en.json` directly and select the correct locale object based on `business.default_language`, not the URL locale.
+
+**Why:** The locked Phase 3 requirement is "booking page renders in the BUSINESS's default_language, not the URL locale." next-intl's `getTranslations()` uses the URL locale by default. Overriding it with `getTranslations({ locale: businessLanguage })` requires the messages to be loaded from the request config, which only has the URL locale. Importing both JSON files statically is simpler, zero-overhead, and correctly implements the business-language contract. The `BookingMessages` type is defined in `BookingFlow.tsx` and the server component passes pre-resolved strings as props — no next-intl dependency in the client component.
+
+**Trade-off:** Both locale files are bundled in the server component. This is acceptable since each file is ~15 KB and server components are not part of the client bundle.
+
+---
+
+### ADR-017: slotTakenError is a separate state from slotsError
+
+**Decision:** `BookingFlow` maintains two distinct error states: `slotsError` (API errors — network failure, rate limit) and `slotTakenError` (409 response from create endpoint). The slot taken error is not cleared by `fetchSlots()`, allowing the user to see the message while slots refresh.
+
+**Why:** `fetchSlots()` sets `setSlotsError(null)` at the start (correct — clearing stale API errors before a new fetch). If 409 were to use `slotsError`, re-fetching slots to refresh availability would immediately clear the message before the user sees it. A separate state for the "slot was just taken" case survives the re-fetch cycle.
+
+**How to apply:** Clearing `slotTakenError` is the responsibility of `handleSlotSelect` (user picks a new slot) and `handleDateSelect` (user picks a new date — implicitly via slot reset).
+
+---
+
+## Phase 3 — Block C
+
+### ADR-018: Booking code format — KLY-XXXX with non-confusable alphabet
+
+**Decision:** Booking codes use the format `KLY-XXXX` where XXXX is 4 characters drawn from the alphabet `ABCDEFGHJKMNPQRSTUVWXYZ23456789` (32 chars). The excluded characters are `0`, `O`, `1`, `I`, `l` — visually confusable pairs.
+
+**Why:** Booking codes are shown to clients on screen and they may need to read them aloud to staff or type them manually. The KLY prefix provides instant brand recognition and makes it clear the code is a Klyro booking reference. The 4-char suffix gives 32^4 = 1,048,576 possible codes — sufficient for the MVP appointment volume. A DB unique index on `appointments.booking_code` enforces global uniqueness; the API route retries once on collision (collision probability at 10,000 bookings is < 0.01%).
+
+**How to apply:** Always generate via `generateBookingCode()` in `src/lib/booking/booking-code.ts`. Never accept booking codes from client requests — they are server-generated only.
+
+---
+
+## Phase 3 — Block E
+
+### ADR-019: E2E seed uses service-role client, no auth user required
+
+**Decision:** `seedBusiness()` inserts directly into `public.businesses`, `branches`, `staff`, etc. using the Supabase service-role client (bypasses RLS). It does not create `auth.users` entries because `businesses` has no `owner_id` column and `staff.user_id` is nullable.
+
+**Why:** The `public.users` table (separate from `auth.users`) is the owner lookup table used by RLS functions like `get_my_business_id()`. E2E tests exercise the public booking flow, which uses the anon client under RLS policies that only require `onboarding_completed = true` on businesses. No auth session is needed for the seeded data to be publicly readable. Creating real auth users for seeding would add latency and require cleanup of Supabase Auth state, which is an additional failure surface.
+
+**How to apply:** Use `seedBusiness(vertical)` in `beforeEach` / setup, `cleanupBusiness(bizId)` in `afterEach` / teardown. Never let seed data persist between test runs.
+
+---
+
+### ADR-020: Slot-taken E2E test uses page.route() mock, not a real DB race
+
+**Decision:** The "slot taken" E2E test (`booking.spec.ts` test 3) uses Playwright's `page.route()` to intercept `POST /api/booking/create` and return a mocked 409 response, rather than attempting to time a true DB race condition.
+
+**Why:** A true race condition test would require coordinating two concurrent requests — one to pre-book the slot and one to attempt the same slot via UI. The exact UTC timestamp of the slot is not known until after slot fetch, making programmatic pre-booking complex. Timing coordination is flaky by nature. The mocked 409 tests the exact same code path (the `if (res.status === 409)` branch in `BookingFlow.handleSubmit`) without relying on timing. The real race-condition guard is already covered by the unit tests in `api-create.test.ts`.
+
+**How to apply:** If the 409 handling logic in `BookingFlow` changes, update the test accordingly. The mock returns the same JSON shape as the real API.
 
 ---

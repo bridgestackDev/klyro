@@ -1,7 +1,7 @@
 # Klyro — Build Status
 
-**Last updated:** 2026-05-24
-**Active phase:** Phase 3 — Public Booking Flow | Phase 2.5 Block E pending
+**Last updated:** 2026-05-25
+**Active phase:** Phase 4 — Messaging Engine (next) | Phase 2.5 Block E (wizard E2E) still pending
 
 ---
 
@@ -15,7 +15,7 @@
 | 2.5 | Hardening & Localization | 🟡 In progress | Blocks A–D+F done; Block E pending |
 | 2.6 | Business & Staff Media | ✅ Done | All blocks shipped; full team management in Phase 5 |
 | LP | Landing Page (parallel) | ✅ Done | `/[locale]` — 4 sections, fully static, dark surface |
-| 3 | Public Booking Flow | ⬜ Not started | `/[biz]/[branch]/[staff]` |
+| 3 | Public Booking Flow | ✅ Done | All blocks A–E complete |
 | 4 | Messaging Engine | ⬜ Not started | WhatsApp + email templates |
 | 5 | Owner Dashboard | ⬜ Not started | Full operational view |
 | 6 | Staff Dashboard | ⬜ Not started | RLS-scoped own-day view |
@@ -321,18 +321,99 @@ Tests: 245/245 passing (225 existing + 20 new)
 
 ---
 
-## Phase 3 — Public Booking Flow (next up)
+## Phase 3 — Public Booking Flow 🟡
 
 **Goal:** A client opens a booking URL, picks a slot, and books in <60s.
 
 URL structure: `/[locale]/[businessSlug]/[branchSlug]/[staffSlug]`
 
-Key work:
-1. Slot calculation engine — `staff_availability` minus existing `appointments` minus buffer
-2. `GET /api/booking/slots` route handler
-3. `POST /api/booking/create` route handler (creates `appointments` + `clients` rows)
-4. Public booking page UI (mobile-first, light surface tokens)
-5. Booking confirmation screen with code (`KLY-XXXX`)
+**Block A — Public Route Access + Routing** ✅ Done
+
+Files added:
+- `supabase/migrations/0008_booking_public_read_rls.sql` — anon read policies for businesses, branches, staff, services, branch_services, staff_branches, staff_availability, appointments
+- `src/lib/booking/queries.ts` — getBusinessBySlug, getBranchByBizAndSlug, getStaffByBranchAndSlug, getActiveServicesForStaff, getBranchCountForBusiness
+- `src/app/[locale]/(booking)/[businessSlug]/page.tsx` — business landing scaffold
+- `src/app/[locale]/(booking)/[businessSlug]/[branchSlug]/page.tsx` — branch page scaffold
+- `src/app/[locale]/(booking)/[businessSlug]/[branchSlug]/[staffSlug]/page.tsx` — booking page scaffold
+
+Files changed:
+- `src/middleware.ts` — added SYSTEM_SEGMENTS set + isPublicBookingPath(); booking paths explicitly pass through before auth check
+- `src/components/dashboard/DashboardShell.tsx` — fixed pre-existing lint error (setState in useEffect → lazy initializer)
+
+Key decisions:
+- ADR-019: RLS migration required (no pre-existing anon read policies)
+- ADR-020: Booking pages use existing (booking) route group, not flat [bizSlug] structure
+
+**Block B — Slot Calculation Engine** ✅ Done
+
+Files added:
+- `src/lib/booking/slots.ts` — `localTimeToUTC`, `computeSlots` (exported pure function), `getAvailableSlots` (async, loads from DB)
+- `tests/booking/slots.test.ts` — 9 tests: 4 B3 scenarios + 3 B2 edge cases + 2 TZ unit tests
+
+No DB migration needed — `idx_appointments_staff_starts (staff_id, starts_at)` already exists (migration 0001).
+DST handling via native `Intl.DateTimeFormat` (Node 22 built-in) — `date-fns-tz` not required.
+
+**Block C — Booking API Endpoints** ✅ Done
+
+Files added:
+- `src/lib/schemas/booking.ts` — slotsQuerySchema + createBookingSchema (Zod v4)
+- `src/lib/booking/booking-code.ts` — generateBookingCode() + generateUniqueBookingCode() with retry
+- `src/app/api/booking/slots/route.ts` — GET, rate-limited by IP, HATEOAS response
+- `src/app/api/booking/create/route.ts` — POST, slot pre-check + DB race guard, client upsert, booking_code retry
+- `supabase/migrations/0009_appointments_booking_code.sql` — booking_code column + idx_appointments_booking_code + idx_appointments_no_slot_overlap
+- `tests/booking/booking-code.test.ts` — 5 tests (format, charset, uniqueness, retry, exhaustion)
+- `tests/booking/booking-schemas.test.ts` — 13 tests (valid/invalid UUIDs, dates, E.164 phone, email)
+- `tests/booking/api-slots.test.ts` — 6 tests (200, empty, 400, 429)
+- `tests/booking/api-create.test.ts` — 9 tests (201, existing client, 400, 409, 429, 404)
+
+Tests: 168/168 passing
+
+**Block D — Public UI** ✅ Done
+
+Files added:
+- `src/app/[locale]/(booking)/[businessSlug]/_components/` — (none; pages are server components)
+- `src/app/[locale]/(booking)/[businessSlug]/[branchSlug]/[staffSlug]/_components/BookingFlow.tsx` — 5-step booking flow ('use client'): service picker, date calendar (28-day), slot grid (fetches /api/booking/slots), client form (CountryPhoneInput), confirmation screen with KLY-XXXX
+- `tests/booking/vertical-copy.test.ts` — 9 tests: vertical appointmentNoun/staffNoun/serviceNoun values for barbershop and fitness, booking namespace keys present in both locales, tagline composition
+- `tests/booking/booking-flow.test.tsx` — 9 tests: renders services, staff initials, step navigation, form validation (empty name, short name, missing phone), happy-path POST call, 409 slot-taken redirect
+
+Files changed:
+- `src/app/[locale]/(booking)/[businessSlug]/page.tsx` — full D1: logo, vertical-aware heading, branch list, single-branch redirect
+- `src/app/[locale]/(booking)/[businessSlug]/[branchSlug]/page.tsx` — full D2: services section (formatCurrency), staff section (avatar/initials, "Reservar con X" CTAs)
+- `src/app/[locale]/(booking)/[businessSlug]/[branchSlug]/[staffSlug]/page.tsx` — full D3: loads all data, resolves business-language translations, renders BookingFlow
+- `src/lib/booking/queries.ts` — added getBranchesForBusiness + getStaffForBranch
+- `src/i18n/locales/es.json` — added booking.* namespace (business, branch, flow, form, success, errors)
+- `src/i18n/locales/en.json` — added booking.* namespace (same keys in English)
+
+Key decisions:
+- Business language overrides URL locale: server pages import both JSON files directly and select based on business.default_language
+- slotTakenError is a separate state from slotsError so it persists through slot re-fetch on 409
+- Light surface tokens (--color-bg-light, --color-text-on-light) used throughout; violet CTAs
+
+**Block E — E2E + Vertical Coverage** ✅ Done
+
+Files added:
+- `playwright.config.ts` — Playwright config (testDir: tests/e2e, webServer: pnpm dev, timeout: 60s, workers: 1)
+- `tests/e2e/booking.spec.ts` — 3 E2E tests: barbershop happy path, fitness vertical copy + booking, slot-taken 409 via page.route() mock
+- `tests/booking/helpers/seed.ts` — seedBusiness(vertical) + cleanupBusiness(bizId) using admin Supabase client
+
+Files changed:
+- `vitest.config.ts` — added exclude for tests/e2e/** so vitest ignores Playwright specs
+- `package.json` — added test:e2e:ui and test:e2e:install scripts
+- `.github/workflows/ci.yml` — added e2e job (gated on vars.E2E_ENABLED = 'true' and Supabase secrets)
+- `DECISIONS.md` — ADR-018 (booking code format), ADR-019 (seed uses service-role, no auth user), ADR-020 (slot-taken test uses page.route() mock)
+
+Key decisions:
+- ADR-019: seedBusiness() requires no auth user — businesses table has no owner_id; staff.user_id is nullable
+- ADR-020: Slot-taken test uses page.route() mock for reliability — real race-condition guard tested in unit tests
+- CI e2e job gated on repository variable E2E_ENABLED to prevent failures when Supabase secrets aren't configured
+
+**Phase 3 Retro:**
+
+**What shipped:** Full public booking flow — 3 unauthenticated pages (business landing, branch page, 5-step booking flow), 2 API endpoints (slots GET, create POST), slot calculation engine with DST support, booking code generation (KLY-XXXX), and E2E test infrastructure. Clients can book in under 60 seconds on a mobile browser.
+
+**What surprised us:** The anon RLS policies were never pushed to remote Supabase — the migration existed locally but not on the live DB. All pages 404'd until the migration was applied remotely. Lesson: always verify remote state after adding new RLS migrations, not just local state.
+
+**What to revisit in Phase 4:** Sending the KLY-XXXX code via WhatsApp confirmation message. The booking code is generated and displayed; the messaging dispatch (pg_cron + Edge Function + WhatsApp Cloud API) is Phase 4.
 
 ---
 

@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       appointments: {
         Row: {
+          booking_code: string | null
           branch_id: string
           business_id: string
           cancelled_at: string | null
@@ -30,6 +31,7 @@ export type Database = {
           status: string
         }
         Insert: {
+          booking_code?: string | null
           branch_id: string
           business_id: string
           cancelled_at?: string | null
@@ -44,6 +46,7 @@ export type Database = {
           status?: string
         }
         Update: {
+          booking_code?: string | null
           branch_id?: string
           business_id?: string
           cancelled_at?: string | null

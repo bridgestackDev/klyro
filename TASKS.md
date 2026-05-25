@@ -1,6 +1,6 @@
 # Klyro — Task List
 
-**Last updated:** 2026-05-22
+**Last updated:** 2026-05-25
 
 Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 
@@ -178,20 +178,42 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 
 ## Phase 3 — Public Booking Flow
 
-- [ ] Route: `/[businessSlug]` — business landing (name, branches list)
-- [ ] Route: `/[businessSlug]/[branchSlug]` — branch page (staff list, services)
-- [ ] Route: `/[businessSlug]/[branchSlug]/[staffSlug]` — booking page (calendar + slot picker)
-- [ ] Slot calculation engine: `staff_availability` minus existing `appointments` minus buffer
-- [ ] Booking form: client name + WhatsApp number + service picker + slot confirm
-- [ ] `POST /api/booking/create` route handler
-- [ ] `GET /api/booking/slots` route handler
-- [ ] Booking page copy adapts to vertical (`bookingPageHints` from registry)
-- [ ] Mobile-first layout (WCAG AA target)
-- [ ] Success screen with booking code (`KLY-XXXX`)
-- [ ] E2E test: full booking journey for barbershop vertical
-- [ ] E2E test: full booking journey for fitness vertical (vertical coverage check)
-- [ ] Typecheck + lint pass
-- [ ] Commit Phase 3
+### Block A — Public Route Access + Routing ✅
+- [x] A1: `src/middleware.ts` — SYSTEM_SEGMENTS + isPublicBookingPath(); booking paths always pass through
+- [x] A2: Scaffold pages: [businessSlug]/page.tsx, [businessSlug]/[branchSlug]/page.tsx, [businessSlug]/[branchSlug]/[staffSlug]/page.tsx
+- [x] A3: `src/lib/booking/queries.ts` — getBusinessBySlug, getBranchByBizAndSlug, getStaffByBranchAndSlug, getActiveServicesForStaff, getBranchCountForBusiness
+- [x] A4: 404 handling via notFound() in each scaffold page (uses existing [locale]/not-found.tsx)
+- [x] Migration 0008: anon read RLS policies for all booking-relevant tables
+
+### Block B — Slot Calculation Engine ✅
+- [x] B1: `src/lib/booking/slots.ts` — localTimeToUTC + computeSlots (pure) + getAvailableSlots (async DB)
+- [x] B2: Edge cases covered: null availability, service > window, full-window appointment, buffer overflow
+- [x] B3: `tests/booking/slots.test.ts` — 9 tests (4 B3 scenarios + 3 edge cases + 2 TZ unit tests)
+- [x] B4: `idx_appointments_staff_starts (staff_id, starts_at)` confirmed present — no new migration needed
+
+### Block C — Booking API Endpoints ✅
+- [x] C1: `src/lib/schemas/booking.ts` — slotsQuerySchema + createBookingSchema
+- [x] C2: `src/app/api/booking/slots/route.ts` — GET with rate limiting + logging
+- [x] C3: `src/app/api/booking/create/route.ts` — POST with slot race guard + client upsert
+- [x] C4: `src/lib/booking/booking-code.ts` — KLY-XXXX generator
+- [x] C5: Migration 0009 — `appointments.booking_code` column + idx_appointments_booking_code + idx_appointments_no_slot_overlap
+- [x] C6: Tests: happy path, phone validation, slot taken, collision retry, rate limit (168/168 green)
+
+### Block D — Public UI ✅
+- [x] D1: Business landing page — branches list, vertical-aware H1, auto-redirect for single-branch
+- [x] D2: Branch page — services + staff cards, "Reservar con X" CTAs
+- [x] D3: Booking page — 5-step flow (service → date → slot → form → confirmation)
+- [x] D4: Light surface tokens throughout
+- [x] D5: i18n keys under booking.* namespace (es + en)
+- [x] D6: Error/loading states with skeletons
+- [x] D7: Tests: vertical copy, booking form validation
+
+### Block E — E2E + Vertical Coverage ✅
+- [x] E1: `tests/e2e/booking.spec.ts` — barbershop happy path, fitness vertical copy + booking, slot-taken 409 (page.route() mock)
+- [x] E2: `tests/booking/helpers/seed.ts` — seedBusiness(vertical) + cleanupBusiness(bizId)
+- [x] E3: CI integration — `.github/workflows/ci.yml` e2e job (gated on vars.E2E_ENABLED)
+- [x] E4: `playwright.config.ts` + vitest exclude + package.json scripts
+- [x] E5: git tag phase-3-done (run after commit)
 
 ---
 

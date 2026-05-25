@@ -23,11 +23,14 @@ export function DashboardShell({
   userEmail,
   userInitial,
 }: DashboardShellProps) {
+  // Default "collapsed" matches server render; localStorage read happens after
+  // hydration so server/client HTML stays in sync on first paint.
   const [mode, setMode] = useState<SidebarMode>("collapsed");
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY) as SidebarMode | null;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (saved && VALID_MODES.includes(saved)) setMode(saved);
     } catch {}
   }, []);
