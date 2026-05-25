@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -40,8 +40,11 @@ export default async function BranchPage({ params }: Props) {
       ? await getActiveServicesForStaff(firstStaff.id, branch.id)
       : [];
 
-  // Business language overrides URL locale (locked decision)
+  // Redirect to canonical locale so URL always matches page language
   const lang = (business.default_language ?? "es").startsWith("en") ? "en" : "es";
+  if (locale !== lang) {
+    redirect(`/${lang}/${businessSlug}/${branchSlug}`);
+  }
   const m = lang === "en" ? enMessages.booking : esMessages.booking;
 
   const vertical = VERTICALS[business.vertical as VerticalKey];

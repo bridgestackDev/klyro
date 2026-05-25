@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import {
   getBusinessBySlug,
@@ -35,8 +35,11 @@ export default async function BookingPage({ params }: Props) {
 
   const services = await getActiveServicesForStaff(staff.id, branch.id);
 
-  // Business language overrides URL locale (locked decision)
+  // Redirect to the canonical locale URL so the URL always matches the page language
   const lang = (business.default_language ?? "es").startsWith("en") ? "en" : "es";
+  if (locale !== lang) {
+    redirect(`/${lang}/${businessSlug}/${branchSlug}/${staffSlug}`);
+  }
   const rawMessages = lang === "en" ? enMessages : esMessages;
 
   const messages: BookingMessages = {

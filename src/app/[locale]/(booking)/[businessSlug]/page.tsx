@@ -29,8 +29,11 @@ export default async function BusinessLandingPage({ params }: Props) {
     redirect(`/${locale}/${businessSlug}/${branches[0]!.slug}`);
   }
 
-  // Business language overrides URL locale (locked decision)
+  // Redirect to canonical locale so URL always matches page language
   const lang = (business.default_language ?? "es").startsWith("en") ? "en" : "es";
+  if (locale !== lang) {
+    redirect(`/${lang}/${businessSlug}`);
+  }
   const m = lang === "en" ? enMessages.booking : esMessages.booking;
 
   const vertical = VERTICALS[business.vertical as VerticalKey];
