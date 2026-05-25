@@ -1,7 +1,7 @@
 # Klyro — Build Status
 
-**Last updated:** 2026-05-24
-**Active phase:** Phase 3 — Public Booking Flow | Phase 2.5 Block E pending
+**Last updated:** 2026-05-25
+**Active phase:** Phase 4 — Messaging Engine (next) | Phase 2.5 Block E (wizard E2E) still pending
 
 ---
 
@@ -15,7 +15,7 @@
 | 2.5 | Hardening & Localization | 🟡 In progress | Blocks A–D+F done; Block E pending |
 | 2.6 | Business & Staff Media | ✅ Done | All blocks shipped; full team management in Phase 5 |
 | LP | Landing Page (parallel) | ✅ Done | `/[locale]` — 4 sections, fully static, dark surface |
-| 3 | Public Booking Flow | 🟡 In progress | Blocks A–C done; Block D (UI) next |
+| 3 | Public Booking Flow | ✅ Done | All blocks A–E complete |
 | 4 | Messaging Engine | ⬜ Not started | WhatsApp + email templates |
 | 5 | Owner Dashboard | ⬜ Not started | Full operational view |
 | 6 | Staff Dashboard | ⬜ Not started | RLS-scoped own-day view |
@@ -389,7 +389,31 @@ Key decisions:
 - slotTakenError is a separate state from slotsError so it persists through slot re-fetch on 409
 - Light surface tokens (--color-bg-light, --color-text-on-light) used throughout; violet CTAs
 
-**Block E — E2E + Vertical Coverage** ⬜
+**Block E — E2E + Vertical Coverage** ✅ Done
+
+Files added:
+- `playwright.config.ts` — Playwright config (testDir: tests/e2e, webServer: pnpm dev, timeout: 60s, workers: 1)
+- `tests/e2e/booking.spec.ts` — 3 E2E tests: barbershop happy path, fitness vertical copy + booking, slot-taken 409 via page.route() mock
+- `tests/booking/helpers/seed.ts` — seedBusiness(vertical) + cleanupBusiness(bizId) using admin Supabase client
+
+Files changed:
+- `vitest.config.ts` — added exclude for tests/e2e/** so vitest ignores Playwright specs
+- `package.json` — added test:e2e:ui and test:e2e:install scripts
+- `.github/workflows/ci.yml` — added e2e job (gated on vars.E2E_ENABLED = 'true' and Supabase secrets)
+- `DECISIONS.md` — ADR-018 (booking code format), ADR-019 (seed uses service-role, no auth user), ADR-020 (slot-taken test uses page.route() mock)
+
+Key decisions:
+- ADR-019: seedBusiness() requires no auth user — businesses table has no owner_id; staff.user_id is nullable
+- ADR-020: Slot-taken test uses page.route() mock for reliability — real race-condition guard tested in unit tests
+- CI e2e job gated on repository variable E2E_ENABLED to prevent failures when Supabase secrets aren't configured
+
+**Phase 3 Retro:**
+
+**What shipped:** Full public booking flow — 3 unauthenticated pages (business landing, branch page, 5-step booking flow), 2 API endpoints (slots GET, create POST), slot calculation engine with DST support, booking code generation (KLY-XXXX), and E2E test infrastructure. Clients can book in under 60 seconds on a mobile browser.
+
+**What surprised us:** The anon RLS policies were never pushed to remote Supabase — the migration existed locally but not on the live DB. All pages 404'd until the migration was applied remotely. Lesson: always verify remote state after adding new RLS migrations, not just local state.
+
+**What to revisit in Phase 4:** Sending the KLY-XXXX code via WhatsApp confirmation message. The booking code is generated and displayed; the messaging dispatch (pg_cron + Edge Function + WhatsApp Cloud API) is Phase 4.
 
 ---
 

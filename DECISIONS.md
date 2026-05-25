@@ -279,3 +279,37 @@ This file records non-obvious design decisions and their rationale. Never delete
 **How to apply:** Clearing `slotTakenError` is the responsibility of `handleSlotSelect` (user picks a new slot) and `handleDateSelect` (user picks a new date — implicitly via slot reset).
 
 ---
+
+## Phase 3 — Block C
+
+### ADR-018: Booking code format — KLY-XXXX with non-confusable alphabet
+
+**Decision:** Booking codes use the format `KLY-XXXX` where XXXX is 4 characters drawn from the alphabet `ABCDEFGHJKMNPQRSTUVWXYZ23456789` (32 chars). The excluded characters are `0`, `O`, `1`, `I`, `l` — visually confusable pairs.
+
+**Why:** Booking codes are shown to clients on screen and they may need to read them aloud to staff or type them manually. The KLY prefix provides instant brand recognition and makes it clear the code is a Klyro booking reference. The 4-char suffix gives 32^4 = 1,048,576 possible codes — sufficient for the MVP appointment volume. A DB unique index on `appointments.booking_code` enforces global uniqueness; the API route retries once on collision (collision probability at 10,000 bookings is < 0.01%).
+
+**How to apply:** Always generate via `generateBookingCode()` in `src/lib/booking/booking-code.ts`. Never accept booking codes from client requests — they are server-generated only.
+
+---
+
+## Phase 3 — Block E
+
+### ADR-019: E2E seed uses service-role client, no auth user required
+
+**Decision:** `seedBusiness()` inserts directly into `public.businesses`, `branches`, `staff`, etc. using the Supabase service-role client (bypasses RLS). It does not create `auth.users` entries because `businesses` has no `owner_id` column and `staff.user_id` is nullable.
+
+**Why:** The `public.users` table (separate from `auth.users`) is the owner lookup table used by RLS functions like `get_my_business_id()`. E2E tests exercise the public booking flow, which uses the anon client under RLS policies that only require `onboarding_completed = true` on businesses. No auth session is needed for the seeded data to be publicly readable. Creating real auth users for seeding would add latency and require cleanup of Supabase Auth state, which is an additional failure surface.
+
+**How to apply:** Use `seedBusiness(vertical)` in `beforeEach` / setup, `cleanupBusiness(bizId)` in `afterEach` / teardown. Never let seed data persist between test runs.
+
+---
+
+### ADR-020: Slot-taken E2E test uses page.route() mock, not a real DB race
+
+**Decision:** The "slot taken" E2E test (`booking.spec.ts` test 3) uses Playwright's `page.route()` to intercept `POST /api/booking/create` and return a mocked 409 response, rather than attempting to time a true DB race condition.
+
+**Why:** A true race condition test would require coordinating two concurrent requests — one to pre-book the slot and one to attempt the same slot via UI. The exact UTC timestamp of the slot is not known until after slot fetch, making programmatic pre-booking complex. Timing coordination is flaky by nature. The mocked 409 tests the exact same code path (the `if (res.status === 409)` branch in `BookingFlow.handleSubmit`) without relying on timing. The real race-condition guard is already covered by the unit tests in `api-create.test.ts`.
+
+**How to apply:** If the 409 handling logic in `BookingFlow` changes, update the test accordingly. The mock returns the same JSON shape as the real API.
+
+---

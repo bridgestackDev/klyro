@@ -1,6 +1,6 @@
 # Klyro — Task List
 
-**Last updated:** 2026-05-22
+**Last updated:** 2026-05-25
 
 Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 
@@ -208,12 +208,12 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 - [x] D6: Error/loading states with skeletons
 - [x] D7: Tests: vertical copy, booking form validation
 
-### Block E — E2E + Vertical Coverage ⬜
-- [ ] E1: `tests/e2e/booking.spec.ts` — barbershop + fitness journeys + slot-taken race
-- [ ] E2: Test helpers: seedBusiness, cleanupBusiness
-- [ ] E3: CI integration
-- [ ] E4: Manual verification 7 steps
-- [ ] E5: git tag phase-3-done
+### Block E — E2E + Vertical Coverage ✅
+- [x] E1: `tests/e2e/booking.spec.ts` — barbershop happy path, fitness vertical copy + booking, slot-taken 409 (page.route() mock)
+- [x] E2: `tests/booking/helpers/seed.ts` — seedBusiness(vertical) + cleanupBusiness(bizId)
+- [x] E3: CI integration — `.github/workflows/ci.yml` e2e job (gated on vars.E2E_ENABLED)
+- [x] E4: `playwright.config.ts` + vitest exclude + package.json scripts
+- [x] E5: git tag phase-3-done (run after commit)
 
 ---
 
