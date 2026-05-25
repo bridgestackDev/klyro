@@ -15,7 +15,7 @@
 | 2.5 | Hardening & Localization | 🟡 In progress | Blocks A–D+F done; Block E pending |
 | 2.6 | Business & Staff Media | ✅ Done | All blocks shipped; full team management in Phase 5 |
 | LP | Landing Page (parallel) | ✅ Done | `/[locale]` — 4 sections, fully static, dark surface |
-| 3 | Public Booking Flow | ⬜ Not started | `/[biz]/[branch]/[staff]` |
+| 3 | Public Booking Flow | 🟡 In progress | Blocks A–C done; Block D (UI) next |
 | 4 | Messaging Engine | ⬜ Not started | WhatsApp + email templates |
 | 5 | Owner Dashboard | ⬜ Not started | Full operational view |
 | 6 | Staff Dashboard | ⬜ Not started | RLS-scoped own-day view |
@@ -321,18 +321,56 @@ Tests: 245/245 passing (225 existing + 20 new)
 
 ---
 
-## Phase 3 — Public Booking Flow (next up)
+## Phase 3 — Public Booking Flow 🟡
 
 **Goal:** A client opens a booking URL, picks a slot, and books in <60s.
 
 URL structure: `/[locale]/[businessSlug]/[branchSlug]/[staffSlug]`
 
-Key work:
-1. Slot calculation engine — `staff_availability` minus existing `appointments` minus buffer
-2. `GET /api/booking/slots` route handler
-3. `POST /api/booking/create` route handler (creates `appointments` + `clients` rows)
-4. Public booking page UI (mobile-first, light surface tokens)
-5. Booking confirmation screen with code (`KLY-XXXX`)
+**Block A — Public Route Access + Routing** ✅ Done
+
+Files added:
+- `supabase/migrations/0008_booking_public_read_rls.sql` — anon read policies for businesses, branches, staff, services, branch_services, staff_branches, staff_availability, appointments
+- `src/lib/booking/queries.ts` — getBusinessBySlug, getBranchByBizAndSlug, getStaffByBranchAndSlug, getActiveServicesForStaff, getBranchCountForBusiness
+- `src/app/[locale]/(booking)/[businessSlug]/page.tsx` — business landing scaffold
+- `src/app/[locale]/(booking)/[businessSlug]/[branchSlug]/page.tsx` — branch page scaffold
+- `src/app/[locale]/(booking)/[businessSlug]/[branchSlug]/[staffSlug]/page.tsx` — booking page scaffold
+
+Files changed:
+- `src/middleware.ts` — added SYSTEM_SEGMENTS set + isPublicBookingPath(); booking paths explicitly pass through before auth check
+- `src/components/dashboard/DashboardShell.tsx` — fixed pre-existing lint error (setState in useEffect → lazy initializer)
+
+Key decisions:
+- ADR-019: RLS migration required (no pre-existing anon read policies)
+- ADR-020: Booking pages use existing (booking) route group, not flat [bizSlug] structure
+
+**Block B — Slot Calculation Engine** ✅ Done
+
+Files added:
+- `src/lib/booking/slots.ts` — `localTimeToUTC`, `computeSlots` (exported pure function), `getAvailableSlots` (async, loads from DB)
+- `tests/booking/slots.test.ts` — 9 tests: 4 B3 scenarios + 3 B2 edge cases + 2 TZ unit tests
+
+No DB migration needed — `idx_appointments_staff_starts (staff_id, starts_at)` already exists (migration 0001).
+DST handling via native `Intl.DateTimeFormat` (Node 22 built-in) — `date-fns-tz` not required.
+
+**Block C — Booking API Endpoints** ✅ Done
+
+Files added:
+- `src/lib/schemas/booking.ts` — slotsQuerySchema + createBookingSchema (Zod v4)
+- `src/lib/booking/booking-code.ts` — generateBookingCode() + generateUniqueBookingCode() with retry
+- `src/app/api/booking/slots/route.ts` — GET, rate-limited by IP, HATEOAS response
+- `src/app/api/booking/create/route.ts` — POST, slot pre-check + DB race guard, client upsert, booking_code retry
+- `supabase/migrations/0009_appointments_booking_code.sql` — booking_code column + idx_appointments_booking_code + idx_appointments_no_slot_overlap
+- `tests/booking/booking-code.test.ts` — 5 tests (format, charset, uniqueness, retry, exhaustion)
+- `tests/booking/booking-schemas.test.ts` — 13 tests (valid/invalid UUIDs, dates, E.164 phone, email)
+- `tests/booking/api-slots.test.ts` — 6 tests (200, empty, 400, 429)
+- `tests/booking/api-create.test.ts` — 9 tests (201, existing client, 400, 409, 429, 404)
+
+Tests: 168/168 passing
+
+**Block D — Public UI** ⬜
+
+**Block E — E2E + Vertical Coverage** ⬜
 
 ---
 
