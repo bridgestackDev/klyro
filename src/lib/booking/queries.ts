@@ -147,3 +147,40 @@ export async function getBranchCountForBusiness(
 
   return count ?? 0;
 }
+
+export async function getBranchesForBusiness(
+  bizId: string
+): Promise<BookingBranch[]> {
+  const supabase = getAnonClient();
+  const { data, error } = await supabase
+    .from("branches")
+    .select("id, name, slug, address, city, timezone, phone, business_id")
+    .eq("business_id", bizId)
+    .eq("is_active", true)
+    .order("name");
+
+  if (error || !data) return [];
+  return data;
+}
+
+export async function getStaffForBranch(
+  branchId: string
+): Promise<BookingStaff[]> {
+  const supabase = getAnonClient();
+  const { data, error } = await supabase
+    .from("staff")
+    .select(
+      "id, display_name, slug, avatar_url, business_id, staff_branches!inner(branch_id)"
+    )
+    .eq("is_active", true)
+    .eq("staff_branches.branch_id", branchId);
+
+  if (error || !data) return [];
+  return data.map((row) => ({
+    id: row.id,
+    display_name: row.display_name,
+    slug: row.slug,
+    avatar_url: row.avatar_url,
+    business_id: row.business_id,
+  }));
+}

@@ -257,3 +257,25 @@ This file records non-obvious design decisions and their rationale. Never delete
 **Trade-off:** Users cannot crop within the app — they must pre-crop externally. If user research in Phase 5/6 shows crop friction is a blocker, we revisit with a proper crop library at that point.
 
 ---
+
+## Phase 3 — Block D
+
+### ADR-016: Business language overrides URL locale via direct JSON import (no next-intl override)
+
+**Decision:** Booking server pages (`businessSlug/page.tsx`, `branchSlug/page.tsx`, `staffSlug/page.tsx`) import both `es.json` and `en.json` directly and select the correct locale object based on `business.default_language`, not the URL locale.
+
+**Why:** The locked Phase 3 requirement is "booking page renders in the BUSINESS's default_language, not the URL locale." next-intl's `getTranslations()` uses the URL locale by default. Overriding it with `getTranslations({ locale: businessLanguage })` requires the messages to be loaded from the request config, which only has the URL locale. Importing both JSON files statically is simpler, zero-overhead, and correctly implements the business-language contract. The `BookingMessages` type is defined in `BookingFlow.tsx` and the server component passes pre-resolved strings as props — no next-intl dependency in the client component.
+
+**Trade-off:** Both locale files are bundled in the server component. This is acceptable since each file is ~15 KB and server components are not part of the client bundle.
+
+---
+
+### ADR-017: slotTakenError is a separate state from slotsError
+
+**Decision:** `BookingFlow` maintains two distinct error states: `slotsError` (API errors — network failure, rate limit) and `slotTakenError` (409 response from create endpoint). The slot taken error is not cleared by `fetchSlots()`, allowing the user to see the message while slots refresh.
+
+**Why:** `fetchSlots()` sets `setSlotsError(null)` at the start (correct — clearing stale API errors before a new fetch). If 409 were to use `slotsError`, re-fetching slots to refresh availability would immediately clear the message before the user sees it. A separate state for the "slot was just taken" case survives the re-fetch cycle.
+
+**How to apply:** Clearing `slotTakenError` is the responsibility of `handleSlotSelect` (user picks a new slot) and `handleDateSelect` (user picks a new date — implicitly via slot reset).
+
+---

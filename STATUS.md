@@ -368,7 +368,26 @@ Files added:
 
 Tests: 168/168 passing
 
-**Block D — Public UI** ⬜
+**Block D — Public UI** ✅ Done
+
+Files added:
+- `src/app/[locale]/(booking)/[businessSlug]/_components/` — (none; pages are server components)
+- `src/app/[locale]/(booking)/[businessSlug]/[branchSlug]/[staffSlug]/_components/BookingFlow.tsx` — 5-step booking flow ('use client'): service picker, date calendar (28-day), slot grid (fetches /api/booking/slots), client form (CountryPhoneInput), confirmation screen with KLY-XXXX
+- `tests/booking/vertical-copy.test.ts` — 9 tests: vertical appointmentNoun/staffNoun/serviceNoun values for barbershop and fitness, booking namespace keys present in both locales, tagline composition
+- `tests/booking/booking-flow.test.tsx` — 9 tests: renders services, staff initials, step navigation, form validation (empty name, short name, missing phone), happy-path POST call, 409 slot-taken redirect
+
+Files changed:
+- `src/app/[locale]/(booking)/[businessSlug]/page.tsx` — full D1: logo, vertical-aware heading, branch list, single-branch redirect
+- `src/app/[locale]/(booking)/[businessSlug]/[branchSlug]/page.tsx` — full D2: services section (formatCurrency), staff section (avatar/initials, "Reservar con X" CTAs)
+- `src/app/[locale]/(booking)/[businessSlug]/[branchSlug]/[staffSlug]/page.tsx` — full D3: loads all data, resolves business-language translations, renders BookingFlow
+- `src/lib/booking/queries.ts` — added getBranchesForBusiness + getStaffForBranch
+- `src/i18n/locales/es.json` — added booking.* namespace (business, branch, flow, form, success, errors)
+- `src/i18n/locales/en.json` — added booking.* namespace (same keys in English)
+
+Key decisions:
+- Business language overrides URL locale: server pages import both JSON files directly and select based on business.default_language
+- slotTakenError is a separate state from slotsError so it persists through slot re-fetch on 409
+- Light surface tokens (--color-bg-light, --color-text-on-light) used throughout; violet CTAs
 
 **Block E — E2E + Vertical Coverage** ⬜
 

@@ -199,14 +199,14 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 - [x] C5: Migration 0009 — `appointments.booking_code` column + idx_appointments_booking_code + idx_appointments_no_slot_overlap
 - [x] C6: Tests: happy path, phone validation, slot taken, collision retry, rate limit (168/168 green)
 
-### Block D — Public UI ⬜
-- [ ] D1: Business landing page — branches list, vertical-aware H1, auto-redirect for single-branch
-- [ ] D2: Branch page — services + staff cards, "Reservar con X" CTAs
-- [ ] D3: Booking page — 5-step flow (service → date → slot → form → confirmation)
-- [ ] D4: Light surface tokens throughout
-- [ ] D5: i18n keys under booking.* namespace (es + en)
-- [ ] D6: Error/loading states with skeletons
-- [ ] D7: Tests: vertical copy, booking form validation
+### Block D — Public UI ✅
+- [x] D1: Business landing page — branches list, vertical-aware H1, auto-redirect for single-branch
+- [x] D2: Branch page — services + staff cards, "Reservar con X" CTAs
+- [x] D3: Booking page — 5-step flow (service → date → slot → form → confirmation)
+- [x] D4: Light surface tokens throughout
+- [x] D5: i18n keys under booking.* namespace (es + en)
+- [x] D6: Error/loading states with skeletons
+- [x] D7: Tests: vertical copy, booking form validation
 
 ### Block E — E2E + Vertical Coverage ⬜
 - [ ] E1: `tests/e2e/booking.spec.ts` — barbershop + fitness journeys + slot-taken race
