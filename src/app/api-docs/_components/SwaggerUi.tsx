@@ -1,11 +1,21 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import "swagger-ui-react/swagger-ui.css";
-
-const SwaggerUI = dynamic(() => import("swagger-ui-react"), { ssr: false });
+import { useEffect } from "react";
+import "swagger-ui-dist/swagger-ui.css";
 
 export function SwaggerUi() {
+  useEffect(() => {
+    import("swagger-ui-dist").then(({ SwaggerUIBundle }) => {
+      SwaggerUIBundle({
+        url: "/openapi.json",
+        dom_id: "#swagger-ui",
+        presets: [SwaggerUIBundle.presets.apis],
+        layout: "BaseLayout",
+        deepLinking: true,
+      });
+    });
+  }, []);
+
   return (
     <>
       <style>{`
@@ -34,7 +44,6 @@ export function SwaggerUi() {
         .swagger-ui .opblock-tag:hover {
           background: var(--color-bg-hover);
         }
-        /* Operation blocks */
         .swagger-ui .opblock {
           background: var(--color-bg-surface);
           border-color: var(--color-border);
@@ -58,7 +67,6 @@ export function SwaggerUi() {
           background: var(--color-bg-elevated);
           color: var(--color-text-primary);
         }
-        /* Buttons */
         .swagger-ui .btn.execute {
           background: var(--color-violet);
           border-color: var(--color-violet);
@@ -71,7 +79,6 @@ export function SwaggerUi() {
           border-color: var(--color-border);
           color: var(--color-text-secondary);
         }
-        /* Inputs */
         .swagger-ui input[type=text],
         .swagger-ui textarea,
         .swagger-ui select {
@@ -79,7 +86,6 @@ export function SwaggerUi() {
           border-color: var(--color-border);
           color: var(--color-text-primary);
         }
-        /* Tables */
         .swagger-ui table thead tr td,
         .swagger-ui table thead tr th {
           color: var(--color-text-secondary);
@@ -89,7 +95,6 @@ export function SwaggerUi() {
         .swagger-ui .parameter__type {
           color: var(--color-text-primary);
         }
-        /* Info section */
         .swagger-ui .info .title,
         .swagger-ui .info li,
         .swagger-ui .info p {
@@ -98,7 +103,6 @@ export function SwaggerUi() {
         .swagger-ui .info a {
           color: var(--color-violet-soft);
         }
-        /* Models */
         .swagger-ui section.models {
           border-color: var(--color-border);
         }
@@ -111,7 +115,6 @@ export function SwaggerUi() {
         .swagger-ui .model {
           color: var(--color-text-secondary);
         }
-        /* Responses */
         .swagger-ui .response-col_status {
           color: var(--color-success);
         }
@@ -119,7 +122,7 @@ export function SwaggerUi() {
           color: var(--color-text-secondary);
         }
       `}</style>
-      <SwaggerUI url="/openapi.json" />
+      <div id="swagger-ui" />
     </>
   );
 }
