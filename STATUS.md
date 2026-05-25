@@ -17,7 +17,7 @@
 | LP | Landing Page (parallel) | ✅ Done | `/[locale]` — 4 sections, fully static, dark surface |
 | 3 | Public Booking Flow | ✅ Done | All blocks A–E complete |
 | 3.5 | API Documentation | ✅ Done | Swagger UI at /api-docs + Postman setup |
-| 4 | Messaging Engine | ⬜ Not started | WhatsApp + email templates |
+| 4 | Messaging Engine | ⬜ Not started | Blocked on PHASE_4_PREFLIGHT.md — all 6 items open |
 | 5 | Owner Dashboard | ⬜ Not started | Full operational view |
 | 6 | Staff Dashboard | ⬜ Not started | RLS-scoped own-day view |
 | 7 | Polish & QA | ⬜ Not started | WCAG AA, Lighthouse >90, brand pass |
