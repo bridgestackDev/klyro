@@ -1,0 +1,33 @@
+{
+  "configPath": "/Users/jmendezrf/Developer/Klyro/klyro-app/klyro/openapi-gen.config.json",
+  "outputFile": "/Users/jmendezrf/Developer/Klyro/klyro-app/klyro/public/openapi.json",
+  "diagnostics": [],
+  "performance": {
+    "prepareTemplateMs": 0.040000000000020464,
+    "loadCustomFragmentsMs": 0.00037500000001955414,
+    "prepareDocumentMs": 0.04037500000004002,
+    "scanRouteFilesMs": 0.9744999999999777,
+    "deriveRoutePathMs": 0.15216699999996308,
+    "filterRouteCandidatesMs": 0.012999999999976808,
+    "sourcePrecheckMs": 0.6173319999999762,
+    "readRouteFilesMs": 0.27037500000000136,
+    "parseRouteFilesMs": 11.213999999999999,
+    "analyzeRouteFilesMs": 8.188165999999967,
+    "typescriptResponseInferenceMs": 0,
+    "processRouteFilesMs": 19.558582999999942,
+    "registerRouteMs": 24.61170900000002,
+    "getSchemaContentMs": 23.851832999999942,
+    "createRequestParamsMs": 0.14591600000005656,
+    "createRequestBodyMs": 0,
+    "processResponsesMs": 0.0867919999999458,
+    "createResponseSchemaMs": 0,
+    "buildOperationsMs": 24.631374999999935,
+    "sortAndMergePathsMs": 0.20362500000004502,
+    "buildPathsMs": 0.20362500000004502,
+    "defaultComponentsAndErrorsMs": 0.0030830000000037217,
+    "mergeSchemasMs": 0.19554099999999153,
+    "finalizeDocumentMs": 0.6411249999999882,
+    "totalMs": 47.296291,
+    "scanRoutesMs": 45.164457999999854
+  }
+}
