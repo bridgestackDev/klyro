@@ -1,7 +1,7 @@
 # Klyro — Build Status
 
 **Last updated:** 2026-05-25
-**Active phase:** Phase 3.5 — API Documentation (Block A done; Block B next)
+**Active phase:** Phase 3.5 — API Documentation ✅ Done — Phase 4 preflight next
 
 ---
 
@@ -16,7 +16,7 @@
 | 2.6 | Business & Staff Media | ✅ Done | All blocks shipped; full team management in Phase 5 |
 | LP | Landing Page (parallel) | ✅ Done | `/[locale]` — 4 sections, fully static, dark surface |
 | 3 | Public Booking Flow | ✅ Done | All blocks A–E complete |
-| 3.5 | API Documentation | 🟡 In progress | Block A done; Block B next |
+| 3.5 | API Documentation | ✅ Done | Swagger UI at /api-docs + Postman setup |
 | 4 | Messaging Engine | ⬜ Not started | WhatsApp + email templates |
 | 5 | Owner Dashboard | ⬜ Not started | Full operational view |
 | 6 | Staff Dashboard | ⬜ Not started | RLS-scoped own-day view |
@@ -441,7 +441,30 @@ Key decisions:
 - `includeOpenApiRoutes: true` restricts generation to `@openapi`-tagged handlers only
 - Config uses `openapi-gen.config.json` (preferred filename; `next.openapi.json` is deprecated)
 
-**Block B — Swagger UI + Postman Export** ⬜ Not started
+**Block B — Swagger UI + Postman Export** ✅ Done
+
+Files added:
+- `src/app/api-docs/page.tsx` — Server Component; calls `notFound()` in production; renders `<SwaggerUi />`
+- `src/app/api-docs/_components/SwaggerUi.tsx` — `'use client'`; dynamic import of swagger-ui-react (`ssr: false`); Klyro dark-surface styles in a scoped `<style>` block
+- `docs/postman.md` — Postman import instructions (local + production URL, environment setup, auth)
+- `docs/postman/klyro-local.postman_environment.json` — Local dev environment (`http://localhost:3000`)
+- `docs/postman/klyro-staging.postman_environment.json` — Staging environment (`https://klyro.app`)
+
+Files changed:
+- `src/middleware.ts` — `api-docs` added to SYSTEM_SEGMENTS (prevents booking-path misclassification for `/es/api-docs`)
+- `package.json` — `swagger-ui-react@5.32.6` added as runtime dep
+
+Key decisions:
+- ADR-023: Swagger UI dev-only — `notFound()` in production; `next/dynamic ssr: false` prevents browser-API crash on server render
+- Metadata `robots: { index: false }` prevents crawlers from indexing the page even if it somehow became accessible
+
+### Phase 3.5 Retro
+
+**What shipped:** OpenAPI 3.1 spec auto-generated from the two existing Zod schemas (Block A), plus an interactive Swagger UI at `http://localhost:3000/api-docs` with Klyro dark-surface branding (Block B). Postman users can import the spec in one click via `http://localhost:3000/openapi.json`. The spec is committed to git so reviewers see API changes in PRs.
+
+**What surprised us:** `next-openapi-gen` v1.4.x deprecated `next.openapi.json` in favour of `openapi-gen.config.json` — the README still references the old name. Used the preferred filename from the start to avoid deprecation warnings. Also: the tool requires JSDoc on the `export const GET/POST = ...` line, not on the inner `handler` function — the HOF wrapping pattern (`withRequestLogging`) required moving annotations to the export assignment.
+
+**What to revisit in Phase 5+:** Add `@response` annotations with explicit status codes and response shapes once the response schemas stabilize. Currently the spec has empty `responses: {}` objects — "Try it out" still works but response schemas aren't documented.
 
 ---
 

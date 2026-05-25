@@ -229,16 +229,16 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 - [x] A7: `DECISIONS.md` — ADR-022 (next-openapi-gen over next-swagger-doc)
 - [x] A8: `pnpm typecheck && pnpm lint && pnpm test` — 308/308 green
 
-### Block B — Swagger UI + Postman Export ⬜
-- [ ] B1: `pnpm add swagger-ui-react@latest`
-- [ ] B2: `src/app/api-docs/page.tsx` — `'use client'`, renders Swagger UI from `/openapi.json`, returns `notFound()` in production
-- [ ] B3: Add `/api-docs` to public-path set in `middleware.ts`
-- [ ] B4: Klyro brand styles in a scoped `<style>` block (dark surface, violet accent)
-- [ ] B5: `docs/postman.md` — Postman import instructions
-- [ ] B6: `docs/postman/klyro-local.postman_environment.json` + `klyro-staging.postman_environment.json`
-- [ ] B7: `DECISIONS.md` — ADR-023 (Swagger UI dev-only)
-- [ ] B8: `pnpm typecheck && pnpm lint && pnpm test` — all green
-- [ ] B9: `git tag phase-3.5-done`
+### Block B — Swagger UI + Postman Export ✅
+- [x] B1: `pnpm add swagger-ui-react@5.32.6` + `@types/swagger-ui-react`
+- [x] B2: `src/app/api-docs/page.tsx` — Server Component; calls `notFound()` in production
+- [x] B3: `src/app/api-docs/_components/SwaggerUi.tsx` — `'use client'`; `next/dynamic ssr:false`; Klyro dark-surface styles
+- [x] B4: `api-docs` added to `SYSTEM_SEGMENTS` in `middleware.ts`
+- [x] B5: `docs/postman.md` — Postman import instructions
+- [x] B6: `docs/postman/klyro-local.postman_environment.json` + `klyro-staging.postman_environment.json`
+- [x] B7: `DECISIONS.md` — ADR-023 (Swagger UI dev-only; ssr:false rationale)
+- [x] B8: `pnpm typecheck && pnpm lint && pnpm test` — all green
+- [x] B9: `git tag phase-3.5-done`
 
 ---
 
