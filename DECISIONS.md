@@ -313,3 +313,19 @@ This file records non-obvious design decisions and their rationale. Never delete
 **How to apply:** If the 409 handling logic in `BookingFlow` changes, update the test accordingly. The mock returns the same JSON shape as the real API.
 
 ---
+
+## Phase 3.5 — Block A
+
+### ADR-022: next-openapi-gen over next-swagger-doc — Zod-native schema introspection
+
+**Decision:** `next-openapi-gen@1.4.0` is the OpenAPI generator. `next-swagger-doc` was considered and rejected.
+
+**Why:** `next-openapi-gen` reads Zod schemas directly from the codebase (`schemaType: "zod"`, `schemaDir: "src/lib/schemas"`). It emits correct JSON Schema from Zod v4 validators — including `format: uuid`, `pattern`, `format: date-time`, `minLength`, and optional fields — without any manual schema duplication. `next-swagger-doc` expects JSDoc `@swagger` blocks with inline YAML/JSON, meaning every schema field would need to be written twice (once in Zod, once in JSDoc). Given that we already have `slotsQuerySchema` and `createBookingSchema` as the single source of validation truth, duplication is an anti-pattern that will diverge on the first schema change.
+
+**Config file:** `openapi-gen.config.json` at repo root (the tool's preferred filename; `next.openapi.json` is deprecated as of v1.4.x). `includeOpenApiRoutes: true` restricts generation to handlers explicitly tagged `@openapi`, preventing auto-inclusion of internal admin routes added in future phases.
+
+**JSDoc placement:** Annotations go on the `export const GET/POST = ...` line (not on the inner `handler` function), because the generator scans for JSDoc immediately preceding named HTTP-method exports.
+
+**How to apply:** Every new public route handler MUST include a JSDoc block with `@openapi`, `@tag`, and at minimum one of `@queryParams` / `@body`. Run `pnpm openapi:gen` and commit `public/openapi.json` in the same commit.
+
+---

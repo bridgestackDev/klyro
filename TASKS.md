@@ -1,6 +1,6 @@
 # Klyro — Task List
 
-**Last updated:** 2026-05-25
+**Last updated:** 2026-05-25 (Phase 3.5 Block A)
 
 Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 
@@ -214,6 +214,31 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 - [x] E3: CI integration — `.github/workflows/ci.yml` e2e job (gated on vars.E2E_ENABLED)
 - [x] E4: `playwright.config.ts` + vitest exclude + package.json scripts
 - [x] E5: git tag phase-3-done (run after commit)
+
+---
+
+## Phase 3.5 — API Documentation
+
+### Block A — OpenAPI Spec Generation ✅
+- [x] A1: Install `next-openapi-gen@latest` as devDependency
+- [x] A2: `openapi-gen.config.json` at repo root — points at `src/app/api`, `src/lib/schemas`, outputs `public/openapi.json`, `includeOpenApiRoutes: true`
+- [x] A3: `@openapi` JSDoc on `GET /api/booking/slots` — `@queryParams slotsQuerySchema`, `@tag Booking`
+- [x] A4: `@openapi` JSDoc on `POST /api/booking/create` — `@body createBookingSchema`, `@tag Booking`
+- [x] A5: `package.json` script `openapi:gen` → `openapi-gen generate`
+- [x] A6: Run generator — `public/openapi.json` produced with both endpoints and full Zod schema reflection
+- [x] A7: `DECISIONS.md` — ADR-022 (next-openapi-gen over next-swagger-doc)
+- [x] A8: `pnpm typecheck && pnpm lint && pnpm test` — 308/308 green
+
+### Block B — Swagger UI + Postman Export ⬜
+- [ ] B1: `pnpm add swagger-ui-react@latest`
+- [ ] B2: `src/app/api-docs/page.tsx` — `'use client'`, renders Swagger UI from `/openapi.json`, returns `notFound()` in production
+- [ ] B3: Add `/api-docs` to public-path set in `middleware.ts`
+- [ ] B4: Klyro brand styles in a scoped `<style>` block (dark surface, violet accent)
+- [ ] B5: `docs/postman.md` — Postman import instructions
+- [ ] B6: `docs/postman/klyro-local.postman_environment.json` + `klyro-staging.postman_environment.json`
+- [ ] B7: `DECISIONS.md` — ADR-023 (Swagger UI dev-only)
+- [ ] B8: `pnpm typecheck && pnpm lint && pnpm test` — all green
+- [ ] B9: `git tag phase-3.5-done`
 
 ---
 

@@ -185,6 +185,8 @@ Before marking any task as complete:
 
 All route handlers live under `src/app/api/` (locale-independent). Target: **Richardson Maturity Level 3** — Resources + HTTP verbs + HATEOAS links.
 
+**OpenAPI rule (Phase 3.5+):** Every new public route handler MUST include a `@openapi` JSDoc block on the exported HTTP method (`export const GET/POST = ...`), with at minimum `@tag`, and one of `@queryParams` / `@body` referencing the existing Zod schema. Run `pnpm openapi:gen` and commit `public/openapi.json` as part of the same commit.
+
 ### URLs
 - Plural nouns: `/api/bookings`, `/api/staff`, `/api/services`
 - Nested resources: `/api/branches/:id/staff`

@@ -16,7 +16,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:install": "playwright install --with-deps"
+    "test:e2e:install": "playwright install --with-deps",
+    "openapi:gen": "openapi-gen generate"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
@@ -75,6 +76,7 @@
     "eslint-config-next": "16.2.6",
     "eslint-config-prettier": "^10.1.8",
     "jsdom": "^29.1.1",
+    "next-openapi-gen": "^1.4.0",
     "prettier": "^3.8.3",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "supabase": "^2.98.2",
