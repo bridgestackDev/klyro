@@ -337,7 +337,8 @@
       "noSlots": "No hay horarios disponibles este día",
       "loadingSlots": "Cargando horarios...",
       "back": "Atrás",
-      "bookWith": "Reservar con {name}"
+      "bookWith": "Reservar con {name}",
+      "continueBtn": "Continuar"
     },
     "form": {
       "name": "Nombre completo",

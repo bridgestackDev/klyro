@@ -25,6 +25,7 @@ export interface BookingMessages {
     loadingSlots: string;
     back: string;
     bookWith: string;
+    continueBtn: string;
   };
   form: {
     name: string;
@@ -56,11 +57,15 @@ export interface BookingFlowProps {
   branchId: string;
   staffName: string;
   staffAvatar: string | null;
+  businessName: string;
+  businessLogo: string | null;
   businessCountry: CountryCode;
   businessTimezone: string;
   businessLanguage: string;
   services: BookingService[];
   messages: BookingMessages;
+  backHref?: string;
+  backLabel?: string;
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -81,10 +86,9 @@ function getNext28Days(): string[] {
 
 function buildCalendarWeeks(days: string[]): (string | null)[][] {
   if (days.length === 0) return [];
-  // Parse the first day at noon to avoid DST edge cases
   const first = new Date(`${days[0]}T12:00:00`);
-  const dow = first.getDay(); // 0=Sun … 6=Sat
-  const offset = dow === 0 ? 6 : dow - 1; // Monday-first calendar
+  const dow = first.getDay();
+  const offset = dow === 0 ? 6 : dow - 1;
   const grid: (string | null)[] = [
     ...Array<null>(offset).fill(null),
     ...days,
@@ -121,29 +125,55 @@ function effectivePrice(svc: BookingService): number {
   return svc.price_override ?? svc.price ?? 0;
 }
 
-// ── Sub-components ───────────────────────────────────────────────────────────
+function getTodayStr(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 
-function StepBar({ step, labels }: { step: Step; labels: string[] }) {
-  if (step === 5) return null;
+// ── Service icon SVG (scissors — universal for personal care/grooming) ──────
+
+function ScissorsIcon({ color = "#6b7280" }: { color?: string }) {
   return (
-    <div className="px-4 pt-4 pb-2 max-w-lg mx-auto">
-      <div className="flex gap-1.5 mb-2">
-        {labels.map((_, i) => (
-          <div
-            key={i}
-            className="h-1 flex-1 rounded-full transition-colors"
-            style={{
-              backgroundColor: step > i ? "var(--color-violet)" : "var(--border-on-light)",
-            }}
-          />
-        ))}
-      </div>
-      <p className="text-xs font-medium" style={{ color: "var(--color-text-on-light-muted)" }}>
-        {labels[step - 1]}
-      </p>
-    </div>
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="6" cy="6" r="3" />
+      <path d="M8.12 8.12 12 12" />
+      <path d="M20 4 8.12 15.88" />
+      <circle cx="6" cy="18" r="3" />
+      <path d="M14.8 14.8 20 20" />
+    </svg>
   );
 }
+
+function ClockIcon() {
+  return (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#94a3b8"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  );
+}
+
+// ── Sub-components ───────────────────────────────────────────────────────────
 
 function ServiceCard({
   svc,
@@ -162,26 +192,71 @@ function ServiceCard({
   return (
     <button
       onClick={() => onSelect(svc)}
-      className="w-full text-left rounded-xl border p-4 transition-all"
+      className="w-full text-left transition-all"
       style={{
-        backgroundColor: selected ? "var(--color-violet)" : "var(--color-bg-light-surface)",
-        borderColor: selected ? "var(--color-violet)" : "var(--border-on-light)",
-        color: selected ? "#fff" : "var(--color-text-on-light)",
+        background: selected ? "rgba(109,100,251,0.06)" : "#ffffff",
+        border: selected ? "1.5px solid var(--color-violet)" : "1px solid #E5E7EB",
+        borderRadius: "12px",
+        padding: "16px",
+        cursor: "pointer",
       }}
       aria-pressed={selected}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <div className="font-semibold text-sm">{svc.name}</div>
-          <div
-            className="text-xs mt-0.5"
-            style={{ color: selected ? "rgba(255,255,255,0.75)" : "var(--color-text-on-light-muted)" }}
+      <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+        {/* Service icon */}
+        <div
+          style={{
+            width: "44px",
+            height: "44px",
+            borderRadius: "11px",
+            background: selected ? "rgba(109,100,251,0.12)" : "#F3F4F6",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <ScissorsIcon color={selected ? "var(--color-violet)" : "#6b7280"} />
+        </div>
+
+        {/* Name + duration */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span
+            style={{
+              fontWeight: 600,
+              color: "#0A0E1A",
+              fontSize: "14px",
+              display: "block",
+            }}
           >
-            {svc.duration_minutes} min
+            {svc.name}
+          </span>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+              marginTop: "5px",
+            }}
+          >
+            <ClockIcon />
+            <span style={{ fontSize: "12px", color: "#94A3B8" }}>
+              {svc.duration_minutes} min
+            </span>
           </div>
         </div>
+
+        {/* Price */}
         {price > 0 && (
-          <span className="text-sm font-semibold flex-shrink-0">
+          <span
+            style={{
+              fontSize: "17px",
+              fontWeight: 700,
+              color: "var(--color-violet)",
+              letterSpacing: "-0.3px",
+              flexShrink: 0,
+            }}
+          >
             {formatCurrency(price, currency, countryLocale)}
           </span>
         )}
@@ -206,23 +281,44 @@ function DateCell({
   const dayAbbr = d.toLocaleDateString(lang === "en" ? "en-US" : "es", {
     weekday: "short",
   });
+  const isToday = dateStr === getTodayStr();
 
   return (
     <button
       onClick={() => onSelect(dateStr)}
-      className="flex flex-col items-center justify-center rounded-xl py-2 px-1 text-xs transition-all"
+      className="flex flex-col items-center justify-center rounded-xl transition-all"
       style={{
-        backgroundColor: selected ? "var(--color-violet)" : "transparent",
-        color: selected ? "#fff" : "var(--color-text-on-light)",
-        border: selected ? "1.5px solid var(--color-violet)" : "1.5px solid var(--border-on-light)",
+        minHeight: "54px",
+        padding: "6px 2px",
+        background: selected ? "var(--color-violet)" : isToday ? "rgba(109,100,251,0.07)" : "transparent",
+        border: selected
+          ? "1.5px solid var(--color-violet)"
+          : isToday
+          ? "1.5px solid rgba(109,100,251,0.35)"
+          : "1px solid #E5E7EB",
+        cursor: "pointer",
       }}
       aria-pressed={selected}
       aria-label={dateStr}
     >
-      <span style={{ color: selected ? "rgba(255,255,255,0.75)" : "var(--color-text-on-light-muted)" }}>
+      <span
+        style={{
+          fontSize: "10px",
+          color: selected ? "rgba(255,255,255,0.72)" : isToday ? "var(--color-violet)" : "#94A3B8",
+        }}
+      >
         {dayAbbr}
       </span>
-      <span className="font-semibold mt-0.5">{dayNum}</span>
+      <span
+        style={{
+          fontSize: "14px",
+          fontWeight: 600,
+          marginTop: "2px",
+          color: selected ? "#fff" : isToday ? "var(--color-violet)" : "#0A0E1A",
+        }}
+      >
+        {dayNum}
+      </span>
     </button>
   );
 }
@@ -244,12 +340,13 @@ function SlotButton({
   return (
     <button
       onClick={() => onSelect(slot)}
-      className="rounded-xl py-2 px-3 text-sm font-medium transition-all"
+      className="w-full rounded-xl text-sm font-medium transition-all"
       style={{
-        backgroundColor: selected ? "var(--color-violet)" : "var(--color-bg-light-surface)",
-        borderColor: selected ? "var(--color-violet)" : "var(--border-on-light)",
-        border: "1.5px solid",
-        color: selected ? "#fff" : "var(--color-text-on-light)",
+        padding: "12px 8px",
+        background: selected ? "var(--color-violet)" : "#ffffff",
+        border: selected ? "1.5px solid var(--color-violet)" : "1px solid #E5E7EB",
+        color: selected ? "#fff" : "#0A0E1A",
+        cursor: "pointer",
       }}
       aria-pressed={selected}
     >
@@ -277,20 +374,29 @@ function ConfirmationScreen({
 }) {
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center px-4 py-12"
-      style={{ backgroundColor: "var(--color-bg-light)" }}
+      className="min-h-screen flex flex-col items-center justify-center px-5 py-12"
+      style={{ background: "#FAFAFA" }}
     >
-      <div className="max-w-sm w-full text-center">
-        {/* Checkmark */}
+      <div style={{ maxWidth: "440px", width: "100%", textAlign: "center" }}>
+        {/* Animated checkmark */}
         <div
-          className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-6"
-          style={{ backgroundColor: "var(--color-success)", opacity: 0.9 }}
+          style={{
+            margin: "0 auto 24px",
+            width: "80px",
+            height: "80px",
+            borderRadius: "50%",
+            background: "var(--color-success)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            animation: "klyro-bounceIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both",
+          }}
         >
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none" aria-hidden="true">
             <path
-              d="M8 16.5L13.5 22 24 11"
+              d="M9 18.5L15 25 27 11.5"
               stroke="white"
-              strokeWidth="2.5"
+              strokeWidth="3"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
@@ -298,29 +404,59 @@ function ConfirmationScreen({
         </div>
 
         <h1
-          className="text-2xl font-bold mb-2"
-          style={{ color: "var(--color-text-on-light)" }}
+          style={{
+            fontSize: "24px",
+            fontWeight: 700,
+            color: "#0A0E1A",
+            letterSpacing: "-0.5px",
+            marginBottom: "8px",
+            animation: "klyro-fadeUp 0.4s ease both 0.3s",
+          }}
         >
           {messages.success.title}
         </h1>
-        <p className="text-sm mb-8" style={{ color: "var(--color-text-on-light-muted)" }}>
+        <p
+          style={{
+            fontSize: "14px",
+            color: "#475569",
+            marginBottom: "32px",
+            animation: "klyro-fadeUp 0.4s ease both 0.4s",
+          }}
+        >
           {messages.success.subtitle}
         </p>
 
         {/* Booking code */}
         <div
-          className="rounded-2xl border p-5 mb-5"
           style={{
-            backgroundColor: "var(--color-bg-light-surface)",
-            borderColor: "var(--border-on-light)",
+            background: "#ffffff",
+            border: "1px solid #E5E7EB",
+            borderRadius: "16px",
+            padding: "20px",
+            marginBottom: "12px",
+            animation: "klyro-fadeUp 0.4s ease both 0.45s",
           }}
         >
-          <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--color-text-on-light-muted)" }}>
+          <p
+            style={{
+              fontSize: "10px",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.8px",
+              color: "#94A3B8",
+              marginBottom: "8px",
+            }}
+          >
             {messages.success.codeLabel}
           </p>
           <p
-            className="text-3xl font-bold tracking-widest"
-            style={{ fontFamily: "var(--font-mono)", color: "var(--color-violet)" }}
+            style={{
+              fontSize: "32px",
+              fontWeight: 700,
+              letterSpacing: "6px",
+              fontFamily: "var(--font-mono)",
+              color: "var(--color-violet)",
+            }}
           >
             {bookingCode}
           </p>
@@ -328,48 +464,65 @@ function ConfirmationScreen({
 
         {/* Appointment details */}
         <div
-          className="rounded-2xl border p-4 mb-5 text-left text-sm"
           style={{
-            backgroundColor: "var(--color-bg-light-surface)",
-            borderColor: "var(--border-on-light)",
+            background: "#ffffff",
+            border: "1px solid #E5E7EB",
+            borderRadius: "16px",
+            padding: "16px",
+            marginBottom: "20px",
+            textAlign: "left",
+            animation: "klyro-fadeUp 0.4s ease both 0.5s",
           }}
         >
-          <div className="flex flex-col gap-1.5">
-            <div className="flex justify-between gap-2">
-              <span style={{ color: "var(--color-text-on-light-muted)" }}>
-                {lang === "en" ? "Service" : "Servicio"}
-              </span>
-              <span className="font-medium text-right" style={{ color: "var(--color-text-on-light)" }}>
-                {serviceName}
+          {[
+            { label: lang === "en" ? "Service" : "Servicio", value: serviceName },
+            { label: lang === "en" ? "With" : "Con", value: staffName },
+            {
+              label: lang === "en" ? "When" : "Cuándo",
+              value: formatAppointmentDateTime(startsAt, timezone, lang),
+            },
+          ].map(({ label, value }) => (
+            <div
+              key={label}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: "12px",
+                padding: "6px 0",
+                borderBottom: "1px solid #F3F4F6",
+              }}
+            >
+              <span style={{ fontSize: "13px", color: "#94A3B8", flexShrink: 0 }}>{label}</span>
+              <span
+                style={{
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  color: "#0A0E1A",
+                  textAlign: "right",
+                  textTransform: "capitalize",
+                }}
+              >
+                {value}
               </span>
             </div>
-            <div className="flex justify-between gap-2">
-              <span style={{ color: "var(--color-text-on-light-muted)" }}>
-                {lang === "en" ? "With" : "Con"}
-              </span>
-              <span className="font-medium text-right" style={{ color: "var(--color-text-on-light)" }}>
-                {staffName}
-              </span>
-            </div>
-            <div className="flex justify-between gap-2">
-              <span style={{ color: "var(--color-text-on-light-muted)" }}>
-                {lang === "en" ? "When" : "Cuándo"}
-              </span>
-              <span className="font-medium text-right capitalize" style={{ color: "var(--color-text-on-light)" }}>
-                {formatAppointmentDateTime(startsAt, timezone, lang)}
-              </span>
-            </div>
-          </div>
+          ))}
         </div>
 
-        <p className="text-xs mb-6" style={{ color: "var(--color-text-on-light-muted)" }}>
+        <p style={{ fontSize: "12px", color: "#94A3B8", marginBottom: "24px" }}>
           {messages.success.saveHint}
         </p>
 
         <button
           onClick={() => window.location.reload()}
-          className="text-sm font-medium underline"
-          style={{ color: "var(--color-violet)" }}
+          style={{
+            fontSize: "14px",
+            fontWeight: 600,
+            color: "var(--color-violet)",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            textDecoration: "underline",
+          }}
         >
           {messages.success.newBooking}
         </button>
@@ -385,11 +538,14 @@ export function BookingFlow({
   branchId,
   staffName,
   staffAvatar,
+  businessName,
+  businessLogo,
   businessCountry,
   businessTimezone,
   businessLanguage,
   services,
   messages,
+  backHref,
 }: BookingFlowProps) {
   const lang = businessLanguage.startsWith("en") ? "en" : "es";
   const countryLocale = COUNTRIES[businessCountry]?.locale ?? "es-HN";
@@ -427,6 +583,8 @@ export function BookingFlow({
     messages.flow.yourDetails,
   ];
 
+  const bookWithLabel = messages.flow.bookWith.replace("{name}", staffName);
+
   // ── Handlers ────────────────────────────────────────────────────────────
 
   const fetchSlots = useCallback(
@@ -452,19 +610,16 @@ export function BookingFlow({
     [staffId, branchId, messages.errors.networkError]
   );
 
+  // Steps no longer auto-advance — user explicitly taps "Continuar"
   const handleServiceSelect = useCallback((svc: BookingService) => {
     setSelectedService(svc);
-    setSelectedDate(null);
-    setSlots([]);
-    setSelectedSlot(null);
-    setStep(2);
   }, []);
 
   const handleDateSelect = useCallback(
     (date: string) => {
       setSelectedDate(date);
       setSelectedSlot(null);
-      setStep(3);
+      // Eagerly fetch slots so they're ready when user taps Continue
       if (selectedService) {
         void fetchSlots(date, selectedService.id);
       }
@@ -475,7 +630,6 @@ export function BookingFlow({
   const handleSlotSelect = useCallback((slot: Slot) => {
     setSelectedSlot(slot);
     setSlotTakenError(null);
-    setStep(4);
   }, []);
 
   const handleBack = () => {
@@ -533,7 +687,6 @@ export function BookingFlow({
       };
 
       if (res.status === 409) {
-        // Go back to slot picker; slotTakenError persists through re-fetch
         setSelectedSlot(null);
         setStep(3);
         setSlotTakenError(messages.errors.slotTaken);
@@ -560,7 +713,22 @@ export function BookingFlow({
     }
   };
 
-  // ── Step 5: Success ──────────────────────────────────────────────────────
+  // Continue button: advances step or submits on step 4
+  const handleContinue = () => {
+    if (step === 1 && selectedService) setStep(2);
+    else if (step === 2 && selectedDate) setStep(3);
+    else if (step === 3 && selectedSlot) setStep(4);
+    else if (step === 4) void handleSubmit();
+  };
+
+  // Whether the continue/submit button is enabled
+  const isContinueEnabled =
+    (step === 1 && !!selectedService) ||
+    (step === 2 && !!selectedDate) ||
+    (step === 3 && !!selectedSlot) ||
+    step === 4;
+
+  // ── Step 5: Confirmation ─────────────────────────────────────────────────
 
   if (step === 5 && bookingResult) {
     return (
@@ -576,67 +744,227 @@ export function BookingFlow({
     );
   }
 
-  // ── Steps 1–4 ────────────────────────────────────────────────────────────
+  // ── Calendar month label ─────────────────────────────────────────────────
 
-  const bookWithLabel = messages.flow.bookWith.replace("{name}", staffName);
+  const calendarMonthLabel =
+    days[0] !== undefined
+      ? new Date(`${days[0]}T12:00:00`).toLocaleDateString(
+          lang === "en" ? "en-US" : "es",
+          { month: "long", year: "numeric" }
+        )
+      : "";
+
+  // ── Step subtitles ───────────────────────────────────────────────────────
+
+  const stepSubtitles: Record<number, string> = {
+    1: lang === "en"
+      ? "Select the service you'd like to book"
+      : "Selecciona el servicio que deseas reservar",
+    2: lang === "en" ? "What day works for you?" : "¿Qué día prefieres?",
+    3: lang === "en" ? "What time works best?" : "¿A qué hora?",
+    4: lang === "en"
+      ? "Complete your details to confirm"
+      : "Completa tus datos para confirmar",
+  };
 
   return (
-    <div className="min-h-screen pb-20" style={{ backgroundColor: "var(--color-bg-light)" }}>
-      {/* Staff header */}
+    <div style={{ minHeight: "100vh", background: "#FAFAFA" }}>
+      {/* ── Sticky header ────────────────────────────────────────────────── */}
       <header
-        className="px-4 pt-5 pb-4 border-b sticky top-0 z-10"
         style={{
-          borderColor: "var(--border-on-light)",
-          backgroundColor: "var(--color-bg-light-surface)",
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
+          background: "#FFFFFF",
+          borderBottom: "1px solid #E5E7EB",
         }}
       >
-        <div className="max-w-lg mx-auto flex items-center gap-3">
-          {staffAvatar ? (
+        {/* Business info row */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "14px",
+            padding: "16px 20px",
+          }}
+        >
+          {/* Business logo / icon */}
+          {businessLogo ? (
             <Image
-              src={staffAvatar}
-              alt={staffName}
-              width={40}
-              height={40}
-              className="rounded-full object-cover flex-shrink-0"
+              src={businessLogo}
+              alt={businessName}
+              width={52}
+              height={52}
+              style={{ borderRadius: "14px", objectFit: "cover", flexShrink: 0 }}
             />
           ) : (
             <div
-              className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
-              style={{ backgroundColor: "var(--color-violet)" }}
+              style={{
+                width: "52px",
+                height: "52px",
+                borderRadius: "14px",
+                background: "rgba(109,100,251,0.1)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
             >
-              {getInitials(staffName)}
+              <ScissorsIcon color="var(--color-violet)" />
             </div>
           )}
-          <div className="min-w-0">
+
+          {/* Text column */}
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div
-              className="font-semibold text-sm"
-              style={{ color: "var(--color-text-on-light)" }}
+              style={{
+                fontWeight: 700,
+                fontSize: "16px",
+                color: "#0A0E1A",
+                letterSpacing: "-0.3px",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
             >
-              {bookWithLabel}
+              {businessName}
             </div>
-            {selectedService && (
-              <div
-                className="text-xs mt-0.5 truncate"
-                style={{ color: "var(--color-text-on-light-muted)" }}
-              >
-                {selectedService.name}
-                {selectedSlot
-                  ? ` · ${formatSlotTime(selectedSlot.startsAt, businessTimezone, lang)}`
-                  : null}
-              </div>
-            )}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                marginTop: "4px",
+              }}
+            >
+              {/* Staff mini-avatar */}
+              {staffAvatar ? (
+                <Image
+                  src={staffAvatar}
+                  alt={staffName}
+                  width={18}
+                  height={18}
+                  style={{ borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: "18px",
+                    height: "18px",
+                    borderRadius: "50%",
+                    background: "var(--color-violet)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "9px",
+                    fontWeight: 700,
+                    color: "#fff",
+                    flexShrink: 0,
+                  }}
+                >
+                  {getInitials(staffName)}
+                </div>
+              )}
+              <span style={{ fontSize: "12px", color: "#475569" }}>{bookWithLabel}</span>
+            </div>
           </div>
+
+          {/* Back to previous page (step 1 only) */}
+          {backHref && step === 1 && (
+            <a
+              href={backHref}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "32px",
+                height: "32px",
+                borderRadius: "8px",
+                color: "#475569",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                flexShrink: 0,
+              }}
+              aria-label={lang === "en" ? "Go back" : "Volver"}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M19 12H5M12 5l-7 7 7 7" />
+              </svg>
+            </a>
+          )}
+        </div>
+
+        {/* Progress bars */}
+        <div style={{ padding: "0 20px 12px" }}>
+          <div style={{ display: "flex", gap: "4px" }}>
+            {stepLabels.map((_, i) => (
+              <div
+                key={i}
+                style={{
+                  flex: 1,
+                  height: "3px",
+                  borderRadius: "2px",
+                  background: step > i ? "var(--color-violet)" : "#F3F4F6",
+                  transition: "background 0.3s",
+                }}
+              />
+            ))}
+          </div>
+          <p
+            style={{
+              fontSize: "10px",
+              color: "#94A3B8",
+              marginTop: "8px",
+              textAlign: "center",
+              letterSpacing: "0.8px",
+              textTransform: "uppercase",
+              fontWeight: 600,
+            }}
+          >
+            {lang === "en" ? "Step" : "Paso"} {step} {lang === "en" ? "of" : "de"} 4
+          </p>
         </div>
       </header>
 
-      {/* Progress bar */}
-      <StepBar step={step} labels={stepLabels} />
+      {/* ── Step content ─────────────────────────────────────────────────── */}
+      <main
+        style={{
+          maxWidth: "480px",
+          margin: "0 auto",
+          padding: "24px 20px 120px",
+        }}
+      >
+        {/* Step title + subtitle */}
+        <h2
+          style={{
+            fontWeight: 700,
+            fontSize: "22px",
+            color: "#0A0E1A",
+            marginBottom: "6px",
+            letterSpacing: "-0.5px",
+          }}
+        >
+          {stepLabels[step - 1]}
+        </h2>
+        <p
+          style={{
+            color: "#475569",
+            fontSize: "14px",
+            lineHeight: "1.5",
+            marginBottom: "20px",
+          }}
+        >
+          {stepSubtitles[step]}
+        </p>
 
-      {/* Step content */}
-      <main className="px-4 pt-2 pb-4 max-w-lg mx-auto">
-        {/* ── Step 1: Service ── */}
+        {/* ── Step 1: Service picker ─────────────────────────────────────── */}
         {step === 1 && (
-          <div className="flex flex-col gap-2" role="list" aria-label={messages.flow.pickService}>
+          <div
+            style={{ display: "grid", gap: "10px" }}
+            role="list"
+            aria-label={messages.flow.pickService}
+          >
             {services.map((svc) => (
               <div key={svc.id} role="listitem">
                 <ServiceCard
@@ -648,32 +976,44 @@ export function BookingFlow({
               </div>
             ))}
             {services.length === 0 && (
-              <p className="text-sm py-4 text-center" style={{ color: "var(--color-text-on-light-muted)" }}>
+              <p style={{ fontSize: "14px", color: "#94A3B8", textAlign: "center", padding: "32px 0" }}>
                 {lang === "en" ? "No services available" : "No hay servicios disponibles"}
               </p>
             )}
           </div>
         )}
 
-        {/* ── Step 2: Date ── */}
+        {/* ── Step 2: Date picker ────────────────────────────────────────── */}
         {step === 2 && (
           <div>
+            {calendarMonthLabel && (
+              <p
+                style={{
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  color: "#475569",
+                  marginBottom: "12px",
+                  textTransform: "capitalize",
+                }}
+              >
+                {calendarMonthLabel}
+              </p>
+            )}
             {/* Weekday headers */}
-            <div className="grid grid-cols-7 gap-1 mb-1">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "4px", marginBottom: "6px" }}>
               {weekdayHeaders.map((h) => (
                 <div
                   key={h}
-                  className="text-center text-xs py-1"
-                  style={{ color: "var(--color-text-on-light-muted)" }}
+                  style={{ textAlign: "center", fontSize: "11px", fontWeight: 600, color: "#94A3B8", padding: "4px 0" }}
                 >
                   {h}
                 </div>
               ))}
             </div>
             {/* Calendar weeks */}
-            <div className="flex flex-col gap-1">
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
               {weeks.map((week, wi) => (
-                <div key={wi} className="grid grid-cols-7 gap-1">
+                <div key={wi} style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "4px" }}>
                   {week.map((dateStr, di) =>
                     dateStr ? (
                       <DateCell
@@ -693,54 +1033,53 @@ export function BookingFlow({
           </div>
         )}
 
-        {/* ── Step 3: Slots ── */}
+        {/* ── Step 3: Slot picker ────────────────────────────────────────── */}
         {step === 3 && (
           <div>
             {slotTakenError && (
               <div
-                className="rounded-xl border p-3 text-sm mb-3"
                 role="alert"
                 style={{
-                  borderColor: "var(--color-warning)",
-                  color: "var(--color-warning)",
-                  backgroundColor: "rgba(245,158,11,0.08)",
+                  borderRadius: "10px",
+                  border: "1px solid #F59E0B",
+                  padding: "12px",
+                  fontSize: "13px",
+                  color: "#F59E0B",
+                  background: "rgba(245,158,11,0.08)",
+                  marginBottom: "16px",
                 }}
               >
                 {slotTakenError}
               </div>
             )}
             {slotsLoading && (
-              <p
-                className="text-sm text-center py-6"
-                style={{ color: "var(--color-text-on-light-muted)" }}
-              >
-                {messages.flow.loadingSlots}
-              </p>
+              <div style={{ textAlign: "center", padding: "48px 0" }}>
+                <p style={{ fontSize: "14px", color: "#94A3B8" }}>{messages.flow.loadingSlots}</p>
+              </div>
             )}
             {slotsError && (
               <div
-                className="rounded-xl border p-4 text-sm text-center"
                 style={{
-                  borderColor: "var(--color-danger)",
-                  color: "var(--color-danger)",
-                  backgroundColor: "rgba(239,68,68,0.05)",
+                  borderRadius: "10px",
+                  border: "1px solid #EF4444",
+                  padding: "16px",
+                  fontSize: "13px",
+                  textAlign: "center",
+                  color: "#EF4444",
+                  background: "rgba(239,68,68,0.05)",
                 }}
               >
                 {slotsError}
               </div>
             )}
             {!slotsLoading && !slotsError && slots.length === 0 && (
-              <p
-                className="text-sm text-center py-8"
-                style={{ color: "var(--color-text-on-light-muted)" }}
-              >
+              <p style={{ fontSize: "14px", color: "#94A3B8", textAlign: "center", padding: "48px 0" }}>
                 {messages.flow.noSlots}
               </p>
             )}
             {!slotsLoading && slots.length > 0 && (
               <div
-                className="grid gap-2"
-                style={{ gridTemplateColumns: "repeat(auto-fill, minmax(80px, 1fr))" }}
+                style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}
                 role="list"
                 aria-label={messages.flow.pickSlot}
               >
@@ -760,15 +1099,20 @@ export function BookingFlow({
           </div>
         )}
 
-        {/* ── Step 4: Form ── */}
+        {/* ── Step 4: Client form ────────────────────────────────────────── */}
         {step === 4 && (
-          <div className="flex flex-col gap-4">
+          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             {/* Name */}
             <div>
               <label
                 htmlFor="booking-name"
-                className="block text-sm font-medium mb-1"
-                style={{ color: "var(--color-text-on-light)" }}
+                style={{
+                  display: "block",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  color: "#0A0E1A",
+                  marginBottom: "8px",
+                }}
               >
                 {messages.form.name}
               </label>
@@ -779,11 +1123,18 @@ export function BookingFlow({
                 onChange={(e) => setClientName(e.target.value)}
                 placeholder={messages.form.namePlaceholder}
                 autoComplete="name"
-                className="w-full rounded-xl border px-3 py-2.5 text-sm outline-none focus:ring-2"
+                autoFocus
                 style={{
-                  borderColor: nameError ? "var(--color-danger)" : "var(--border-on-light)",
-                  backgroundColor: "var(--color-bg-light-surface)",
-                  color: "var(--color-text-on-light)",
+                  width: "100%",
+                  borderRadius: "10px",
+                  border: nameError ? "1.5px solid #EF4444" : "1px solid #E5E7EB",
+                  padding: "13px 14px",
+                  fontSize: "16px", // prevents iOS zoom
+                  color: "#0A0E1A",
+                  background: "#ffffff",
+                  outline: "none",
+                  boxSizing: "border-box",
+                  fontFamily: "inherit",
                 }}
                 aria-invalid={!!nameError}
                 aria-describedby={nameError ? "booking-name-error" : undefined}
@@ -791,9 +1142,8 @@ export function BookingFlow({
               {nameError && (
                 <p
                   id="booking-name-error"
-                  className="text-xs mt-1"
                   role="alert"
-                  style={{ color: "var(--color-danger)" }}
+                  style={{ fontSize: "12px", color: "#EF4444", marginTop: "6px" }}
                 >
                   {nameError}
                 </p>
@@ -804,8 +1154,13 @@ export function BookingFlow({
             <div>
               <label
                 htmlFor="booking-phone"
-                className="block text-sm font-medium mb-1"
-                style={{ color: "var(--color-text-on-light)" }}
+                style={{
+                  display: "block",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  color: "#0A0E1A",
+                  marginBottom: "8px",
+                }}
               >
                 {messages.form.whatsapp}
               </label>
@@ -822,43 +1177,99 @@ export function BookingFlow({
             {/* Submit error */}
             {submitError && (
               <div
-                className="rounded-xl border px-4 py-3 text-sm"
                 role="alert"
                 style={{
-                  borderColor: "var(--color-danger)",
-                  color: "var(--color-danger)",
-                  backgroundColor: "rgba(239,68,68,0.05)",
+                  borderRadius: "10px",
+                  border: "1px solid #EF4444",
+                  padding: "13px 16px",
+                  fontSize: "13px",
+                  color: "#EF4444",
+                  background: "rgba(239,68,68,0.05)",
                 }}
               >
                 {submitError}
               </div>
             )}
-
-            {/* Submit button */}
-            <button
-              onClick={() => void handleSubmit()}
-              disabled={submitting}
-              className="w-full rounded-xl py-3 text-sm font-semibold text-white transition-opacity disabled:opacity-50"
-              style={{ backgroundColor: "var(--color-violet)" }}
-            >
-              {submitting ? messages.form.submitting : messages.form.submit}
-            </button>
           </div>
         )}
       </main>
 
-      {/* Back button */}
-      {step > 1 && (
-        <div className="px-4 pt-2 max-w-lg mx-auto">
+      {/* ── Fixed bottom bar ─────────────────────────────────────────────── */}
+      <div
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: "#FFFFFF",
+          borderTop: "1px solid #E5E7EB",
+          padding: "14px 20px",
+          boxShadow: "0 -4px 12px rgba(0,0,0,0.05)",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "480px",
+            margin: "0 auto",
+            display: "flex",
+            gap: "8px",
+          }}
+        >
+          {/* Back button (steps 2–4) */}
+          {step > 1 && step < 5 && (
+            <button
+              onClick={handleBack}
+              style={{
+                background: "#F3F4F6",
+                border: "none",
+                borderRadius: "10px",
+                padding: "13px 20px",
+                fontSize: "14px",
+                fontWeight: 600,
+                color: "#475569",
+                cursor: "pointer",
+                fontFamily: "inherit",
+                flexShrink: 0,
+              }}
+            >
+              ← {messages.flow.back}
+            </button>
+          )}
+
+          {/* Continue / Submit button */}
           <button
-            onClick={handleBack}
-            className="text-sm"
-            style={{ color: "var(--color-text-on-light-muted)" }}
+            onClick={handleContinue}
+            disabled={!isContinueEnabled || submitting}
+            style={{
+              flex: 1,
+              background: isContinueEnabled && !submitting ? "var(--color-violet)" : "#F3F4F6",
+              border: "none",
+              borderRadius: "10px",
+              padding: "13px 24px",
+              fontSize: "14px",
+              fontWeight: 600,
+              color: isContinueEnabled && !submitting ? "#ffffff" : "#94A3B8",
+              cursor: isContinueEnabled && !submitting ? "pointer" : "not-allowed",
+              transition: "all 0.15s",
+              fontFamily: "inherit",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+            }}
           >
-            ← {messages.flow.back}
+            {step === 4
+              ? (submitting ? messages.form.submitting : messages.form.submit)
+              : messages.flow.continueBtn}
+            {!submitting && (
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            )}
           </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }

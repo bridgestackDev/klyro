@@ -53,6 +53,7 @@ const messages: BookingFlowProps["messages"] = {
     loadingSlots: "Loading...",
     back: "Back",
     bookWith: "Book with {name}",
+    continueBtn: "Continue",
   },
   form: {
     name: "Full name",
@@ -103,6 +104,8 @@ const defaultProps: BookingFlowProps = {
   branchId: "branch-uuid",
   staffName: "Carlos",
   staffAvatar: null,
+  businessName: "Marcus Barbershop",
+  businessLogo: null,
   businessCountry: "HN",
   businessTimezone: "America/Tegucigalpa",
   businessLanguage: "es",
@@ -141,21 +144,24 @@ describe("BookingFlow", () => {
     expect(screen.getByText("C")).toBeInTheDocument();
   });
 
-  it("advances to step 2 when a service is selected", () => {
+  it("advances to step 2 when a service is selected and Continue is tapped", () => {
     renderFlow();
     fireEvent.click(screen.getByText("Haircut"));
+    fireEvent.click(screen.getByText("Continue"));
     expect(screen.getByText("Pick a date")).toBeInTheDocument();
   });
 
   it("shows a back button on step 2", () => {
     renderFlow();
     fireEvent.click(screen.getByText("Haircut"));
+    fireEvent.click(screen.getByText("Continue"));
     expect(screen.getByText("← Back")).toBeInTheDocument();
   });
 
   it("goes back to step 1 when back is clicked on step 2", () => {
     renderFlow();
     fireEvent.click(screen.getByText("Haircut"));
+    fireEvent.click(screen.getByText("Continue"));
     fireEvent.click(screen.getByText("← Back"));
     expect(screen.getByText("Pick a service")).toBeInTheDocument();
   });
@@ -179,25 +185,27 @@ describe("BookingFlow", () => {
 
     renderFlow();
 
-    // Step 1: pick service
+    // Step 1: pick service → Continue to step 2
     await user.click(screen.getByText("Haircut"));
+    await user.click(screen.getByText("Continue"));
 
-    // Step 2: pick date — click any date button (aria-label is YYYY-MM-DD)
+    // Step 2: pick date → Continue to step 3
     const dayBtns = screen.getAllByRole("button", { name: /^\d{4}-\d{2}-\d{2}$/ });
     expect(dayBtns.length).toBeGreaterThan(0);
     if (!dayBtns[0]) throw new Error("No day button found");
     await user.click(dayBtns[0]);
+    await user.click(screen.getByText("Continue"));
 
-    // Step 3: wait for slot and click it
+    // Step 3: wait for slot and click it → Continue to step 4
     await waitFor(() =>
       expect(screen.queryByText("Loading...")).not.toBeInTheDocument()
     );
     const slotBtns = screen.getAllByRole("button");
-    // The slot button label is a formatted time — contains ":"
     const slotBtn = slotBtns.find((b) => (b.textContent ?? "").includes(":"));
     expect(slotBtn).toBeTruthy();
     if (!slotBtn) throw new Error("No slot button found");
     await user.click(slotBtn);
+    await user.click(screen.getByText("Continue"));
 
     // Step 4: form — try to submit without name
     const submitBtn = screen.getByText("Confirm booking");
@@ -218,13 +226,19 @@ describe("BookingFlow", () => {
     }));
 
     renderFlow();
-    await user.click(screen.getByText("Haircut"));
 
+    // Step 1 → Step 2
+    await user.click(screen.getByText("Haircut"));
+    await user.click(screen.getByText("Continue"));
+
+    // Step 2 → Step 3
     const dayBtns = screen.getAllByRole("button", { name: /^\d{4}-\d{2}-\d{2}$/ });
     expect(dayBtns.length).toBeGreaterThan(0);
     if (!dayBtns[0]) throw new Error("No day button found");
     await user.click(dayBtns[0]);
+    await user.click(screen.getByText("Continue"));
 
+    // Step 3 → Step 4
     await waitFor(() =>
       expect(screen.queryByText("Loading...")).not.toBeInTheDocument()
     );
@@ -232,6 +246,7 @@ describe("BookingFlow", () => {
     const slotBtn = slotBtns.find((b) => (b.textContent ?? "").includes(":"));
     if (!slotBtn) throw new Error("No slot button found");
     await user.click(slotBtn);
+    await user.click(screen.getByText("Continue"));
 
     // Enter a 1-char name
     const nameInput = screen.getByLabelText("Full name");
@@ -253,13 +268,19 @@ describe("BookingFlow", () => {
     }));
 
     renderFlow();
-    await user.click(screen.getByText("Haircut"));
 
+    // Step 1 → Step 2
+    await user.click(screen.getByText("Haircut"));
+    await user.click(screen.getByText("Continue"));
+
+    // Step 2 → Step 3
     const dayBtns = screen.getAllByRole("button", { name: /^\d{4}-\d{2}-\d{2}$/ });
     expect(dayBtns.length).toBeGreaterThan(0);
     if (!dayBtns[0]) throw new Error("No day button found");
     await user.click(dayBtns[0]);
+    await user.click(screen.getByText("Continue"));
 
+    // Step 3 → Step 4
     await waitFor(() =>
       expect(screen.queryByText("Loading...")).not.toBeInTheDocument()
     );
@@ -267,6 +288,7 @@ describe("BookingFlow", () => {
     const slotBtn = slotBtns.find((b) => (b.textContent ?? "").includes(":"));
     if (!slotBtn) throw new Error("No slot button found");
     await user.click(slotBtn);
+    await user.click(screen.getByText("Continue"));
 
     // Enter valid name but no phone
     await user.type(screen.getByLabelText("Full name"), "Ana García");
@@ -300,13 +322,19 @@ describe("BookingFlow", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     renderFlow();
-    await user.click(screen.getByText("Haircut"));
 
+    // Step 1 → Step 2
+    await user.click(screen.getByText("Haircut"));
+    await user.click(screen.getByText("Continue"));
+
+    // Step 2 → Step 3
     const dayBtns = screen.getAllByRole("button", { name: /^\d{4}-\d{2}-\d{2}$/ });
     expect(dayBtns.length).toBeGreaterThan(0);
     if (!dayBtns[0]) throw new Error("No day button found");
     await user.click(dayBtns[0]);
+    await user.click(screen.getByText("Continue"));
 
+    // Step 3 → Step 4
     await waitFor(() =>
       expect(screen.queryByText("Loading...")).not.toBeInTheDocument()
     );
@@ -314,6 +342,7 @@ describe("BookingFlow", () => {
     const slotBtn = slotBtns.find((b) => (b.textContent ?? "").includes(":"));
     if (!slotBtn) throw new Error("No slot button found");
     await user.click(slotBtn);
+    await user.click(screen.getByText("Continue"));
 
     await user.type(screen.getByLabelText("Full name"), "Ana García");
 
@@ -360,13 +389,19 @@ describe("BookingFlow", () => {
     }));
 
     renderFlow();
-    await user.click(screen.getByText("Haircut"));
 
+    // Step 1 → Step 2
+    await user.click(screen.getByText("Haircut"));
+    await user.click(screen.getByText("Continue"));
+
+    // Step 2 → Step 3
     const dayBtns = screen.getAllByRole("button", { name: /^\d{4}-\d{2}-\d{2}$/ });
     expect(dayBtns.length).toBeGreaterThan(0);
     if (!dayBtns[0]) throw new Error("No day button found");
     await user.click(dayBtns[0]);
+    await user.click(screen.getByText("Continue"));
 
+    // Step 3 → Step 4
     await waitFor(() =>
       expect(screen.queryByText("Loading...")).not.toBeInTheDocument()
     );
@@ -374,6 +409,7 @@ describe("BookingFlow", () => {
     const slotBtn = slotBtns.find((b) => (b.textContent ?? "").includes(":"));
     if (!slotBtn) throw new Error("No slot button found");
     await user.click(slotBtn);
+    await user.click(screen.getByText("Continue"));
 
     await user.type(screen.getByLabelText("Full name"), "Test User");
     const phoneInput = screen.getByTestId("phone-input");

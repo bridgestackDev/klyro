@@ -1,5 +1,4 @@
 import { notFound, redirect } from "next/navigation";
-import Link from "next/link";
 import {
   getBusinessBySlug,
   getBranchByBizAndSlug,
@@ -51,37 +50,20 @@ export default async function BookingPage({ params }: Props) {
   };
 
   return (
-    <div style={{ backgroundColor: "var(--color-bg-light)", minHeight: "100vh" }}>
-      {/* Back nav above the booking flow */}
-      <div
-        className="px-4 pt-3 pb-1 border-b"
-        style={{
-          borderColor: "var(--border-on-light)",
-          backgroundColor: "var(--color-bg-light-surface)",
-        }}
-      >
-        <div className="max-w-lg mx-auto">
-          <Link
-            href={`/${locale}/${businessSlug}/${branchSlug}`}
-            className="text-xs"
-            style={{ color: "var(--color-text-on-light-muted)" }}
-          >
-            ← {branch.name}
-          </Link>
-        </div>
-      </div>
-
-      <BookingFlow
-        staffId={staff.id}
-        branchId={branch.id}
-        staffName={staff.display_name}
-        staffAvatar={staff.avatar_url ?? null}
-        businessCountry={(business.country as CountryCode) ?? "HN"}
-        businessTimezone={branch.timezone ?? "America/Tegucigalpa"}
-        businessLanguage={business.default_language ?? "es"}
-        services={services}
-        messages={messages}
-      />
-    </div>
+    <BookingFlow
+      staffId={staff.id}
+      branchId={branch.id}
+      staffName={staff.display_name}
+      staffAvatar={staff.avatar_url ?? null}
+      businessName={business.name}
+      businessLogo={business.logo_url ?? null}
+      businessCountry={(business.country as CountryCode) ?? "HN"}
+      businessTimezone={branch.timezone ?? "America/Tegucigalpa"}
+      businessLanguage={business.default_language ?? "es"}
+      services={services}
+      messages={messages}
+      backHref={`/${locale}/${businessSlug}/${branchSlug}`}
+      backLabel={branch.name}
+    />
   );
 }

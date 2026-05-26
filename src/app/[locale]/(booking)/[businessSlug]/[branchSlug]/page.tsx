@@ -32,15 +32,12 @@ export default async function BranchPage({ params }: Props) {
 
   const staff = await getStaffForBranch(branch.id);
 
-  // Load services for each staff member (same set per branch for MVP)
-  // We use the first staff member's services as the branch service list
   const firstStaff = staff[0];
   const services =
     firstStaff !== undefined
       ? await getActiveServicesForStaff(firstStaff.id, branch.id)
       : [];
 
-  // Redirect to canonical locale so URL always matches page language
   const lang = (business.default_language ?? "es").startsWith("en") ? "en" : "es";
   if (locale !== lang) {
     redirect(`/${lang}/${businessSlug}/${branchSlug}`);
@@ -48,26 +45,43 @@ export default async function BranchPage({ params }: Props) {
   const m = lang === "en" ? enMessages.booking : esMessages.booking;
 
   const vertical = VERTICALS[business.vertical as VerticalKey];
-  const staffNoun = vertical?.bookingPageHints.staffNoun[lang] ?? (lang === "en" ? "professional" : "profesional");
+  const staffNoun =
+    vertical?.bookingPageHints.staffNoun[lang] ??
+    (lang === "en" ? "professional" : "profesional");
 
   const countryCode = (business.country as CountryCode) ?? "HN";
   const countryLocale = COUNTRIES[countryCode]?.locale ?? "es-HN";
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "var(--color-bg-light)" }}>
-      {/* Header */}
+      {/* ── Header ───────────────────────────────────────────────────────── */}
       <header
-        className="px-4 py-4 border-b sticky top-0 z-10"
-        style={{ borderColor: "var(--border-on-light)", backgroundColor: "var(--color-bg-light-surface)" }}
+        className="sticky top-0 z-10 border-b"
+        style={{
+          borderColor: "var(--border-on-light)",
+          backgroundColor: "var(--color-bg-light-surface)",
+        }}
       >
-        <div className="max-w-lg mx-auto">
+        <div className="px-4 py-3 max-w-lg mx-auto">
+          {/* Back link */}
           <Link
             href={`/${locale}/${businessSlug}`}
-            className="text-xs mb-1 block"
-            style={{ color: "var(--color-text-on-light-muted)" }}
+            className="text-sm font-medium inline-flex items-center gap-1 mb-1"
+            style={{ color: "var(--color-violet)" }}
           >
-            ← {business.name}
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path
+                d="M9 11L5 7l4-4"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            {business.name}
           </Link>
+
+          {/* Branch name row */}
           <div className="flex items-center gap-2">
             {business.logo_url ? (
               <Image
@@ -77,9 +91,7 @@ export default async function BranchPage({ params }: Props) {
                 height={28}
                 className="rounded-lg object-cover flex-shrink-0"
               />
-            ) : (
-              <Logo variant="mark" theme="light" className="flex-shrink-0 scale-75 origin-left" />
-            )}
+            ) : null}
             <h1
               className="text-base font-bold truncate"
               style={{ color: "var(--color-text-on-light)" }}
@@ -87,38 +99,48 @@ export default async function BranchPage({ params }: Props) {
               {branch.name}
             </h1>
           </div>
-          {(branch.address || branch.city) && (
-            <p className="text-xs mt-0.5" style={{ color: "var(--color-text-on-light-muted)" }}>
+
+          {(branch.address ?? branch.city) && (
+            <p
+              className="text-xs mt-0.5"
+              style={{ color: "var(--color-text-on-light-muted)" }}
+            >
               {[branch.address, branch.city].filter(Boolean).join(", ")}
             </p>
           )}
         </div>
       </header>
 
-      <main className="px-4 py-6 max-w-lg mx-auto space-y-8">
-        {/* Services section */}
+      <main className="px-4 py-6 pb-20 max-w-lg mx-auto space-y-8">
+        {/* ── Services ──────────────────────────────────────────────────── */}
         {services.length > 0 && (
           <section>
             <h2
-              className="text-xs font-semibold uppercase tracking-wider mb-3"
+              className="text-xs font-bold uppercase tracking-wider mb-3"
               style={{ color: "var(--color-text-on-light-muted)" }}
             >
               {m.branch.servicesLabel}
             </h2>
-            <div className="flex flex-col gap-2">
-              {services.map((svc) => {
+            <div
+              className="rounded-2xl border overflow-hidden"
+              style={{
+                backgroundColor: "var(--color-bg-light-surface)",
+                borderColor: "var(--border-on-light)",
+              }}
+            >
+              {services.map((svc, idx) => {
                 const price = svc.price_override ?? svc.price ?? 0;
                 const currency = svc.currency ?? "HNL";
                 return (
                   <div
                     key={svc.id}
-                    className="rounded-xl border px-4 py-3 flex items-center justify-between"
+                    className="px-4 py-3.5 flex items-center justify-between"
                     style={{
-                      backgroundColor: "var(--color-bg-light-surface)",
-                      borderColor: "var(--border-on-light)",
+                      borderTop:
+                        idx > 0 ? "1px solid var(--border-on-light)" : undefined,
                     }}
                   >
-                    <div>
+                    <div className="min-w-0">
                       <div
                         className="font-medium text-sm"
                         style={{ color: "var(--color-text-on-light)" }}
@@ -129,7 +151,7 @@ export default async function BranchPage({ params }: Props) {
                         className="text-xs mt-0.5"
                         style={{ color: "var(--color-text-on-light-muted)" }}
                       >
-                        {svc.duration_minutes} {lang === "en" ? "min" : "min"}
+                        {svc.duration_minutes} min
                       </div>
                     </div>
                     {price > 0 && (
@@ -147,17 +169,22 @@ export default async function BranchPage({ params }: Props) {
           </section>
         )}
 
-        {/* Staff section */}
+        {/* ── Staff ─────────────────────────────────────────────────────── */}
         <section>
           <h2
-            className="text-xs font-semibold uppercase tracking-wider mb-3"
+            className="text-xs font-bold uppercase tracking-wider mb-3"
             style={{ color: "var(--color-text-on-light-muted)" }}
           >
-            {m.branch.staffLabel}{staffNoun !== "profesional" && staffNoun !== "professional" ? ` — ${staffNoun}` : ""}
+            {lang === "en"
+              ? `Book with a ${staffNoun}`
+              : `Reservar con un ${staffNoun}`}
           </h2>
 
           {staff.length === 0 ? (
-            <p className="text-sm" style={{ color: "var(--color-text-on-light-muted)" }}>
+            <p
+              className="text-sm text-center py-8"
+              style={{ color: "var(--color-text-on-light-muted)" }}
+            >
               {lang === "en" ? "No staff available" : "No hay personal disponible"}
             </p>
           ) : (
@@ -166,10 +193,11 @@ export default async function BranchPage({ params }: Props) {
                 <Link
                   key={member.id}
                   href={`/${locale}/${businessSlug}/${branchSlug}/${member.slug}`}
-                  className="rounded-2xl border p-4 flex items-center gap-3 transition-all hover:shadow-sm"
+                  className="rounded-2xl border flex items-center gap-3 transition-all active:scale-[0.98]"
                   style={{
                     backgroundColor: "var(--color-bg-light-surface)",
                     borderColor: "var(--border-on-light)",
+                    padding: "14px",
                   }}
                 >
                   {/* Avatar */}
@@ -177,14 +205,19 @@ export default async function BranchPage({ params }: Props) {
                     <Image
                       src={member.avatar_url}
                       alt={member.display_name}
-                      width={48}
-                      height={48}
+                      width={52}
+                      height={52}
                       className="rounded-full object-cover flex-shrink-0"
                     />
                   ) : (
                     <div
-                      className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
-                      style={{ backgroundColor: "var(--color-violet)" }}
+                      className="w-13 h-13 rounded-full flex items-center justify-center font-bold text-white flex-shrink-0"
+                      style={{
+                        width: "52px",
+                        height: "52px",
+                        backgroundColor: "var(--color-violet)",
+                        fontSize: "16px",
+                      }}
                     >
                       {getInitials(member.display_name)}
                     </div>
@@ -193,20 +226,25 @@ export default async function BranchPage({ params }: Props) {
                   {/* Info */}
                   <div className="min-w-0 flex-1">
                     <div
-                      className="font-semibold text-sm truncate"
+                      className="font-semibold text-sm"
                       style={{ color: "var(--color-text-on-light)" }}
                     >
                       {member.display_name}
                     </div>
                     <div
-                      className="text-sm mt-0.5"
-                      style={{ color: "var(--color-violet)" }}
+                      className="text-xs mt-0.5"
+                      style={{ color: "var(--color-text-on-light-muted)" }}
                     >
-                      {lang === "en"
-                        ? `Book with ${member.display_name}`
-                        : `Reservar con ${member.display_name}`}{" "}
-                      →
+                      {lang === "en" ? "Tap to see availability" : "Ver disponibilidad"}
                     </div>
+                  </div>
+
+                  {/* CTA */}
+                  <div
+                    className="flex-shrink-0 rounded-xl px-3 py-2 text-xs font-semibold text-white"
+                    style={{ backgroundColor: "var(--color-violet)" }}
+                  >
+                    {lang === "en" ? "Book" : "Reservar"}
                   </div>
                 </Link>
               ))}
@@ -215,7 +253,7 @@ export default async function BranchPage({ params }: Props) {
         </section>
       </main>
 
-      {/* Footer */}
+      {/* ── Footer ───────────────────────────────────────────────────────── */}
       <footer className="text-center pb-8">
         <span className="text-xs" style={{ color: "var(--color-text-on-light-muted)" }}>
           {m.business.poweredBy}{" "}

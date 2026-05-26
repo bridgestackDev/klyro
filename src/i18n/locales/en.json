@@ -337,7 +337,8 @@
       "noSlots": "No times available on this day",
       "loadingSlots": "Loading times...",
       "back": "Back",
-      "bookWith": "Book with {name}"
+      "bookWith": "Book with {name}",
+      "continueBtn": "Continue"
     },
     "form": {
       "name": "Full name",
