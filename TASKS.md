@@ -240,6 +240,16 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 - [x] B8: `pnpm typecheck && pnpm lint && pnpm test` — all green
 - [x] B9: `git tag phase-3.5-done`
 
+### Block C (Fix) — Complete OpenAPI Response Documentation ✅
+- [x] C1: `linkSchema` + `errorResponseSchema` + `bookingCreatedResponseSchema` + `slotsListResponseSchema` in `src/lib/schemas/booking.ts`
+- [x] C2: Schemas match actual handler output (not spec draft); HATEOAS gap documented in ADR-025
+- [x] C3: `@response` + `@add` annotations on `POST /api/booking/create` (201/400/404/409/429/500)
+- [x] C4: `@response` + `@add` annotations on `GET /api/booking/slots` (200/400/404/429/500)
+- [x] C5: `pnpm openapi:gen` — `public/openapi.json` regenerated (4,106 → 11,337 bytes)
+- [x] C6: `tests/booking/api-docs.test.ts` — 7 smoke tests asserting status codes + schemas
+- [x] C7: `DECISIONS.md` — ADR-024 (shared error envelope) + ADR-025 (HATEOAS mismatch)
+- [x] C8: `pnpm typecheck && pnpm lint && pnpm test` — 315/315 green
+
 ---
 
 ## Phase 4 — Messaging Engine

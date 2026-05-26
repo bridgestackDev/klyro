@@ -343,3 +343,29 @@ This file records non-obvious design decisions and their rationale. Never delete
 **`api-docs` in SYSTEM_SEGMENTS:** Added to prevent the booking-path detector in `middleware.ts` from treating `/es/api-docs` as a business slug. The middleware matcher already excludes `/api-docs` (no locale prefix) because it starts with "api", but locale-prefixed navigations (`/es/api-docs`) would otherwise be routed to `isPublicBookingPath`.
 
 ---
+
+## Phase 3.5 — Block C (Fix)
+
+### ADR-024: Shared error envelope schema (`errorResponseSchema`) is the canonical error shape for all endpoints
+
+**Decision:** `errorResponseSchema` in `src/lib/schemas/booking.ts` is the single reusable error envelope for all endpoints from Phase 3.5 onwards. It covers codes `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `VALIDATION_ERROR`, `SLOT_TAKEN`, `BOOKING_CONFLICT`, `CONFLICT`, `RATE_LIMITED`, and `INTERNAL_ERROR`. Every `@add` error annotation references this schema.
+
+**Why:** Consistency across all endpoints reduces client-side error handling complexity. The `errorResponseSchema` mirrors the actual error objects the route handlers emit — the code enum entries were derived by reading the handler source directly, not the spec draft.
+
+**How to apply:** When adding a new route, import and use `errorResponseSchema` for all 4xx/5xx `@add` annotations. If a new error code is needed, add it to the enum and document the addition here.
+
+---
+
+### ADR-025: Current booking API responses do not implement the full HATEOAS shape from CLAUDE.md
+
+**Decision:** The response schemas documented in Phase 3.5 Block C (`bookingCreatedResponseSchema`, `slotsListResponseSchema`) match what the route handlers **actually return**, not the richer shape described in CLAUDE.md §"Response shape".
+
+**Mismatch details:**
+- `POST /api/booking/create` 201 returns `{ data: { bookingCode, startsAt, endsAt }, _links: { self } }`. CLAUDE.md convention calls for `id`, `staffId`, `serviceId`, `branchId`, `clientId`, `status`, `createdAt` in `data`, and `cancel`/`staff`/`business` links in `_links`.
+- `GET /api/booking/slots` 200 `meta` only has `total`; CLAUDE.md convention calls for `date`, `timezone`, `staffId`, `serviceId`, `branchId` as well.
+
+**Why documented this way:** The spec says "if the route handlers DO already return HATEOAS shapes, the schema must match exactly." The handlers don't return the full shape. Changing the handler response shapes is a breaking change for the already-deployed `BookingFlow.tsx` client; that's out of scope for a doc-only fix.
+
+**How to apply:** When Phase 4 or 5 extends the booking API, the response shapes should be brought in line with CLAUDE.md HATEOAS conventions at that time, with corresponding schema and handler updates committed together.
+
+---

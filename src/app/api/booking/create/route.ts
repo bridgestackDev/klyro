@@ -175,6 +175,12 @@ async function handler(req: NextRequest) {
  * Create a booking appointment
  * @description Books a slot for a client. Verifies availability, upserts the client by phone, and creates the appointment with a unique KLY-XXXX booking code.
  * @body createBookingSchema
+ * @response 201: bookingCreatedResponseSchema: Booking created successfully
+ * @add 400: errorResponseSchema: Validation failed
+ * @add 404: errorResponseSchema: Branch not found or hidden by RLS
+ * @add 409: errorResponseSchema: Slot already taken (pre-check or DB race)
+ * @add 429: errorResponseSchema: Rate limit exceeded
+ * @add 500: errorResponseSchema: Unexpected internal error
  * @tag Booking
  * @openapi
  */

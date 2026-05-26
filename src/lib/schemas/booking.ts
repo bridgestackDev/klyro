@@ -20,3 +20,62 @@ export const createBookingSchema = z.object({
 
 export type SlotsQuery = z.infer<typeof slotsQuerySchema>;
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;
+
+// ── Response schemas ──────────────────────────────────────────────────────────
+
+export const linkSchema = z.object({
+  href: z.string(),
+  method: z.enum(["GET", "POST", "PATCH", "PUT", "DELETE"]),
+});
+
+export const errorResponseSchema = z.object({
+  error: z.object({
+    code: z.enum([
+      "UNAUTHORIZED",
+      "FORBIDDEN",
+      "NOT_FOUND",
+      "VALIDATION_ERROR",
+      "SLOT_TAKEN",
+      "BOOKING_CONFLICT",
+      "CONFLICT",
+      "RATE_LIMITED",
+      "INTERNAL_ERROR",
+    ]),
+    message: z.string(),
+    field: z.string().optional(),
+  }),
+});
+
+// POST /api/booking/create — 201 response (matches actual handler output)
+export const bookingCreatedResponseSchema = z.object({
+  data: z.object({
+    bookingCode: z.string().regex(/^KLY-[A-Z0-9]{4}$/).meta({
+      example: "KLY-7F4A",
+    }),
+    startsAt: z.string().datetime().meta({
+      example: "2026-05-26T15:00:00.000Z",
+    }),
+    endsAt: z.string().datetime().meta({
+      example: "2026-05-26T15:30:00.000Z",
+    }),
+  }),
+  _links: z.object({
+    self: linkSchema,
+  }),
+});
+
+// GET /api/booking/slots — 200 response (matches actual handler output)
+export const slotsListResponseSchema = z.object({
+  data: z.array(
+    z.object({
+      startsAt: z.string().datetime().meta({ example: "2026-05-26T15:00:00.000Z" }),
+      endsAt: z.string().datetime().meta({ example: "2026-05-26T15:30:00.000Z" }),
+    })
+  ),
+  meta: z.object({
+    total: z.number().int().nonnegative().meta({ example: 8 }),
+  }),
+  _links: z.object({
+    self: linkSchema,
+  }),
+});

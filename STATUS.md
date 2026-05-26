@@ -458,6 +458,17 @@ Key decisions:
 - ADR-023: Swagger UI dev-only — `notFound()` in production; `next/dynamic ssr: false` prevents browser-API crash on server render
 - Metadata `robots: { index: false }` prevents crawlers from indexing the page even if it somehow became accessible
 
+**Block C (Fix) — Complete OpenAPI Response Documentation** ✅ Done
+
+Files changed:
+- `src/lib/schemas/booking.ts` — added `linkSchema`, `errorResponseSchema`, `bookingCreatedResponseSchema`, `slotsListResponseSchema` with Zod `.meta({ example })` on leaf fields
+- `src/app/api/booking/create/route.ts` — added `@response 201` + `@add` for 400/404/409/429/500
+- `src/app/api/booking/slots/route.ts` — added `@response 200` + `@add` for 400/404/429/500
+- `public/openapi.json` — regenerated; 4,106 → 11,337 bytes
+- `tests/booking/api-docs.test.ts` — 7 new smoke tests asserting all status codes and schemas
+
+ADRs added: ADR-024 (shared error envelope), ADR-025 (HATEOAS mismatch)
+
 ### Phase 3.5 Retro
 
 **What shipped:** OpenAPI 3.1 spec auto-generated from the two existing Zod schemas (Block A), plus an interactive Swagger UI at `http://localhost:3000/api-docs` with Klyro dark-surface branding (Block B). Postman users can import the spec in one click via `http://localhost:3000/openapi.json`. The spec is committed to git so reviewers see API changes in PRs.
