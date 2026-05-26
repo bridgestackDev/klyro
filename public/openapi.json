@@ -50,7 +50,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ errorResponseSchema"
+                  "$ref": "#/components/schemas/errorResponseSchema"
                 }
               }
             }
@@ -60,7 +60,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ errorResponseSchema"
+                  "$ref": "#/components/schemas/errorResponseSchema"
                 }
               }
             }
@@ -70,7 +70,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ errorResponseSchema"
+                  "$ref": "#/components/schemas/errorResponseSchema"
                 }
               }
             }
@@ -80,7 +80,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ errorResponseSchema"
+                  "$ref": "#/components/schemas/errorResponseSchema"
                 }
               }
             }
@@ -90,7 +90,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ errorResponseSchema"
+                  "$ref": "#/components/schemas/errorResponseSchema"
                 }
               }
             }
@@ -160,7 +160,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ errorResponseSchema"
+                  "$ref": "#/components/schemas/errorResponseSchema"
                 }
               }
             }
@@ -170,7 +170,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ errorResponseSchema"
+                  "$ref": "#/components/schemas/errorResponseSchema"
                 }
               }
             }
@@ -180,7 +180,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ errorResponseSchema"
+                  "$ref": "#/components/schemas/errorResponseSchema"
                 }
               }
             }
@@ -190,7 +190,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ errorResponseSchema"
+                  "$ref": "#/components/schemas/errorResponseSchema"
                 }
               }
             }
