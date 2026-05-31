@@ -111,7 +111,8 @@
     },
     "title": "Dashboard",
     "welcome": "Welcome",
-    "placeholder": "Your dashboard will appear here in Phase 5."
+    "placeholder": "Your dashboard will appear here in Phase 5.",
+    "noAppointments": "No appointments in the next 7 days."
   },
   "errors": {
     "UNAUTHORIZED": "You must be signed in to continue.",
@@ -362,6 +363,27 @@
       "slotTaken": "This time slot was just taken. Please choose another.",
       "networkError": "Connection error. Please try again.",
       "validationFailed": "Please check the fields and try again."
+    }
+  },
+  "messaging": {
+    "title": "Messages",
+    "noMessages": "No messages for this appointment yet.",
+    "type": {
+      "confirmation": "Confirmation",
+      "reminder_24h": "24h Reminder",
+      "cancellation": "Cancellation"
+    },
+    "channel": {
+      "whatsapp": "WhatsApp",
+      "sms": "SMS",
+      "email": "Email"
+    },
+    "status": {
+      "pending": "Pending",
+      "sent": "Sent",
+      "delivered": "Delivered",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
     }
   }
 }

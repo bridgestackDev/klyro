@@ -37,6 +37,7 @@ const serverSchema = z.object({
   // Resend Email
   RESEND_API_KEY: z.string().optional(),
   RESEND_FROM_EMAIL: z.string().email().default("hola@klyro.app"),
+  RESEND_WEBHOOK_SECRET: z.string().optional(),
 
   // Observability
   SENTRY_AUTH_TOKEN: z.string().optional(),

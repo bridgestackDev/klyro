@@ -33,3 +33,11 @@ export function getGenericLimiter(): Limiter {
   _generic ??= createLimiter(60, 60);
   return _generic;
 }
+
+let _cancel: Limiter | null = null;
+
+/** Appointment cancellation: 5 req / 60 s per IP */
+export function getCancelLimiter(): Limiter {
+  _cancel ??= createLimiter(5, 60);
+  return _cancel;
+}
