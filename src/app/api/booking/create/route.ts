@@ -75,13 +75,11 @@ async function handler(req: NextRequest) {
     );
   }
 
-  // Upsert client by phone within this business
-  const { data: existingClient } = await supabase
-    .from("clients")
-    .select("id")
-    .eq("business_id", branch.business_id)
-    .eq("phone", clientPhone)
-    .maybeSingle();
+  // Dedup client by phone (primary) or email (fallback) within this business
+  const clientLookupQuery = clientPhone
+    ? supabase.from("clients").select("id").eq("business_id", branch.business_id).eq("phone", clientPhone)
+    : supabase.from("clients").select("id").eq("business_id", branch.business_id).eq("email", clientEmail!);
+  const { data: existingClient } = await clientLookupQuery.maybeSingle();
 
   let clientId: string;
   if (existingClient) {
@@ -92,9 +90,9 @@ async function handler(req: NextRequest) {
       .insert({
         business_id: branch.business_id,
         full_name: clientName,
-        phone: clientPhone,
+        phone: clientPhone ?? null,
         email: clientEmail ?? null,
-        whatsapp_number: clientPhone,
+        whatsapp_number: clientPhone ?? null,
       })
       .select("id")
       .single();
@@ -188,7 +186,7 @@ async function handler(req: NextRequest) {
 
 /**
  * Create a booking appointment
- * @description Books a slot for a client. Verifies availability, upserts the client by phone, and creates the appointment with a unique KLY-XXXX booking code.
+ * @description Books a slot for a client. Verifies availability, upserts the client record, and creates the appointment with a unique KLY-XXXX booking code. At least one of clientPhone or clientEmail is required.
  * @body createBookingSchema
  * @response 201:bookingCreatedResponseSchema: Booking created successfully
  * @add 400:errorResponseSchema: Validation failed

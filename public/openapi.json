@@ -103,7 +103,7 @@
       "post": {
         "operationId": "post-booking-create",
         "summary": "Create a booking appointment",
-        "description": "Books a slot for a client. Verifies availability, upserts the client by phone, and creates the appointment with a unique KLY-XXXX booking code.",
+        "description": "Books a slot for a client. Verifies availability, upserts the client record, and creates the appointment with a unique KLY-XXXX booking code. At least one of clientPhone or clientEmail is required.",
         "tags": [
           "Booking"
         ],
@@ -449,8 +449,7 @@
           "serviceId",
           "branchId",
           "slotStart",
-          "clientName",
-          "clientPhone"
+          "clientName"
         ]
       },
       "errorResponseSchema": {

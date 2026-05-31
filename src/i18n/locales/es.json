@@ -350,7 +350,14 @@
       "nameRequired": "Ingresa tu nombre",
       "nameTooShort": "El nombre debe tener al menos 2 caracteres",
       "nameTooLong": "El nombre no puede superar 120 caracteres",
-      "whatsappRequired": "Ingresa tu número de WhatsApp"
+      "whatsappRequired": "Ingresa tu número de WhatsApp",
+      "email": {
+        "label": "Correo electrónico",
+        "placeholder": "tu@correo.com"
+      },
+      "contactHelp": "Ingresa tu WhatsApp o tu correo (al menos uno)",
+      "atLeastOneContact": "Necesitamos tu WhatsApp o tu correo para confirmarte.",
+      "invalidEmail": "Correo inválido."
     },
     "success": {
       "title": "¡Reserva confirmada!",

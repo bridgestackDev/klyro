@@ -350,7 +350,14 @@
       "nameRequired": "Please enter your name",
       "nameTooShort": "Name must be at least 2 characters",
       "nameTooLong": "Name cannot exceed 120 characters",
-      "whatsappRequired": "Please enter your WhatsApp number"
+      "whatsappRequired": "Please enter your WhatsApp number",
+      "email": {
+        "label": "Email",
+        "placeholder": "you@email.com"
+      },
+      "contactHelp": "Enter your WhatsApp or email (at least one)",
+      "atLeastOneContact": "We need your WhatsApp or email to confirm your booking.",
+      "invalidEmail": "Invalid email."
     },
     "success": {
       "title": "Booking confirmed!",

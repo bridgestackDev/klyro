@@ -59,6 +59,10 @@ const messages: BookingFlowProps["messages"] = {
     name: "Full name",
     namePlaceholder: "Your name",
     whatsapp: "WhatsApp",
+    email: { label: "Email", placeholder: "you@email.com" },
+    contactHelp: "Enter your WhatsApp or email (at least one)",
+    atLeastOneContact: "We need your WhatsApp or email to confirm your booking.",
+    invalidEmail: "Invalid email.",
     submit: "Confirm booking",
     submitting: "Booking...",
     nameRequired: "Please enter your name",
@@ -256,7 +260,7 @@ describe("BookingFlow", () => {
     expect(screen.getByText("Name must be at least 2 characters")).toBeInTheDocument();
   });
 
-  it("form step: shows whatsapp error when phone is empty", async () => {
+  it("form step: shows at-least-one-contact error when both phone and email are empty", async () => {
     const user = userEvent.setup();
 
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
@@ -290,11 +294,11 @@ describe("BookingFlow", () => {
     await user.click(slotBtn);
     await user.click(screen.getByText("Continue"));
 
-    // Enter valid name but no phone
+    // Enter valid name but leave both phone and email empty
     await user.type(screen.getByLabelText("Full name"), "Ana García");
     await user.click(screen.getByText("Confirm booking"));
 
-    expect(screen.getByText("Please enter your WhatsApp number")).toBeInTheDocument();
+    expect(screen.getByText("We need your WhatsApp or email to confirm your booking.")).toBeInTheDocument();
   });
 
   it("form step: calls POST /api/booking/create on valid submit", async () => {

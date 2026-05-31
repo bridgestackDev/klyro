@@ -217,6 +217,20 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 
 ---
 
+## Fix — Booking Client Email Capture ✅
+
+- [x] `createBookingSchema`: `clientPhone` optional, `.refine()` "AT_LEAST_ONE_CONTACT"
+- [x] Booking form (`BookingFlow.tsx`): email field, updated `validateForm`, updated `handleSubmit`
+- [x] Route handler (`/api/booking/create`): client dedup by phone then email; store both
+- [x] MessageRouter verified: already falls back gracefully when a channel address is absent
+- [x] i18n: `booking.form.email.*`, `contactHelp`, `atLeastOneContact`, `invalidEmail` (es + en)
+- [x] `pnpm openapi:gen` — spec regenerated, both fields optional, description updated
+- [x] Tests: 407/407 green (2 new schema, 2 new API, existing flow test updated)
+- [x] E2E: email-only and neither-contact cases added to `tests/e2e/booking.spec.ts`
+- [x] `STATUS.md`, `TASKS.md`, `DECISIONS.md` updated
+
+---
+
 ## Phase 3.5 — API Documentation
 
 ### Block A — OpenAPI Spec Generation ✅

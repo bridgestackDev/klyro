@@ -50,6 +50,15 @@ const VALID_BODY = {
   clientPhone: "+50422345678",
 };
 
+const EMAIL_ONLY_BODY = {
+  staffId: UUID,
+  serviceId: UUID,
+  branchId: UUID,
+  slotStart: SLOT_START,
+  clientName: "Ana López",
+  clientEmail: "ana@example.com",
+};
+
 const CTX = { params: Promise.resolve({}) } as { params: Promise<Record<string, string>> };
 
 function makeRequest(body: unknown) {
@@ -171,5 +180,28 @@ describe("POST /api/booking/create", () => {
 
     const res = await POST(makeRequest(VALID_BODY), CTX);
     expect(res.status).toBe(404);
+  });
+
+  it("returns 201 when booking with email only (no phone)", async () => {
+    mockSingle
+      .mockResolvedValueOnce({ data: { business_id: UUID, timezone: "America/Tegucigalpa" }, error: null })
+      .mockResolvedValueOnce({ data: { id: UUID }, error: null })
+      .mockResolvedValueOnce({ data: { id: UUID, starts_at: SLOT_START, ends_at: SLOT_END, booking_code: "KLY-ABCD" }, error: null });
+
+    mockMaybeSingle.mockResolvedValueOnce({ data: null, error: null });
+
+    const res = await POST(makeRequest(EMAIL_ONLY_BODY), CTX);
+    expect(res.status).toBe(201);
+    const body = await res.json() as { data: { bookingCode: string } };
+    expect(body.data.bookingCode).toMatch(/^KLY-[A-Z0-9]{4}$/);
+  });
+
+  it("returns 400 when neither clientPhone nor clientEmail is provided", async () => {
+    const noContact = { staffId: UUID, serviceId: UUID, branchId: UUID, slotStart: SLOT_START, clientName: "Ana López" };
+    const res = await POST(makeRequest(noContact), CTX);
+    expect(res.status).toBe(400);
+    const body = await res.json() as { error: { code: string; message: string } };
+    expect(body.error.code).toBe("VALIDATION_ERROR");
+    expect(body.error.message).toBe("AT_LEAST_ONE_CONTACT");
   });
 });

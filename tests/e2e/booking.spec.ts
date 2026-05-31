@@ -127,7 +127,53 @@ test("fitness client sees vertical copy and books session", async ({
   }
 });
 
-// ── Test 3: slot taken during booking → user sees inline error ───────────────
+// ── Test 3: email-only booking → confirmation screen appears ─────────────────
+
+test("client books with email only (no WhatsApp)", async ({ page }) => {
+  let seed: SeededBusiness | null = null;
+
+  try {
+    seed = await seedBusiness("barbershop");
+    const { bizSlug, branchSlug, staffSlug, serviceName } = seed;
+
+    await page.goto(`/es/${bizSlug}/${branchSlug}/${staffSlug}`);
+
+    // Step 1 — pick service
+    await page.getByRole("button", { name: serviceName }).click();
+
+    // Step 2 — pick tomorrow
+    const tomorrowStr = tomorrow();
+    await page.getByRole("button", { name: tomorrowStr }).click();
+
+    // Step 3 — wait for slots and pick the first one
+    await expect(
+      page.getByRole("list", { name: /elige un horario/i })
+    ).toBeVisible({ timeout: 10_000 });
+    await page
+      .getByRole("list", { name: /elige un horario/i })
+      .getByRole("listitem")
+      .first()
+      .getByRole("button")
+      .click();
+
+    // Step 4 — fill only email (leave phone empty)
+    await page.locator("#booking-name").fill("María Email");
+    await page.locator("#booking-email").fill("maria@example.com");
+
+    // Submit
+    await page.getByRole("button", { name: /confirmar reserva/i }).click();
+
+    // Step 5 — confirmation
+    await expect(
+      page.getByRole("heading", { name: /reserva confirmada/i })
+    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/^KLY-[A-Z0-9]{4}$/)).toBeVisible();
+  } finally {
+    if (seed) await cleanupBusiness(seed.bizId);
+  }
+});
+
+// ── Test 4: slot taken during booking → user sees inline error ───────────────
 
 test("slot taken shows inline error and re-enables slot picker", async ({
   page,
@@ -183,6 +229,49 @@ test("slot taken shows inline error and re-enables slot picker", async ({
     await expect(
       page.getByRole("list", { name: /elige un horario/i })
     ).toBeVisible({ timeout: 10_000 });
+  } finally {
+    if (seed) await cleanupBusiness(seed.bizId);
+  }
+});
+
+// ── Test 5: submitting with neither phone nor email shows "at least one" error
+
+test("submitting with no contact info shows at-least-one-contact error", async ({
+  page,
+}) => {
+  let seed: SeededBusiness | null = null;
+
+  try {
+    seed = await seedBusiness("barbershop");
+    const { bizSlug, branchSlug, staffSlug, serviceName } = seed;
+
+    await page.goto(`/es/${bizSlug}/${branchSlug}/${staffSlug}`);
+
+    // Navigate to step 4
+    await page.getByRole("button", { name: serviceName }).click();
+    await page.getByRole("button", { name: tomorrow() }).click();
+    await expect(
+      page.getByRole("list", { name: /elige un horario/i })
+    ).toBeVisible({ timeout: 10_000 });
+    await page
+      .getByRole("list", { name: /elige un horario/i })
+      .getByRole("listitem")
+      .first()
+      .getByRole("button")
+      .click();
+
+    // Fill only name, leave both phone and email empty
+    await page.locator("#booking-name").fill("Sin Contacto");
+
+    await page.getByRole("button", { name: /confirmar reserva/i }).click();
+
+    // Should show the "at least one" error and NOT navigate to confirmation
+    await expect(page.getByRole("alert")).toContainText(
+      /whatsapp.*correo|correo.*whatsapp|necesitamos/i,
+      { timeout: 5_000 }
+    );
+    // Still on step 4 (no booking code visible)
+    await expect(page.getByRole("heading", { name: /reserva confirmada/i })).not.toBeVisible();
   } finally {
     if (seed) await cleanupBusiness(seed.bizId);
   }

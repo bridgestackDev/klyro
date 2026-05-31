@@ -369,3 +369,25 @@ This file records non-obvious design decisions and their rationale. Never delete
 **How to apply:** When Phase 4 or 5 extends the booking API, the response shapes should be brought in line with CLAUDE.md HATEOAS conventions at that time, with corresponding schema and handler updates committed together.
 
 ---
+
+## Fix — Booking Client Email Capture
+
+### ADR-026: Client contact rule is "at least one of WhatsApp or email", not "WhatsApp required"
+
+**Decision:** `createBookingSchema` enforces "at least one of `clientPhone` or `clientEmail`" via a Zod `.refine()`, not a hard phone requirement. Both fields are individually optional.
+
+**Why:** WhatsApp dominates in Honduras but some clients and verticals (fitness, spa, carwash) prefer email. Blocking on one channel loses bookings. This also unblocks Phase 4's email channel, which had no recipient address because the booking flow never asked for email.
+
+**How to apply:** Any new intake form or API endpoint that collects client contact info should follow the same "at least one" rule. The `AT_LEAST_ONE_CONTACT` error code is the canonical signal for this validation failure. OpenAPI can't express "at least one of" cleanly — add a human-readable note to the endpoint description instead.
+
+---
+
+### ADR-027: Phase 4.0 messaging contract (MessageRepository interface) was not implemented — direct table access accepted as MVP debt
+
+**Decision:** Phase 4 was built with direct Supabase table access (no `MessageRepository` abstraction layer). The `messages` table is read and written directly by `scheduleMessages` and the MessageRouter.
+
+**Why:** The spec called for a `MessageRepository` interface to decouple the messaging engine from Supabase, but the MVP timeline favored shipping the engine quickly. The abstraction adds no value until a second consumer of message data appears.
+
+**How to apply:** Revisit in Phase 5+ if the dashboard needs to read messages through a different code path. If a second consumer appears, extract the interface at that point rather than prematurely.
+
+---

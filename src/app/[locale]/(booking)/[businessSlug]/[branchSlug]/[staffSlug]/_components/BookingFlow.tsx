@@ -31,6 +31,10 @@ export interface BookingMessages {
     name: string;
     namePlaceholder: string;
     whatsapp: string;
+    email: { label: string; placeholder: string };
+    contactHelp: string;
+    atLeastOneContact: string;
+    invalidEmail: string;
     submit: string;
     submitting: string;
     nameRequired: string;
@@ -560,8 +564,10 @@ export function BookingFlow({
   const [slotTakenError, setSlotTakenError] = useState<string | null>(null);
   const [clientName, setClientName] = useState("");
   const [clientPhone, setClientPhone] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
   const [nameError, setNameError] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [bookingResult, setBookingResult] = useState<{
@@ -651,11 +657,31 @@ export function BookingFlow({
     } else {
       setNameError(null);
     }
-    if (!clientPhone) {
-      setPhoneError(messages.form.whatsappRequired);
+
+    const e164Regex = /^\+\d{7,15}$/;
+    // CountryPhoneInput emits dialCode+digits; digits.length > 3 means user typed national number
+    const phoneDigits = clientPhone.replace(/\D/g, "");
+    const phoneHasContent = phoneDigits.length > 3;
+    const emailTrimmed = clientEmail.trim();
+    const emailHasContent = emailTrimmed.length > 0;
+
+    if (!phoneHasContent && !emailHasContent) {
+      setPhoneError(messages.form.atLeastOneContact);
+      setEmailError(null);
       valid = false;
     } else {
-      setPhoneError(null);
+      if (phoneHasContent && !e164Regex.test(clientPhone)) {
+        setPhoneError(messages.form.whatsappRequired);
+        valid = false;
+      } else {
+        setPhoneError(null);
+      }
+      if (emailHasContent && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
+        setEmailError(messages.form.invalidEmail);
+        valid = false;
+      } else {
+        setEmailError(null);
+      }
     }
     return valid;
   };
@@ -668,6 +694,9 @@ export function BookingFlow({
     setSubmitError(null);
 
     try {
+      const phoneToSend = /^\+\d{7,15}$/.test(clientPhone) ? clientPhone : undefined;
+      const emailToSend = clientEmail.trim() || undefined;
+
       const res = await fetch("/api/booking/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -677,7 +706,8 @@ export function BookingFlow({
           serviceId: selectedService.id,
           slotStart: selectedSlot.startsAt,
           clientName: clientName.trim(),
-          clientPhone,
+          ...(phoneToSend ? { clientPhone: phoneToSend } : {}),
+          ...(emailToSend ? { clientEmail: emailToSend } : {}),
         }),
       });
 
@@ -1173,6 +1203,58 @@ export function BookingFlow({
                 ariaLabel={messages.form.whatsapp}
               />
             </div>
+
+            {/* Email */}
+            <div>
+              <label
+                htmlFor="booking-email"
+                style={{
+                  display: "block",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  color: "#0A0E1A",
+                  marginBottom: "8px",
+                }}
+              >
+                {messages.form.email.label}
+              </label>
+              <input
+                id="booking-email"
+                type="email"
+                value={clientEmail}
+                onChange={(e) => setClientEmail(e.target.value)}
+                placeholder={messages.form.email.placeholder}
+                autoComplete="email"
+                style={{
+                  width: "100%",
+                  borderRadius: "10px",
+                  border: emailError ? "1.5px solid #EF4444" : "1px solid #E5E7EB",
+                  padding: "13px 14px",
+                  fontSize: "16px",
+                  color: "#0A0E1A",
+                  background: "#ffffff",
+                  outline: "none",
+                  boxSizing: "border-box",
+                  fontFamily: "inherit",
+                }}
+                aria-invalid={!!emailError}
+                aria-describedby={emailError ? "booking-email-error" : undefined}
+              />
+              {emailError && (
+                <p
+                  id="booking-email-error"
+                  role="alert"
+                  style={{ fontSize: "12px", color: "#EF4444", marginTop: "6px" }}
+                >
+                  {emailError}
+                </p>
+              )}
+            </div>
+
+            {/* Contact help text */}
+            <p style={{ fontSize: "12px", color: "#94A3B8", marginTop: "-8px" }}>
+              {messages.form.contactHelp}
+            </p>
 
             {/* Submit error */}
             {submitError && (

@@ -29,37 +29,49 @@ describe("slotsQuerySchema", () => {
 });
 
 describe("createBookingSchema", () => {
-  const valid = {
+  const base = {
     staffId: UUID,
     serviceId: UUID,
     branchId: UUID,
     slotStart: ISO_DATETIME,
     clientName: "Jane Doe",
-    clientPhone: "+50422345678",
   };
+  const valid = { ...base, clientPhone: "+50422345678" };
 
-  it("accepts a valid booking payload", () => {
+  it("accepts phone only", () => {
     expect(createBookingSchema.safeParse(valid).success).toBe(true);
   });
 
-  it("accepts optional clientEmail and notes", () => {
+  it("accepts email only", () => {
+    expect(createBookingSchema.safeParse({ ...base, clientEmail: "jane@example.com" }).success).toBe(true);
+  });
+
+  it("accepts both phone and email", () => {
     expect(createBookingSchema.safeParse({ ...valid, clientEmail: "jane@example.com", notes: "Latex allergy" }).success).toBe(true);
   });
 
+  it("rejects neither phone nor email with AT_LEAST_ONE_CONTACT", () => {
+    const result = createBookingSchema.safeParse(base);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.message).toBe("AT_LEAST_ONE_CONTACT");
+    }
+  });
+
   it("rejects a phone not in E.164 format (missing +)", () => {
-    expect(createBookingSchema.safeParse({ ...valid, clientPhone: "50422345678" }).success).toBe(false);
+    expect(createBookingSchema.safeParse({ ...base, clientPhone: "50422345678" }).success).toBe(false);
   });
 
   it("rejects a phone that is just a + sign", () => {
-    expect(createBookingSchema.safeParse({ ...valid, clientPhone: "+" }).success).toBe(false);
+    expect(createBookingSchema.safeParse({ ...base, clientPhone: "+" }).success).toBe(false);
   });
 
   it("rejects an empty clientName", () => {
     expect(createBookingSchema.safeParse({ ...valid, clientName: "" }).success).toBe(false);
   });
 
-  it("rejects an invalid email", () => {
-    expect(createBookingSchema.safeParse({ ...valid, clientEmail: "not-an-email" }).success).toBe(false);
+  it("rejects an invalid email when email is the only contact", () => {
+    expect(createBookingSchema.safeParse({ ...base, clientEmail: "not-an-email" }).success).toBe(false);
   });
 
   it("rejects a slotStart that is not ISO datetime (no T separator)", () => {

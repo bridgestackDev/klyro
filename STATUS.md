@@ -1,7 +1,7 @@
 # Klyro — Build Status
 
-**Last updated:** 2026-05-25
-**Active phase:** Phase 3.5 — API Documentation ✅ Done — Phase 4 preflight next
+**Last updated:** 2026-05-31
+**Active phase:** Phase 4 preflight — booking email fix landed
 
 ---
 
@@ -15,7 +15,7 @@
 | 2.5 | Hardening & Localization | 🟡 In progress | Blocks A–D+F done; Block E pending |
 | 2.6 | Business & Staff Media | ✅ Done | All blocks shipped; full team management in Phase 5 |
 | LP | Landing Page (parallel) | ✅ Done | `/[locale]` — 4 sections, fully static, dark surface |
-| 3 | Public Booking Flow | ✅ Done | All blocks A–E complete |
+| 3 | Public Booking Flow | ✅ Done | All blocks A–E complete; email capture fix landed |
 | 3.5 | API Documentation | ✅ Done | Swagger UI at /api-docs + Postman setup |
 | 4 | Messaging Engine | ⬜ Not started | Blocked on PHASE_4_PREFLIGHT.md — all 6 items open |
 | 5 | Owner Dashboard | ⬜ Not started | Full operational view |
@@ -415,6 +415,23 @@ Key decisions:
 **What surprised us:** The anon RLS policies were never pushed to remote Supabase — the migration existed locally but not on the live DB. All pages 404'd until the migration was applied remotely. Lesson: always verify remote state after adding new RLS migrations, not just local state.
 
 **What to revisit in Phase 4:** Sending the KLY-XXXX code via WhatsApp confirmation message. The booking code is generated and displayed; the messaging dispatch (pg_cron + Edge Function + WhatsApp Cloud API) is Phase 4.
+
+---
+
+## Fix — Booking Client Email Capture ✅
+
+**Branch:** `fix/booking-client-email` (merged to `001-automated-messaging`)
+
+**What shipped:** Public booking form now collects an optional email alongside the optional WhatsApp number. A schema-level refine enforces "at least one of phone or email". Client dedup falls back to email when phone is absent. Phase 4 email channel unblocked.
+
+- `createBookingSchema`: phone + email both optional, `.refine()` "at least one" (`AT_LEAST_ONE_CONTACT`)
+- Booking form: email field + localized "at least one" help text + per-field format validation
+- Route handler: client dedup by phone (primary) or email (fallback); stores both when present
+- MessageRouter channel fallback verified — already handles missing-address gracefully (no changes needed)
+- `clients` table already had `email` column — no migration required
+- OpenAPI spec regenerated; both fields now optional with the "at least one" rule in the description
+- Unit + integration tests: 407/407 green (2 new schema tests, 2 new API tests)
+- E2E: email-only and neither-contact test cases added
 
 ---
 
