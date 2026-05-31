@@ -5,6 +5,7 @@ allowBuilds:
   '@tree-sitter-grammars/tree-sitter-yaml': true
   core-js: true
   core-js-pure: true
+  esbuild: set this to true or false
   msw: true
   protobufjs: true
   sharp: true

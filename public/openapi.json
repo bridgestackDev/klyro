@@ -16,6 +16,89 @@
     }
   ],
   "paths": {
+    "/appointments/{id}/cancel": {
+      "post": {
+        "operationId": "post-appointments-{id}-cancel",
+        "summary": "Cancel an appointment via a client-held cancel token.",
+        "description": "Public endpoint — no session required. Authenticated via",
+        "tags": [
+          "Appointments"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/cancelAppointmentSchema"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Appointment cancelled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/cancelResponseSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (invalid UUID format)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponseSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Appointment not found or token invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponseSchema"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Appointment already in a terminal state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponseSchema"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponseSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/booking/create": {
       "post": {
         "operationId": "post-booking-create",
@@ -197,11 +280,71 @@
           }
         }
       }
+    },
+    "/appointments/{id}/messages": {
+      "get": {
+        "operationId": "get-appointments-{id}-messages",
+        "summary": "Get delivery status for all messages linked to an appointment.",
+        "description": "Returns message rows for the given appointment. Session required;",
+        "tags": [
+          "Messaging"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "example": 123,
+            "description": "Path parameter: id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Message statuses retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/messageStatusResponseSchema"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No authenticated session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponseSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Appointment not found or not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponseSchema"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "tags": [
     {
+      "name": "Appointments"
+    },
+    {
       "name": "Booking"
+    },
+    {
+      "name": "Messaging"
     }
   ],
   "components": {
@@ -251,6 +394,19 @@
           "_links"
         ]
       },
+      "cancelAppointmentSchema": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "cancelResponseSchema": {},
       "createBookingSchema": {
         "type": "object",
         "properties": {
@@ -356,6 +512,7 @@
           "method"
         ]
       },
+      "messageStatusResponseSchema": {},
       "slotsListResponseSchema": {
         "type": "object",
         "properties": {

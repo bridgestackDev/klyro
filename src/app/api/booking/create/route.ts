@@ -7,6 +7,7 @@ import { getBookingLimiter } from "@/lib/rate-limit/limiters";
 import { getIp } from "@/lib/rate-limit/get-ip";
 import { withRequestLogging } from "@/lib/log/with-request-logging";
 import { logger } from "@/lib/log";
+import { scheduleMessages } from "@/lib/messaging/schedule";
 
 function utcToLocalDate(utcStr: string, timezone: string): string {
   return new Intl.DateTimeFormat("en-CA", {
@@ -130,6 +131,20 @@ async function handler(req: NextRequest) {
       .single();
 
     if (!apptError) {
+      // Schedule confirmation + reminder messages. Fire-and-forget: messaging
+      // failure must never fail the booking response.
+      void scheduleMessages(
+        appt.id,
+        appt.starts_at as string,
+        branch.business_id,
+        branchId,
+      ).catch((err: unknown) => {
+        logger.error("scheduleMessages failed after booking", {
+          appointmentId: appt.id,
+          error: String(err),
+        });
+      });
+
       return NextResponse.json(
         {
           data: {

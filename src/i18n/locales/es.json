@@ -111,7 +111,8 @@
     },
     "title": "Dashboard",
     "welcome": "Bienvenido",
-    "placeholder": "Tu dashboard aparecerá aquí en la Fase 5."
+    "placeholder": "Tu dashboard aparecerá aquí en la Fase 5.",
+    "noAppointments": "No hay citas en los próximos 7 días."
   },
   "errors": {
     "UNAUTHORIZED": "Debes iniciar sesión para continuar.",
@@ -362,6 +363,27 @@
       "slotTaken": "Este horario ya fue reservado. Por favor elige otro.",
       "networkError": "Error de conexión. Por favor intenta de nuevo.",
       "validationFailed": "Revisa los campos e intenta de nuevo."
+    }
+  },
+  "messaging": {
+    "title": "Mensajes",
+    "noMessages": "No hay mensajes para esta cita todavía.",
+    "type": {
+      "confirmation": "Confirmación",
+      "reminder_24h": "Recordatorio 24h",
+      "cancellation": "Cancelación"
+    },
+    "channel": {
+      "whatsapp": "WhatsApp",
+      "sms": "SMS",
+      "email": "Correo electrónico"
+    },
+    "status": {
+      "pending": "Pendiente",
+      "sent": "Enviado",
+      "delivered": "Entregado",
+      "failed": "Fallido",
+      "cancelled": "Cancelado"
     }
   }
 }

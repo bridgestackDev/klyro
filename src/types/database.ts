@@ -19,6 +19,7 @@ export type Database = {
           booking_code: string | null
           branch_id: string
           business_id: string
+          cancel_token: string
           cancelled_at: string | null
           client_id: string
           created_at: string
@@ -34,6 +35,7 @@ export type Database = {
           booking_code?: string | null
           branch_id: string
           business_id: string
+          cancel_token?: string
           cancelled_at?: string | null
           client_id: string
           created_at?: string
@@ -49,6 +51,7 @@ export type Database = {
           booking_code?: string | null
           branch_id?: string
           business_id?: string
+          cancel_token?: string
           cancelled_at?: string | null
           client_id?: string
           created_at?: string
