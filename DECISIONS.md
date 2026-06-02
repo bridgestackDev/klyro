@@ -425,3 +425,43 @@ This file records non-obvious design decisions and their rationale. Never delete
 **Trade-off:** Inline styles can't be overridden by utility classes as easily. Acceptable — the badge is a leaf presentational component with no themable variants in v1.
 
 ---
+
+## Phase 5 — Block B
+
+### ADR-031: Owner-side cancel is deferred; existing `/cancel` route is client-token-only
+
+**Decision:** The agenda drawer ships "mark completed" and "mark no-show" via `updateAppointmentStatus`, but **not** an owner cancel. The existing `POST /api/appointments/[id]/cancel` is a public endpoint authenticated by a per-appointment `cancel_token` (delivered in the client's confirmation message) and IP-rate-limited — it is built for the client-facing cancellation link, not owner operations.
+
+**Why:** The Block B spec says "cancel triggers the Phase 4 cancellation message — verify the existing server action exists; if not, note it for a follow-up, do NOT build messaging here." There is no owner cancellation server action, and a correct one must void the pending 24h reminder and enqueue a cancellation message — i.e. Phase 4 messaging work that is explicitly out of scope for Block B. Repurposing the public token route from the dashboard would couple the owner UI to a public endpoint's quirks (token handling, ambiguous 404s).
+
+**How to apply:** Add a dedicated `cancelAppointment(id)` server action (owner/ownership check → set `cancelled` + `cancelled_at`, void pending reminder, insert `cancellation` message reusing the confirmation channel) when message-writing is in scope — Block E or a focused follow-up. Until then, no cancel control is rendered (rather than a non-functional one).
+
+---
+
+### ADR-032: Agenda filters use a native `<select>`, not the base-ui `Select` primitive
+
+**Decision:** The branch and staff filters render a styled native `<select>` rather than the `src/components/ui/select.tsx` (base-ui) primitive.
+
+**Why:** The `Select` primitive had zero existing usage in the codebase, and base-ui's `Select.Value` label resolution requires an `items` map on the root (otherwise it renders the raw value) — a runtime/display footgun that can't be verified without manual app runs. A native select is accessible by default, reliably testable (`getByLabelText` + `selectOptions`), and sufficient for two flat option lists. The design-system rule is about colors/tokens (honored via token classes), not the underlying element.
+
+**How to apply:** If a future filter needs grouped/searchable options or custom item rendering, revisit the base-ui `Select` then, supplying the `items` map so `Select.Value` shows labels.
+
+---
+
+### ADR-033: Agenda fetches one bounded window; client navigates in-memory
+
+**Decision:** The agenda page fetches appointments once over `agendaFetchWindow` (today −7d .. +35d, capped at 500 rows) and hands the set to a client `AgendaView` that does all day/week navigation and filtering in memory. No per-navigation server round-trip (no `searchParams`-driven refetch).
+
+**Why:** Instant toggle/nav/filter interactivity with simple, deterministic unit tests, and no loading flicker. The window covers the common operating horizon (a month ahead, a week back) for the MVP cohort.
+
+**Trade-off:** Navigating beyond the loaded window shows empty until reload, and very high-volume businesses could exceed 500 rows in the window. Acceptable for the closed beta; if it bites, switch `AgendaView` to push `?date=&view=` to the URL and refetch server-side (the pure helpers already accept an arbitrary cursor, so the calendar components are unaffected).
+
+---
+
+### ADR-034: Block B keeps the existing `MessageStatusPanel` in the drawer instead of a placeholder
+
+**Decision:** The detail drawer renders the already-shipped `MessageStatusPanel` (from the Phase-4-era agenda) rather than the "message status placeholder" the Block B spec describes for Block E to fill.
+
+**Why:** A working component already existed and was wired into the old agenda scaffold being replaced. Substituting a placeholder would remove live functionality. Block E can refine/extend this (e.g. the `MessageStatusBadge` summary on rows) without re-adding what already works.
+
+---

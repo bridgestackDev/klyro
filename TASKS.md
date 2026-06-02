@@ -297,8 +297,17 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 - [x] A8: Tests — home-data (8), KpiCard (2), StatusBadge (6), TodayAppointments (2) = 18; 426/426 green
 - [x] A9: DECISIONS.md — ADR-028, ADR-029, ADR-030
 
-### Block B — Agenda View ⬜
-- [ ] Day/week calendar, branch + staff filters, appointment detail drawer, `updateAppointmentStatus` action
+### Block B — Agenda View ✅
+- [x] B1: `src/lib/dashboard/agenda-data.ts` — normalize + pure calendar/date helpers + fetch window + tz resolver
+- [x] B2: `src/lib/actions/appointments.ts` — `updateAppointmentStatus` (ownership check, RLS update, revalidate)
+- [x] B3: `AgendaView` — day/week toggle, nav, branch + staff filters
+- [x] B4: `DayColumn` (+ shared `DayColumnBody`) and `WeekGrid` (7-col, scrollable)
+- [x] B5: `AppointmentCard` (positioned) + `AppointmentDrawer` (detail + mark completed/no-show, reuses `MessageStatusPanel`)
+- [x] B6: Rewrite `agenda/page.tsx` (RLS-scoped fetch), remove old route-local `AgendaView`
+- [x] B7: i18n `dashboard.agenda.*` (es + en)
+- [x] B8: Tests — agenda-data (16), action (5), drawer (3), view (4); 451/451 green
+- [x] B9: DECISIONS.md — ADR-031..034
+- [ ] B-followup: owner-side cancel server action (void reminder + cancellation message) — deferred, ADR-031
 
 ### Block C — Team Management ⬜
 - [ ] Invite staff by email, active toggle, branch assignment; `src/lib/actions/team.ts`

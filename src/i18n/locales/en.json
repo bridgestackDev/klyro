@@ -135,6 +135,33 @@
         "team": "Team",
         "links": "Booking links"
       }
+    },
+    "agenda": {
+      "day": "Day",
+      "week": "Week",
+      "today": "Today",
+      "previous": "Previous",
+      "next": "Next",
+      "branchFilter": "Filter by branch",
+      "allBranches": "All branches",
+      "staffFilter": "Filter by staff",
+      "allStaff": "All staff",
+      "empty": "No appointments for this day.",
+      "drawer": {
+        "title": "Appointment details",
+        "service": "Service",
+        "staff": "Staff",
+        "branch": "Branch",
+        "phone": "Phone",
+        "email": "Email",
+        "code": "Code",
+        "notes": "Notes",
+        "messages": "Messages",
+        "markCompleted": "Mark completed",
+        "markNoShow": "Mark no-show",
+        "statusUpdated": "Appointment updated.",
+        "statusFailed": "Couldn't update the appointment."
+      }
     }
   },
   "errors": {

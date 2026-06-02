@@ -135,6 +135,33 @@
         "team": "Equipo",
         "links": "Links de reserva"
       }
+    },
+    "agenda": {
+      "day": "Día",
+      "week": "Semana",
+      "today": "Hoy",
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "branchFilter": "Filtrar por sucursal",
+      "allBranches": "Todas las sucursales",
+      "staffFilter": "Filtrar por miembro",
+      "allStaff": "Todo el equipo",
+      "empty": "No hay citas para este día.",
+      "drawer": {
+        "title": "Detalle de la cita",
+        "service": "Servicio",
+        "staff": "Atiende",
+        "branch": "Sucursal",
+        "phone": "Teléfono",
+        "email": "Correo",
+        "code": "Código",
+        "notes": "Notas",
+        "messages": "Mensajes",
+        "markCompleted": "Marcar completada",
+        "markNoShow": "Marcar ausencia",
+        "statusUpdated": "Cita actualizada.",
+        "statusFailed": "No se pudo actualizar la cita."
+      }
     }
   },
   "errors": {

@@ -1,7 +1,7 @@
 # Klyro — Build Status
 
-**Last updated:** 2026-06-01
-**Active phase:** Phase 5 — Owner Dashboard (Block A done)
+**Last updated:** 2026-06-02
+**Active phase:** Phase 5 — Owner Dashboard (Blocks A–B done)
 
 ---
 
@@ -18,7 +18,7 @@
 | 3 | Public Booking Flow | ✅ Done | All blocks A–E complete; email capture fix landed |
 | 3.5 | API Documentation | ✅ Done | Swagger UI at /api-docs + Postman setup |
 | 4 | Messaging Engine | ✅ Done | Engine + Edge Function + Resend live (direct table access, ADR-027) |
-| 5 | Owner Dashboard | 🟡 In progress | Block A done (home KPIs + today's list); B–E pending |
+| 5 | Owner Dashboard | 🟡 In progress | Blocks A–B done (home + agenda calendar); C–E pending |
 | 6 | Staff Dashboard | ⬜ Not started | RLS-scoped own-day view |
 | 7 | Polish & QA | ⬜ Not started | WCAG AA, Lighthouse >90, brand pass |
 | 8 | Closed Beta | ⬜ Not started | 10 pioneer businesses, klyro.app |
@@ -520,7 +520,31 @@ Files changed:
 
 Tests: 426/426 passing (408 prior + 18 new). Typecheck + lint clean.
 
-**Blocks B–E** — Not started.
+**Block B — Agenda View** ✅ Done
+
+Replaces the Phase-4-era flat-list agenda scaffold with a real day/week calendar.
+
+Files added:
+- `src/lib/dashboard/agenda-data.ts` — pure helpers: `normalizeAgendaRows`, `localYmd`/`localMinutes`, `addDaysYmd`, `startOfWeekYmd`/`weekDaysYmd`, `appointmentsForDay`, `applyFilters`, `cardLayout` (px positioning), `agendaFetchWindow`, `resolveBusinessTimezone`; calendar consts (`DAY_START_HOUR`, `HOUR_PX`, …)
+- `src/lib/actions/appointments.ts` — `updateAppointmentStatus(id, status)` server action (completed/noshow/confirmed); session + explicit ownership check, RLS-enforced update, `revalidatePath`
+- `src/components/dashboard/agenda/AgendaView.tsx` — container: day/week toggle, prev/next/today nav, branch + staff filters, drawer wiring
+- `src/components/dashboard/agenda/DayColumn.tsx` — single-day timeline + shared `DayColumnBody`
+- `src/components/dashboard/agenda/WeekGrid.tsx` — 7-column grid (shared gutter, horizontally scrollable)
+- `src/components/dashboard/agenda/AppointmentCard.tsx` — absolutely-positioned card (status-accent border)
+- `src/components/dashboard/agenda/AppointmentDrawer.tsx` — Sheet detail + mark-completed/no-show; reuses the existing `MessageStatusPanel`
+- `tests/dashboard/agenda-data.test.ts` (16), `src/lib/actions/__tests__/appointments.test.ts` (5), `AppointmentDrawer.test.tsx` (3), `AgendaView.test.tsx` (4)
+
+Files changed:
+- `src/app/[locale]/(dashboard)/agenda/page.tsx` — RLS-scoped fetch of branches/staff/appointments (one window via `agendaFetchWindow`), normalize, render new `AgendaView`
+- Removed `src/app/[locale]/(dashboard)/agenda/AgendaView.tsx` (superseded scaffold)
+- `src/i18n/locales/es.json` + `en.json` — `dashboard.agenda.*`
+- `DECISIONS.md` — ADR-031..034
+
+Tests: 451/451 passing (426 prior + 25 new). Typecheck + lint clean.
+
+**Known follow-up:** owner-side cancel is not wired — the existing `/api/appointments/[id]/cancel` route is a public, client-token endpoint. A dedicated owner cancellation server action (void pending reminder + enqueue cancellation message) is needed; deferred per ADR-031 (Block B must not build messaging).
+
+**Blocks C–E** — Not started.
 
 ---
 
