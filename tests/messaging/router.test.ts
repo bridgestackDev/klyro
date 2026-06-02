@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // ── Supabase admin mock ──────────────────────────────────────────────────────
 
 const mockSingleMessage = vi.fn();
-const mockSingleTemplate = vi.fn();
+const mockTemplateIn = vi.fn(); // terminal call of the template query (.in)
 
 const messageChain = {
   select: vi.fn().mockReturnThis(),
@@ -14,7 +14,7 @@ const messageChain = {
 const templateChain = {
   select: vi.fn().mockReturnThis(),
   eq: vi.fn().mockReturnThis(),
-  single: mockSingleTemplate,
+  in: mockTemplateIn,
 };
 
 const mockFrom = vi.fn((table: string) => {
@@ -27,9 +27,16 @@ vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: vi.fn(() => ({ from: mockFrom })),
 }));
 
+// All providers configured so channel candidacy depends only on client contact fields.
 vi.mock('@/lib/env', () => ({
   env: {
     NEXT_PUBLIC_APP_URL: 'https://klyro.app',
+    WHATSAPP_PHONE_NUMBER_ID: 'wa-id',
+    WHATSAPP_ACCESS_TOKEN: 'wa-token',
+    TWILIO_ACCOUNT_SID: 'AC-test',
+    TWILIO_AUTH_TOKEN: 'twilio-token',
+    TWILIO_MESSAGING_SERVICE_SID: 'MG-test',
+    RESEND_API_KEY: 're_test',
   },
 }));
 
@@ -45,6 +52,9 @@ import {
 const MSG_ID = 'msg-001';
 const APPT_ID = 'appt-001';
 const CANCEL_TOKEN = 'tok-001';
+
+const DEFAULT_CONTENT = '¡Hola {nombre}! Tu corte el {fecha} a las {hora} con {staff}. Cancelar: {cancel_link}';
+const DEFAULT_VARS = ['nombre', 'fecha', 'hora', 'staff', 'cancel_link'];
 
 function makeMessageRow(overrides: Record<string, unknown> = {}) {
   return {
@@ -84,11 +94,12 @@ function makeMessageRow(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function makeTemplate(content = '¡Hola {nombre}! Tu corte el {fecha} a las {hora} con {staff}. Cancelar: {cancel_link}') {
-  return {
-    content,
-    variables: ['nombre', 'fecha', 'hora', 'staff', 'cancel_link'],
-  };
+/** Make the template query resolve with a template for each given channel. */
+function setTemplates(channels: string[], content = DEFAULT_CONTENT, variables = DEFAULT_VARS) {
+  mockTemplateIn.mockResolvedValue({
+    data: channels.map((channel) => ({ channel, content, variables })),
+    error: null,
+  });
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -103,9 +114,9 @@ describe('MessageRouter.resolve', () => {
     });
   });
 
-  it('returns a MessagePayload for a barbershop confirmation (es)', async () => {
+  it('returns a MessagePayload for a barbershop confirmation (es) via whatsapp', async () => {
     mockSingleMessage.mockResolvedValue({ data: makeMessageRow(), error: null });
-    mockSingleTemplate.mockResolvedValue({ data: makeTemplate(), error: null });
+    setTemplates(['whatsapp', 'email']);
 
     const router = new MessageRouter();
     const payload = await router.resolve(MSG_ID);
@@ -122,7 +133,7 @@ describe('MessageRouter.resolve', () => {
     expect(payload.subject).toContain('Barber Club');
   });
 
-  it('selects English template for a client with preferred_language=en', async () => {
+  it('queries templates with language=en for a client with preferred_language=en', async () => {
     const row = makeMessageRow({
       client: {
         id: 'cli-002',
@@ -134,20 +145,16 @@ describe('MessageRouter.resolve', () => {
       },
     });
     mockSingleMessage.mockResolvedValue({ data: row, error: null });
-    mockSingleTemplate.mockResolvedValue({
-      data: makeTemplate('Hi {nombre}! Appointment on {fecha} at {hora} with {staff}. Cancel: {cancel_link}'),
-      error: null,
-    });
+    setTemplates(['whatsapp'], 'Hi {nombre}! Appointment on {fecha} at {hora} with {staff}. Cancel: {cancel_link}');
 
     const router = new MessageRouter();
     const payload = await router.resolve(MSG_ID);
 
-    // Verify eq() was called with 'en' for the template query
     expect(templateChain.eq).toHaveBeenCalledWith('language', 'en');
     expect(payload.body).toContain('Ana');
   });
 
-  it('selects spa vertical template', async () => {
+  it('queries templates for the spa vertical', async () => {
     const row = makeMessageRow({
       business: {
         id: 'biz-002',
@@ -158,10 +165,7 @@ describe('MessageRouter.resolve', () => {
       },
     });
     mockSingleMessage.mockResolvedValue({ data: row, error: null });
-    mockSingleTemplate.mockResolvedValue({
-      data: makeTemplate('Hola {nombre}, tu {servicio} el {fecha}. Cancelar: {cancel_link}'),
-      error: null,
-    });
+    setTemplates(['whatsapp'], 'Hola {nombre}, tu cita el {fecha}. Cancelar: {cancel_link}', ['nombre', 'fecha', 'cancel_link']);
 
     const router = new MessageRouter();
     await router.resolve(MSG_ID);
@@ -169,7 +173,7 @@ describe('MessageRouter.resolve', () => {
     expect(templateChain.eq).toHaveBeenCalledWith('vertical', 'spa');
   });
 
-  it('falls back to SMS when client has no whatsapp_number', async () => {
+  it('uses SMS when whatsapp is absent and an SMS template exists', async () => {
     const row = makeMessageRow({
       client: {
         id: 'cli-003',
@@ -181,20 +185,41 @@ describe('MessageRouter.resolve', () => {
       },
     });
     mockSingleMessage.mockResolvedValue({ data: row, error: null });
-    mockSingleTemplate.mockResolvedValue({
-      data: makeTemplate('Hola {nombre}! Cita el {fecha}. Cancelar: {cancel_link}'),
-      error: null,
-    });
+    setTemplates(['sms', 'email'], 'Hola {nombre}! Cita el {fecha}. Cancelar: {cancel_link}', ['nombre', 'fecha', 'cancel_link']);
 
     const router = new MessageRouter();
     const payload = await router.resolve(MSG_ID);
 
     expect(payload.channel).toBe('sms');
     expect(payload.to).toBe('+50499887766');
-    expect(templateChain.eq).toHaveBeenCalledWith('channel', 'sms');
+    expect(templateChain.in).toHaveBeenCalledWith('channel', ['sms', 'email']);
   });
 
-  it('falls back to email when client has no whatsapp_number and no phone', async () => {
+  // The core fallback-bug regression: client HAS a phone but there is no SMS
+  // template — must fall through to email instead of failing.
+  it('falls through to EMAIL when the client has a phone but no SMS template exists', async () => {
+    const row = makeMessageRow({
+      client: {
+        id: 'cli-006',
+        full_name: 'Pedro Gómez',
+        phone: '+50455667788',
+        email: 'pedro@example.com',
+        whatsapp_number: null,
+        preferred_language: 'es',
+      },
+    });
+    mockSingleMessage.mockResolvedValue({ data: row, error: null });
+    // Only an email template exists; sms is a candidate but has no template.
+    setTemplates(['email'], 'Hola {nombre}! Cita el {fecha}. Cancelar: {cancel_link}', ['nombre', 'fecha', 'cancel_link']);
+
+    const router = new MessageRouter();
+    const payload = await router.resolve(MSG_ID);
+
+    expect(payload.channel).toBe('email');
+    expect(payload.to).toBe('pedro@example.com');
+  });
+
+  it('uses email when client has only an email', async () => {
     const row = makeMessageRow({
       client: {
         id: 'cli-004',
@@ -206,10 +231,7 @@ describe('MessageRouter.resolve', () => {
       },
     });
     mockSingleMessage.mockResolvedValue({ data: row, error: null });
-    mockSingleTemplate.mockResolvedValue({
-      data: makeTemplate('Hola {nombre}! Cita el {fecha}.\n\nPara cancelar: {cancel_link}'),
-      error: null,
-    });
+    setTemplates(['email'], 'Hola {nombre}! Cita el {fecha}. Cancelar: {cancel_link}', ['nombre', 'fecha', 'cancel_link']);
 
     const router = new MessageRouter();
     const payload = await router.resolve(MSG_ID);
@@ -252,9 +274,9 @@ describe('MessageRouter.resolve', () => {
     await expect(router.resolve(MSG_ID)).rejects.toBeInstanceOf(MessageNotFoundError);
   });
 
-  it('throws TemplateNotFoundError when no template exists for vertical+language+channel', async () => {
+  it('throws TemplateNotFoundError when no template exists for any candidate channel', async () => {
     mockSingleMessage.mockResolvedValue({ data: makeMessageRow(), error: null });
-    mockSingleTemplate.mockResolvedValue({ data: null, error: { message: 'Not found' } });
+    mockTemplateIn.mockResolvedValue({ data: [], error: null });
 
     const router = new MessageRouter();
     await expect(router.resolve(MSG_ID)).rejects.toBeInstanceOf(TemplateNotFoundError);
@@ -262,10 +284,7 @@ describe('MessageRouter.resolve', () => {
 
   it('includes cancel_link in payload body', async () => {
     mockSingleMessage.mockResolvedValue({ data: makeMessageRow(), error: null });
-    mockSingleTemplate.mockResolvedValue({
-      data: makeTemplate('Cancelar: {cancel_link}'),
-      error: null,
-    });
+    setTemplates(['whatsapp'], 'Cancelar: {cancel_link}', ['cancel_link']);
 
     const router = new MessageRouter();
     const payload = await router.resolve(MSG_ID);
@@ -275,10 +294,7 @@ describe('MessageRouter.resolve', () => {
 
   it('uses nombre first name only in template variables', async () => {
     mockSingleMessage.mockResolvedValue({ data: makeMessageRow(), error: null });
-    mockSingleTemplate.mockResolvedValue({
-      data: makeTemplate('Hola {nombre}!'),
-      error: null,
-    });
+    setTemplates(['whatsapp'], 'Hola {nombre}!', ['nombre']);
 
     const router = new MessageRouter();
     const payload = await router.resolve(MSG_ID);
@@ -289,7 +305,7 @@ describe('MessageRouter.resolve', () => {
 
   it('sets subject with business name for Spanish confirmation', async () => {
     mockSingleMessage.mockResolvedValue({ data: makeMessageRow(), error: null });
-    mockSingleTemplate.mockResolvedValue({ data: makeTemplate('body'), error: null });
+    setTemplates(['whatsapp'], 'body', []);
 
     const router = new MessageRouter();
     const payload = await router.resolve(MSG_ID);
@@ -309,10 +325,7 @@ describe('MessageRouter.resolve', () => {
       },
     });
     mockSingleMessage.mockResolvedValue({ data: row, error: null });
-    mockSingleTemplate.mockResolvedValue({
-      data: makeTemplate('Hi {nombre}! Appt {fecha}. Cancel: {cancel_link}'),
-      error: null,
-    });
+    setTemplates(['whatsapp'], 'Hi {nombre}! Appt {fecha}. Cancel: {cancel_link}', ['nombre', 'fecha', 'cancel_link']);
 
     const router = new MessageRouter();
     const payload = await router.resolve(MSG_ID);
@@ -325,18 +338,11 @@ describe('MessageRouter.resolve', () => {
   it('queries the reminder_24h template (not confirmation) when message type is reminder_24h', async () => {
     const row = { ...makeMessageRow(), type: 'reminder_24h' };
     mockSingleMessage.mockResolvedValue({ data: row, error: null });
-    mockSingleTemplate.mockResolvedValue({
-      data: {
-        content: '¡{nombre}, te recordamos tu turno mañana {fecha} a las {hora} con {staff}!',
-        variables: ['nombre', 'fecha', 'hora', 'staff'],
-      },
-      error: null,
-    });
+    setTemplates(['whatsapp'], '¡{nombre}, te recordamos tu turno mañana {fecha} a las {hora} con {staff}!', ['nombre', 'fecha', 'hora', 'staff']);
 
     const router = new MessageRouter();
     const payload = await router.resolve(MSG_ID);
 
-    // Verify the template query used type = 'reminder_24h'
     expect(templateChain.eq).toHaveBeenCalledWith('type', 'reminder_24h');
     expect(payload.type).toBe('reminder_24h');
   });
@@ -344,13 +350,7 @@ describe('MessageRouter.resolve', () => {
   it('returns reminder payload with correct body populated for reminder_24h', async () => {
     const row = { ...makeMessageRow(), type: 'reminder_24h' };
     mockSingleMessage.mockResolvedValue({ data: row, error: null });
-    mockSingleTemplate.mockResolvedValue({
-      data: {
-        content: '¡{nombre}, mañana entrenas! Tu sesión con {staff} a las {hora}.',
-        variables: ['nombre', 'staff', 'hora'],
-      },
-      error: null,
-    });
+    setTemplates(['whatsapp'], '¡{nombre}, mañana entrenas! Tu sesión con {staff} a las {hora}.', ['nombre', 'staff', 'hora']);
 
     const router = new MessageRouter();
     const payload = await router.resolve(MSG_ID);
@@ -362,10 +362,7 @@ describe('MessageRouter.resolve', () => {
   it('sets the reminder subject in Spanish', async () => {
     const row = { ...makeMessageRow(), type: 'reminder_24h' };
     mockSingleMessage.mockResolvedValue({ data: row, error: null });
-    mockSingleTemplate.mockResolvedValue({
-      data: { content: '{nombre} {fecha}', variables: ['nombre', 'fecha'] },
-      error: null,
-    });
+    setTemplates(['whatsapp'], '{nombre} {fecha}', ['nombre', 'fecha']);
 
     const router = new MessageRouter();
     const payload = await router.resolve(MSG_ID);
@@ -388,10 +385,7 @@ describe('MessageRouter.resolve', () => {
       type: 'reminder_24h',
     };
     mockSingleMessage.mockResolvedValue({ data: row, error: null });
-    mockSingleTemplate.mockResolvedValue({
-      data: { content: 'Hey {nombre}!', variables: ['nombre'] },
-      error: null,
-    });
+    setTemplates(['whatsapp'], 'Hey {nombre}!', ['nombre']);
 
     const router = new MessageRouter();
     const payload = await router.resolve(MSG_ID);

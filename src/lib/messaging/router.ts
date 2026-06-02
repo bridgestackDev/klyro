@@ -91,20 +91,41 @@ export class MessageRouter {
     const type = raw.type as MessageType;
     const vertical = business.vertical;
 
-    const channel = this.resolveChannel(client, branch, appt.id);
+    const candidates = this.candidateChannels(client, branch.whatsapp_number);
+    if (candidates.length === 0) {
+      throw new NoChannelAvailableError(appt.id);
+    }
 
-    const { data: template, error: tmplError } = await this.supabase
+    // Fetch templates for every candidate channel in one query, then pick the
+    // first candidate (in priority order) that actually has a template — so a
+    // missing SMS template falls through to email.
+    const { data: templates, error: tmplError } = await this.supabase
       .from('message_templates')
-      .select('content, variables')
+      .select('channel, content, variables')
       .eq('type', type)
-      .eq('channel', channel)
       .eq('language', language)
       .eq('vertical', vertical)
       .eq('is_active', true)
-      .single();
+      .in('channel', candidates);
 
-    if (tmplError || !template) {
-      throw new TemplateNotFoundError(vertical, language, channel, type);
+    if (tmplError) {
+      throw new TemplateNotFoundError(vertical, language, candidates[0]!, type);
+    }
+
+    const rows = (templates ?? []) as Array<{ channel: string; content: string; variables: unknown }>;
+    let channel: MessageChannel | null = null;
+    let template: { content: string; variables: unknown } | null = null;
+    for (const ch of candidates) {
+      const t = rows.find((x) => x.channel === ch);
+      if (t) {
+        channel = ch;
+        template = t;
+        break;
+      }
+    }
+
+    if (!channel || !template) {
+      throw new TemplateNotFoundError(vertical, language, candidates[0]!, type);
     }
 
     const timezone = branch.timezone ?? 'America/Tegucigalpa';
@@ -143,15 +164,23 @@ export class MessageRouter {
     };
   }
 
-  private resolveChannel(
+  // Ordered list of channels deliverable for this client: a destination address
+  // is present AND the provider is configured. Priority: WhatsApp → SMS → Email.
+  private candidateChannels(
     client: { whatsapp_number: string | null; phone: string | null; email: string | null },
-    branch: { whatsapp_number: string | null },
-    appointmentId: string,
-  ): MessageChannel {
-    if (client.whatsapp_number && branch.whatsapp_number) return 'whatsapp';
-    if (client.phone) return 'sms';
-    if (client.email) return 'email';
-    throw new NoChannelAvailableError(appointmentId);
+    branchWhatsapp: string | null,
+  ): MessageChannel[] {
+    const out: MessageChannel[] = [];
+    if (client.whatsapp_number && branchWhatsapp && env.WHATSAPP_PHONE_NUMBER_ID && env.WHATSAPP_ACCESS_TOKEN) {
+      out.push('whatsapp');
+    }
+    if (client.phone && env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN && env.TWILIO_MESSAGING_SERVICE_SID) {
+      out.push('sms');
+    }
+    if (client.email && env.RESEND_API_KEY) {
+      out.push('email');
+    }
+    return out;
   }
 
   private getTo(
