@@ -1,6 +1,6 @@
-// Supabase Edge Function — Deno runtime.
+// Supabase Edge Function - Deno runtime.
 // Called by pg_cron every 5 minutes. Dispatches all pending messages whose
-// scheduled_at <= now() using the appropriate channel adapter.
+// scheduled_at <= now() over the best available channel.
 // Processes messages serially to stay within Supabase Free tier connection limits.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -22,8 +22,6 @@ const TWILIO_SVC = Deno.env.get("TWILIO_MESSAGING_SERVICE_SID") ?? "";
 const RESEND_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
 const RESEND_FROM = Deno.env.get("RESEND_FROM_EMAIL") ?? "hola@klyro.app";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-
 type MessageChannel = "whatsapp" | "sms" | "email";
 type MessageType = "confirmation" | "reminder_24h" | "cancellation";
 
@@ -33,8 +31,7 @@ interface DispatchResult {
   error?: string;
 }
 
-// ── Variable interpolation ────────────────────────────────────────────────────
-
+// Variable interpolation
 function interpolate(template: string, vars: Record<string, string>): string {
   return template.replace(/\{([^}]+)\}/g, (_m, key: string) => {
     if (key === "mascota") return vars["mascota"] ?? vars["nombre"] ?? `{${key}}`;
@@ -42,8 +39,7 @@ function interpolate(template: string, vars: Record<string, string>): string {
   });
 }
 
-// ── Date/time formatting ──────────────────────────────────────────────────────
-
+// Date/time formatting
 function formatDate(iso: string, tz: string, lang: string): string {
   return new Intl.DateTimeFormat(lang === "en" ? "en-US" : "es-HN", {
     timeZone: tz,
@@ -63,8 +59,7 @@ function formatTime(iso: string, tz: string, lang: string): string {
   }).format(new Date(iso));
 }
 
-// ── Channel senders ───────────────────────────────────────────────────────────
-
+// Channel senders
 async function sendWhatsApp(to: string, body: string): Promise<DispatchResult> {
   if (!WA_PHONE_ID || !WA_TOKEN) {
     return { success: false, error: "WhatsApp not configured" };
@@ -138,34 +133,44 @@ async function sendEmail(
   return { success: true, providerMessageId: data.id };
 }
 
-// ── Channel resolution ────────────────────────────────────────────────────────
-
-function resolveChannel(
-  clientWhatsapp: string | null,
-  clientPhone: string | null,
-  clientEmail: string | null,
-  branchWhatsapp: string | null,
-): MessageChannel | null {
-  if (clientWhatsapp && branchWhatsapp) return "whatsapp";
-  if (clientPhone) return "sms";
-  if (clientEmail) return "email";
-  return null;
+// Channel resolution
+interface ClientContact {
+  whatsapp_number: string | null;
+  phone: string | null;
+  email: string | null;
 }
 
-// ── Build email subject ───────────────────────────────────────────────────────
+// Ordered list of channels that are actually deliverable for this client:
+// the client has a destination address AND the provider is configured.
+// Priority: WhatsApp -> SMS -> Email. The caller then picks the first of these
+// that also has a template, so a missing SMS template falls through to email.
+function candidateChannels(
+  client: ClientContact,
+  branchWhatsapp: string | null,
+): MessageChannel[] {
+  const out: MessageChannel[] = [];
+  if (client.whatsapp_number && branchWhatsapp && WA_PHONE_ID && WA_TOKEN) {
+    out.push("whatsapp");
+  }
+  if (client.phone && TWILIO_SID && TWILIO_TOKEN && TWILIO_SVC) {
+    out.push("sms");
+  }
+  if (client.email && RESEND_KEY) {
+    out.push("email");
+  }
+  return out;
+}
 
 function buildSubject(type: MessageType, businessName: string, lang: string): string {
   if (lang === "en") {
-    if (type === "confirmation") return `Appointment confirmed — ${businessName}`;
-    if (type === "reminder_24h") return `Appointment reminder — ${businessName}`;
-    return `Appointment cancelled — ${businessName}`;
+    if (type === "confirmation") return `Appointment confirmed - ${businessName}`;
+    if (type === "reminder_24h") return `Appointment reminder - ${businessName}`;
+    return `Appointment cancelled - ${businessName}`;
   }
-  if (type === "confirmation") return `Cita confirmada — ${businessName}`;
-  if (type === "reminder_24h") return `Recordatorio de cita — ${businessName}`;
-  return `Cita cancelada — ${businessName}`;
+  if (type === "confirmation") return `Cita confirmada - ${businessName}`;
+  if (type === "reminder_24h") return `Recordatorio de cita - ${businessName}`;
+  return `Cita cancelada - ${businessName}`;
 }
-
-// ── Main handler ──────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
@@ -194,7 +199,6 @@ Deno.serve(async (req) => {
   // Process serially to avoid connection pool exhaustion on Free tier
   for (const { id: messageId } of pendingMessages ?? []) {
     try {
-      // Load full message context
       const { data: msg, error: msgError } = await supabase
         .from("messages")
         .select(`
@@ -233,37 +237,52 @@ Deno.serve(async (req) => {
       const type = msg.type as MessageType;
       const vertical = business.vertical as string;
 
-      const channel = resolveChannel(
-        client.whatsapp_number,
-        client.phone,
-        client.email,
-        branch.whatsapp_number,
-      );
+      const candidates = candidateChannels(client, branch.whatsapp_number);
 
-      if (!channel) {
+      if (candidates.length === 0) {
         await supabase
           .from("messages")
-          .update({ status: "failed", error: "no channel available" })
+          .update({ status: "failed", error: "no deliverable channel (missing client contact info or no provider configured)" })
           .eq("id", messageId);
         failed++;
         continue;
       }
 
-      // Look up template
-      const { data: template, error: tmplError } = await supabase
+      // Fetch templates for every candidate channel in one query, then pick the
+      // first candidate (in priority order) that actually has a template.
+      const { data: templates, error: tmplError } = await supabase
         .from("message_templates")
-        .select("content, variables")
+        .select("channel, content, variables")
         .eq("type", type)
-        .eq("channel", channel)
         .eq("language", lang)
         .eq("vertical", vertical)
         .eq("is_active", true)
-        .single();
+        .in("channel", candidates);
 
-      if (tmplError || !template) {
+      if (tmplError) {
         await supabase
           .from("messages")
-          .update({ status: "failed", error: `no template for (${vertical},${lang},${channel},${type})` })
+          .update({ status: "failed", error: `template lookup error: ${tmplError.message}` })
+          .eq("id", messageId);
+        failed++;
+        continue;
+      }
+
+      let channel: MessageChannel | null = null;
+      let template: { content: string; variables: unknown } | null = null;
+      for (const ch of candidates) {
+        const t = (templates ?? []).find((x) => x.channel === ch);
+        if (t) {
+          channel = ch;
+          template = t;
+          break;
+        }
+      }
+
+      if (!channel || !template) {
+        await supabase
+          .from("messages")
+          .update({ status: "failed", error: `no template for (${vertical},${lang},${type}) on any available channel [${candidates.join(",")}]` })
           .eq("id", messageId);
         failed++;
         continue;
@@ -277,7 +296,7 @@ Deno.serve(async (req) => {
         staff: staff.display_name,
         negocio: business.name,
         servicio: service.name,
-        dirección: branch.address ?? "",
+        "dirección": branch.address ?? "",
         sucursal: branch.name,
         cancel_link: `${APP_URL}/api/appointments/${appt.id}/cancel`,
         link: `${APP_URL}/${business.slug}`,
@@ -285,7 +304,6 @@ Deno.serve(async (req) => {
 
       const body = interpolate(template.content, vars);
 
-      // Dispatch
       let result: DispatchResult;
       if (channel === "whatsapp") {
         result = await sendWhatsApp(client.whatsapp_number!, body);
@@ -301,6 +319,7 @@ Deno.serve(async (req) => {
           .from("messages")
           .update({
             status: "sent",
+            channel,
             provider_message_id: result.providerMessageId ?? null,
             sent_at: new Date().toISOString(),
           })
