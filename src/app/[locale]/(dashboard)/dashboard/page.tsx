@@ -1,26 +1,89 @@
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { ArrowRight, CheckCircle } from "lucide-react";
+import { ArrowRight, CheckCircle, CalendarDays, Users, LinkIcon } from "lucide-react";
 import { SetupLogoBanner } from "@/components/dashboard/SetupLogoBanner";
+import { KpiCard } from "@/components/dashboard/KpiCard";
+import {
+  TodayAppointments,
+  type TodayAppointmentItem,
+} from "@/components/dashboard/TodayAppointments";
+import {
+  deriveHomeData,
+  homeFetchWindow,
+  type RawAppointmentRow,
+  type AppointmentStatus,
+} from "@/lib/dashboard/home-data";
+import { formatTime } from "@/lib/format/date";
 
-async function getSetupStatus(userId: string) {
+const DEFAULT_TZ = "America/Tegucigalpa";
+
+interface BusinessContext {
+  needsSetup: boolean;
+  logoUrl: string | null;
+  onboardingCompleted: boolean;
+  businessId: string | null;
+  timezone: string;
+}
+
+async function getBusinessContext(userId: string): Promise<BusinessContext> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("users")
-    .select("business_id, businesses(onboarding_completed, logo_url)")
+    .select(
+      "business_id, businesses(onboarding_completed, logo_url, branches(timezone, is_active))"
+    )
     .eq("id", userId)
     .single();
 
-  if (!data?.business_id) return { needsSetup: true, logoUrl: null, onboardingCompleted: false };
-  const biz = Array.isArray(data.businesses)
-    ? data.businesses[0]
-    : data.businesses;
-  return {
-    needsSetup: !biz?.onboarding_completed,
-    logoUrl: (biz?.logo_url as string | null) ?? null,
-    onboardingCompleted: biz?.onboarding_completed ?? false,
+  const empty: BusinessContext = {
+    needsSetup: true,
+    logoUrl: null,
+    onboardingCompleted: false,
+    businessId: null,
+    timezone: DEFAULT_TZ,
   };
+
+  if (!data?.business_id) return empty;
+
+  const biz = Array.isArray(data.businesses) ? data.businesses[0] : data.businesses;
+  if (!biz) return empty;
+
+  type BranchRow = { timezone: string; is_active: boolean };
+  const rawBranches = biz.branches as BranchRow | BranchRow[] | null;
+  const branches: BranchRow[] = Array.isArray(rawBranches)
+    ? rawBranches
+    : rawBranches
+      ? [rawBranches]
+      : [];
+  const timezone =
+    branches.find((b) => b.is_active)?.timezone ?? branches[0]?.timezone ?? DEFAULT_TZ;
+
+  return {
+    needsSetup: !biz.onboarding_completed,
+    logoUrl: (biz.logo_url as string | null) ?? null,
+    onboardingCompleted: biz.onboarding_completed ?? false,
+    businessId: data.business_id,
+    timezone,
+  };
+}
+
+async function getHomeData(timezone: string) {
+  const supabase = await createClient();
+  const now = new Date();
+  const { start, end } = homeFetchWindow(now, timezone);
+
+  // RLS scopes appointments to the owner's business — no manual business_id filter.
+  const { data } = await supabase
+    .from("appointments")
+    .select(
+      "id, starts_at, status, clients(full_name), services(name), staff(display_name)"
+    )
+    .gte("starts_at", start)
+    .lt("starts_at", end)
+    .order("starts_at", { ascending: true });
+
+  return deriveHomeData((data ?? []) as RawAppointmentRow[], now, timezone);
 }
 
 export default async function DashboardPage({
@@ -36,15 +99,41 @@ export default async function DashboardPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { needsSetup, logoUrl, onboardingCompleted } = user
-    ? await getSetupStatus(user.id)
-    : { needsSetup: false, logoUrl: null, onboardingCompleted: false };
+  const ctx = user
+    ? await getBusinessContext(user.id)
+    : {
+        needsSetup: false,
+        logoUrl: null,
+        onboardingCompleted: false,
+        businessId: null,
+        timezone: DEFAULT_TZ,
+      };
+  const { needsSetup, logoUrl, onboardingCompleted, timezone } = ctx;
+
+  const home = needsSetup ? null : await getHomeData(timezone);
+
+  const statusLabel = (status: AppointmentStatus) => t(`home.status.${status}`);
+  const todayItems: TodayAppointmentItem[] = (home?.today ?? []).map((appt) => ({
+    id: appt.id,
+    time: formatTime(appt.startsAt, locale),
+    clientName: appt.clientName,
+    serviceName: appt.serviceName,
+    staffName: appt.staffName,
+    status: appt.status,
+    statusLabel: statusLabel(appt.status),
+  }));
 
   const displayName =
     user?.user_metadata?.["full_name"] ??
     user?.user_metadata?.["name"] ??
     user?.email?.split("@")[0] ??
     "";
+
+  const quickLinks = [
+    { href: `/${locale}/agenda`, label: t("home.quickLinks.agenda"), icon: CalendarDays },
+    { href: `/${locale}/team`, label: t("home.quickLinks.team"), icon: Users },
+    { href: `/${locale}/links`, label: t("home.quickLinks.links"), icon: LinkIcon },
+  ];
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -105,13 +194,54 @@ export default async function DashboardPage({
         </div>
       )}
 
-      {/* Placeholder content when setup is done */}
-      {!needsSetup && (
-        <div className="rounded-[var(--radius-card)] border border-[var(--border-subtle)] bg-[var(--color-bg-surface)] p-8 text-center">
-          <p className="text-sm text-[var(--color-text-muted)]">
-            {t("placeholder")}
-          </p>
-        </div>
+      {/* Operational view — shown once setup is complete */}
+      {!needsSetup && home && (
+        <>
+          {/* TODO(phase-5-block-e): subscribe to Supabase Realtime on
+              appointments:{businessId} to live-refresh these KPIs and the list. */}
+
+          {/* KPI row */}
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <KpiCard label={t("home.kpi.today")} value={home.kpis.today} />
+            <KpiCard label={t("home.kpi.upcomingWeek")} value={home.kpis.upcomingWeek} />
+            <KpiCard label={t("home.kpi.completedToday")} value={home.kpis.completedToday} />
+            <KpiCard label={t("home.kpi.noShowsWeek")} value={home.kpis.noShowsWeek} />
+          </div>
+
+          {/* Today's appointments */}
+          <section className="space-y-3">
+            <h2 className="text-base font-semibold text-[var(--color-text-primary)]">
+              {t("home.todayHeading")}
+            </h2>
+            <TodayAppointments
+              appointments={todayItems}
+              emptyTitle={t("home.empty")}
+            />
+          </section>
+
+          {/* Quick links */}
+          <section className="space-y-3">
+            <h2 className="text-base font-semibold text-[var(--color-text-primary)]">
+              {t("home.quickLinks.heading")}
+            </h2>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {quickLinks.map(({ href, label, icon: Icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="flex items-center gap-3 rounded-[var(--radius-card)] border border-[var(--border-subtle)] bg-[var(--color-bg-surface)] p-4 transition-colors hover:bg-[var(--color-bg-hover)]"
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-[var(--color-violet)]/12 text-[var(--color-violet)]">
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <span className="text-sm font-medium text-[var(--color-text-primary)]">
+                    {label}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        </>
       )}
     </div>
   );

@@ -112,7 +112,30 @@
     "title": "Dashboard",
     "welcome": "Welcome",
     "placeholder": "Your dashboard will appear here in Phase 5.",
-    "noAppointments": "No appointments in the next 7 days."
+    "noAppointments": "No appointments in the next 7 days.",
+    "home": {
+      "kpi": {
+        "today": "Appointments today",
+        "upcomingWeek": "Upcoming this week",
+        "completedToday": "Completed today",
+        "noShowsWeek": "No-shows this week"
+      },
+      "todayHeading": "Today's appointments",
+      "empty": "No appointments today.",
+      "status": {
+        "pending": "Pending",
+        "confirmed": "Confirmed",
+        "completed": "Completed",
+        "noshow": "No-show",
+        "cancelled": "Cancelled"
+      },
+      "quickLinks": {
+        "heading": "Quick links",
+        "agenda": "Agenda",
+        "team": "Team",
+        "links": "Booking links"
+      }
+    }
   },
   "errors": {
     "UNAUTHORIZED": "You must be signed in to continue.",

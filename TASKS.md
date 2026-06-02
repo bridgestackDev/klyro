@@ -286,18 +286,28 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 
 ## Phase 5 — Owner Dashboard
 
-- [ ] Dashboard home: today's appointments (count + list), quick stats
-- [ ] Agenda view: calendar grid (day / week), appointment cards
-- [ ] Clients list: search, total visits, last visit
-- [ ] Services management: CRUD for service catalog
-- [ ] Team management: invite staff by email, list staff, toggle active
-- [ ] Branches management: CRUD for branches, assign staff to branch
-- [ ] Links page: copy booking URL, QR code download
-- [ ] Settings: business profile, logo upload (Supabase Storage), language/currency
-- [ ] Real-time: new booking toast via Supabase Realtime subscription
-- [ ] UI copy uses `appointmentNoun` / `staffNoun` from vertical registry
-- [ ] Typecheck + lint pass
-- [ ] Commit Phase 5
+### Block A — Dashboard Home ✅
+- [x] A1: `src/lib/dashboard/home-data.ts` — `deriveHomeData` + `homeFetchWindow` (tz-aware KPI derivation, reuses `localTimeToUTC`)
+- [x] A2: `src/components/dashboard/KpiCard.tsx` — reusable stat card
+- [x] A3: `src/components/dashboard/StatusBadge.tsx` — status → semantic token (`STATUS_TOKEN`)
+- [x] A4: `src/components/dashboard/AppointmentRow.tsx` — single row (reused in Agenda)
+- [x] A5: `src/components/dashboard/TodayAppointments.tsx` — list + empty state (cat mark)
+- [x] A6: Extend `dashboard/page.tsx` — KPI row, today's list, quick links; Realtime TODO stub
+- [x] A7: i18n `dashboard.home.*` (es + en)
+- [x] A8: Tests — home-data (8), KpiCard (2), StatusBadge (6), TodayAppointments (2) = 18; 426/426 green
+- [x] A9: DECISIONS.md — ADR-028, ADR-029, ADR-030
+
+### Block B — Agenda View ⬜
+- [ ] Day/week calendar, branch + staff filters, appointment detail drawer, `updateAppointmentStatus` action
+
+### Block C — Team Management ⬜
+- [ ] Invite staff by email, active toggle, branch assignment; `src/lib/actions/team.ts`
+
+### Block D — Branches / Services / Links / Settings ⬜
+- [ ] CRUD pages + actions; QR codes on Links (justifies `qrcode` dep)
+
+### Block E — Realtime + Message Status ⬜
+- [ ] Supabase Realtime on `appointments:{businessId}`; `MessageStatusBadge`; `read-status.ts`; tag `phase-5-done`
 
 ---
 

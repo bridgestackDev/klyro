@@ -1,7 +1,7 @@
 # Klyro — Build Status
 
-**Last updated:** 2026-05-31
-**Active phase:** Phase 4 preflight — booking email fix landed
+**Last updated:** 2026-06-01
+**Active phase:** Phase 5 — Owner Dashboard (Block A done)
 
 ---
 
@@ -17,8 +17,8 @@
 | LP | Landing Page (parallel) | ✅ Done | `/[locale]` — 4 sections, fully static, dark surface |
 | 3 | Public Booking Flow | ✅ Done | All blocks A–E complete; email capture fix landed |
 | 3.5 | API Documentation | ✅ Done | Swagger UI at /api-docs + Postman setup |
-| 4 | Messaging Engine | ⬜ Not started | Blocked on PHASE_4_PREFLIGHT.md — all 6 items open |
-| 5 | Owner Dashboard | ⬜ Not started | Full operational view |
+| 4 | Messaging Engine | ✅ Done | Engine + Edge Function + Resend live (direct table access, ADR-027) |
+| 5 | Owner Dashboard | 🟡 In progress | Block A done (home KPIs + today's list); B–E pending |
 | 6 | Staff Dashboard | ⬜ Not started | RLS-scoped own-day view |
 | 7 | Polish & QA | ⬜ Not started | WCAG AA, Lighthouse >90, brand pass |
 | 8 | Closed Beta | ⬜ Not started | 10 pioneer businesses, klyro.app |
@@ -493,6 +493,34 @@ ADRs added: ADR-024 (shared error envelope), ADR-025 (HATEOAS mismatch)
 **What surprised us:** `next-openapi-gen` v1.4.x deprecated `next.openapi.json` in favour of `openapi-gen.config.json` — the README still references the old name. Used the preferred filename from the start to avoid deprecation warnings. Also: the tool requires JSDoc on the `export const GET/POST = ...` line, not on the inner `handler` function — the HOF wrapping pattern (`withRequestLogging`) required moving annotations to the export assignment.
 
 **What to revisit in Phase 5+:** Add `@response` annotations with explicit status codes and response shapes once the response schemas stabilize. Currently the spec has empty `responses: {}` objects — "Try it out" still works but response schemas aren't documented.
+
+---
+
+## Phase 5 — Owner Dashboard 🟡
+
+**Branch:** `feature/owner-dashboard` (off `development`)
+
+**Block A — Dashboard Home** ✅ Done
+
+Extends the Phase 1 dashboard shell — replaces the "Phase 5" placeholder card with the real operational view. Setup-banner path untouched.
+
+Files added:
+- `src/lib/dashboard/home-data.ts` — pure `deriveHomeData(rows, now, tz)` + `homeFetchWindow(now, tz)`; computes the four KPIs and today's list with tz-aware day boundaries (reuses `localTimeToUTC` from `slots.ts`, no new deps)
+- `src/components/dashboard/KpiCard.tsx` — reusable stat card (label, value, optional hint/icon)
+- `src/components/dashboard/StatusBadge.tsx` — maps appointment status → semantic token (`STATUS_TOKEN`); inline CSS-var colors, no hardcoded hex
+- `src/components/dashboard/AppointmentRow.tsx` — single row (time, client, service · staff, badge); presentational, reused by Agenda in Block B
+- `src/components/dashboard/TodayAppointments.tsx` — list + empty state (cat mark via `<Logo variant="mark" />`)
+- `tests/dashboard/home-data.test.ts` — 8 tests (each KPI, sorting, array normalization, empty set, fetch window)
+- `src/components/dashboard/__tests__/{KpiCard,StatusBadge,TodayAppointments}.test.tsx` — 10 tests
+
+Files changed:
+- `src/app/[locale]/(dashboard)/dashboard/page.tsx` — `getBusinessContext` resolves business + active-branch timezone; `getHomeData` fetches one appointments window (RLS-scoped) and derives KPIs; renders KPI row + today's list + quick links; Realtime left as a `TODO(phase-5-block-e)` comment
+- `src/i18n/locales/es.json` + `en.json` — `dashboard.home.*` namespace (kpi, todayHeading, empty, status labels, quickLinks)
+- `DECISIONS.md` — ADR-028, ADR-029, ADR-030
+
+Tests: 426/426 passing (408 prior + 18 new). Typecheck + lint clean.
+
+**Blocks B–E** — Not started.
 
 ---
 

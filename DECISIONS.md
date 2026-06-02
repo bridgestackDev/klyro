@@ -391,3 +391,37 @@ This file records non-obvious design decisions and their rationale. Never delete
 **How to apply:** Revisit in Phase 5+ if the dashboard needs to read messages through a different code path. If a second consumer appears, extract the interface at that point rather than prematurely.
 
 ---
+
+## Phase 5 — Block A
+
+### ADR-028: Dashboard KPI windows are timezone-aware, anchored on the active branch timezone
+
+**Decision:** `deriveHomeData` / `homeFetchWindow` compute "today" and the 7-day windows in the business timezone, taken from the first **active** branch (`branches.timezone`, fallback `America/Tegucigalpa`). Day boundaries are converted to UTC via the existing `localTimeToUTC` helper from `src/lib/booking/slots.ts` — no new dependency, no `date-fns-tz`.
+
+**Why:** Appointments store `starts_at` in UTC. An owner in Honduras (UTC-6) expects "today" to mean their wall-clock day, not the server's UTC day — a naïve UTC window would mis-bucket up to 6 hours of appointments around midnight. Reusing `localTimeToUTC` keeps the conversion logic single-sourced with the booking engine (ADR-015).
+
+**Trade-off:** A multi-branch business spanning multiple timezones gets a single anchor (its first active branch). For the MVP wedge (single-branch Honduras barbershops) this is exact. Block B's agenda has per-branch filters; if cross-timezone KPI accuracy matters later, the home KPIs can be split per branch then.
+
+**KPI window definitions (documented so Block B/E stay consistent):** today = `[todayStart, todayEnd)` excluding `cancelled`; upcomingWeek = `[now, todayStart+7d)` for `pending`/`confirmed`; completedToday = today ∩ `completed`; noShowsWeek = `[todayStart-7d, todayEnd)` ∩ `noshow`. A single fetch over `[−7d, +7d)` feeds all four — derivation is pure and unit-tested, avoiding four `count` round-trips and "test-the-mock" tests.
+
+---
+
+### ADR-029: Dashboard copy uses generic appointment terminology, not interpolated registry nouns
+
+**Decision:** Phase 5 Block A KPI labels, headings, and the empty state use fixed localized strings ("Citas hoy", "No tienes citas hoy"), not the vertical registry `appointmentNoun` interpolated into a `{noun}` placeholder.
+
+**Why:** Spanish pluralization and gender are irregular — `cita→citas` (f.), `turno→turnos` (m.), `sesión→sesiones`. The registry stores singular nouns only. Interpolating them into count labels ("Próximas {noun}") or quantified phrases ("No tienes ningún/ninguna {noun}") produces grammatically wrong copy. The booking pages already carry vertical nouns (Phase 3, ADR-016) where the usage is singular and controlled; the owner dashboard favors correct, consistent terminology over per-vertical labels. The existing `dashboard.noAppointments` string already set this precedent ("citas").
+
+**How to apply:** If vertical-aware dashboard copy becomes a requirement, add per-vertical plural forms to the registry (e.g. `appointmentNounPlural`) rather than pluralizing in code. Until then, keep dashboard count labels generic.
+
+---
+
+### ADR-030: StatusBadge colors via inline CSS-var `color-mix`, not static Tailwind classes
+
+**Decision:** `StatusBadge` maps status → a CSS custom property name (`STATUS_TOKEN`) and applies the color through an inline `style` using `var(--token)` + `color-mix(...)` for the tint/border, rather than precomputed Tailwind utility classes per status.
+
+**Why:** Tailwind can only emit classes it can see statically; a `bg-[var(--color-success)]/14` style tint per status would need five hardcoded class strings and a lookup map anyway. Driving the single token name through `style` keeps the mapping in one typed record (`STATUS_TOKEN`, exported and unit-tested) and still references only semantic tokens — never a raw hex — satisfying the design-system rule. `color-mix` produces the soft fill/border from the same token, so a token change propagates everywhere.
+
+**Trade-off:** Inline styles can't be overridden by utility classes as easily. Acceptable — the badge is a leaf presentational component with no themable variants in v1.
+
+---

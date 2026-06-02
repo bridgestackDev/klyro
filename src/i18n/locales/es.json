@@ -112,7 +112,30 @@
     "title": "Dashboard",
     "welcome": "Bienvenido",
     "placeholder": "Tu dashboard aparecerá aquí en la Fase 5.",
-    "noAppointments": "No hay citas en los próximos 7 días."
+    "noAppointments": "No hay citas en los próximos 7 días.",
+    "home": {
+      "kpi": {
+        "today": "Citas hoy",
+        "upcomingWeek": "Próximas esta semana",
+        "completedToday": "Completadas hoy",
+        "noShowsWeek": "Ausencias esta semana"
+      },
+      "todayHeading": "Citas de hoy",
+      "empty": "No tienes citas hoy.",
+      "status": {
+        "pending": "Pendiente",
+        "confirmed": "Confirmada",
+        "completed": "Completada",
+        "noshow": "No asistió",
+        "cancelled": "Cancelada"
+      },
+      "quickLinks": {
+        "heading": "Accesos rápidos",
+        "agenda": "Agenda",
+        "team": "Equipo",
+        "links": "Links de reserva"
+      }
+    }
   },
   "errors": {
     "UNAUTHORIZED": "Debes iniciar sesión para continuar.",
