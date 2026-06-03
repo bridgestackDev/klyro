@@ -69,7 +69,7 @@ export default async function AgendaPage({
     .map((s) => ({ id: s.id, name: s.display_name }));
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 p-6">
+    <div className="mx-auto max-w-[1600px] space-y-6 p-6">
       <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">
         {t("nav.agenda")}
       </h1>
