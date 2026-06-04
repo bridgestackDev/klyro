@@ -9,10 +9,13 @@ import {
   addStaffSchema,
   updateStaffContactSchema,
   updateStaffBranchesSchema,
+  inviteStaffSchema,
   type AddStaffInput,
   type UpdateStaffContactInput,
   type UpdateStaffBranchesInput,
 } from '@/lib/schemas/team';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { env } from '@/lib/env';
 
 /**
  * Resolves the caller's session and verifies they are the owner of a business.
@@ -244,4 +247,51 @@ export async function updateStaffBranches(input: UpdateStaffBranchesInput): Prom
 
   logger.info('updateStaffBranches', { userId: user.id, staffId, count: branchIds.length });
   revalidatePath('/', 'layout');
+}
+
+/**
+ * Sends a Supabase invite email to a staff member. The auth trigger links
+ * staff.user_id when they accept. Owner-only; safe to call for resend.
+ */
+export async function sendStaffInvite(staffId: string): Promise<void> {
+  const parsed = inviteStaffSchema.safeParse({ staffId });
+  if (!parsed.success) {
+    const e = parsed.error.issues[0]!;
+    throw ApiError.validation({ [e.path.join('.')]: e.message });
+  }
+
+  const { supabase, user, businessId } = await getOwnerContext();
+
+  const { data: staffRow } = await supabase
+    .from('staff')
+    .select('id, business_id, email, user_id')
+    .eq('id', staffId)
+    .single();
+
+  if (!staffRow || staffRow.business_id !== businessId) throw ApiError.forbidden();
+  if (!staffRow.email) {
+    throw ApiError.validation({ email: 'No email on file for this staff member' });
+  }
+  if (staffRow.user_id) {
+    throw ApiError.conflict('Staff member already has a linked account');
+  }
+
+  const admin = createAdminClient();
+  const { error: inviteError } = await admin.auth.admin.inviteUserByEmail(
+    staffRow.email as string,
+    {
+      data: { role: 'staff', business_id: businessId, staff_id: staffId },
+      redirectTo: `${env.NEXT_PUBLIC_APP_URL}/callback`,
+    }
+  );
+
+  if (inviteError) {
+    if (inviteError.message.toLowerCase().includes('already')) {
+      throw ApiError.conflict('Staff member already has a Klyro account');
+    }
+    logger.error('sendStaffInvite failed', { userId: user.id, staffId, error: inviteError.message });
+    throw ApiError.internal(new Error(inviteError.message));
+  }
+
+  logger.info('sendStaffInvite', { userId: user.id, businessId, staffId });
 }

@@ -17,9 +17,20 @@ vi.mock('@/lib/supabase/server', () => ({
   ),
 }));
 
+const mockInviteUserByEmail = vi.fn();
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: vi.fn(() => ({
+    auth: {
+      admin: {
+        inviteUserByEmail: (...args: unknown[]) => mockInviteUserByEmail(...args),
+      },
+    },
+  })),
+}));
+
 // ── Imports ───────────────────────────────────────────────────────────────────
 
-import { addStaffMember, setStaffActive, updateStaffBranches } from '../team';
+import { addStaffMember, setStaffActive, updateStaffBranches, sendStaffInvite } from '../team';
 
 // ── Chain builders (match the exact query shape each action uses) ──────────────
 
@@ -140,5 +151,69 @@ describe('updateStaffBranches', () => {
     await expect(
       updateStaffBranches({ staffId: 'not-a-uuid', branchIds: [] })
     ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' });
+  });
+});
+
+describe('sendStaffInvite', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('throws UNAUTHORIZED when there is no session', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+    await expect(sendStaffInvite(STAFF_ID)).rejects.toMatchObject({ code: 'UNAUTHORIZED' });
+  });
+
+  it('throws FORBIDDEN when the caller is not an owner', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+    mockFrom.mockReturnValueOnce(selectSingle({ business_id: 'biz1', role: 'staff' }));
+    await expect(sendStaffInvite(STAFF_ID)).rejects.toMatchObject({ code: 'FORBIDDEN' });
+  });
+
+  it('throws FORBIDDEN when the staff member belongs to another business', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+    mockFrom
+      .mockReturnValueOnce(selectSingle({ business_id: 'biz1', role: 'owner' }))
+      .mockReturnValueOnce(selectSingle({ id: STAFF_ID, business_id: 'biz-other', email: 'x@x.com', user_id: null }));
+    await expect(sendStaffInvite(STAFF_ID)).rejects.toMatchObject({ code: 'FORBIDDEN' });
+  });
+
+  it('throws VALIDATION_FAILED when the staff member has no email', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+    mockFrom
+      .mockReturnValueOnce(selectSingle({ business_id: 'biz1', role: 'owner' }))
+      .mockReturnValueOnce(selectSingle({ id: STAFF_ID, business_id: 'biz1', email: null, user_id: null }));
+    await expect(sendStaffInvite(STAFF_ID)).rejects.toMatchObject({ code: 'VALIDATION_FAILED' });
+  });
+
+  it('throws CONFLICT when the staff member is already linked', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+    mockFrom
+      .mockReturnValueOnce(selectSingle({ business_id: 'biz1', role: 'owner' }))
+      .mockReturnValueOnce(selectSingle({ id: STAFF_ID, business_id: 'biz1', email: 'ana@klyro.app', user_id: 'existing-user-id' }));
+    await expect(sendStaffInvite(STAFF_ID)).rejects.toMatchObject({ code: 'CONFLICT' });
+  });
+
+  it('calls inviteUserByEmail with correct metadata on success', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+    mockFrom
+      .mockReturnValueOnce(selectSingle({ business_id: 'biz1', role: 'owner' }))
+      .mockReturnValueOnce(selectSingle({ id: STAFF_ID, business_id: 'biz1', email: 'ana@klyro.app', user_id: null }));
+    mockInviteUserByEmail.mockResolvedValue({ data: { user: {} }, error: null });
+
+    await sendStaffInvite(STAFF_ID);
+
+    expect(mockInviteUserByEmail).toHaveBeenCalledWith('ana@klyro.app', {
+      data: { role: 'staff', business_id: 'biz1', staff_id: STAFF_ID },
+      redirectTo: expect.stringContaining('/callback'),
+    });
+  });
+
+  it('throws CONFLICT when Supabase returns an "already registered" error', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+    mockFrom
+      .mockReturnValueOnce(selectSingle({ business_id: 'biz1', role: 'owner' }))
+      .mockReturnValueOnce(selectSingle({ id: STAFF_ID, business_id: 'biz1', email: 'ana@klyro.app', user_id: null }));
+    mockInviteUserByEmail.mockResolvedValue({ data: null, error: { message: 'User already registered' } });
+
+    await expect(sendStaffInvite(STAFF_ID)).rejects.toMatchObject({ code: 'CONFLICT' });
   });
 });
