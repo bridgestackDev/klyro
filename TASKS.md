@@ -321,6 +321,16 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 - [x] C9: DECISIONS.md — ADR-035 (ops-only split), ADR-036 (authed client over admin)
 - Scope: email invite + accept-linking deferred (ADR-035), see Block C2
 
+### Block C polish — Team UI + contact info + upload fix ✅
+- [x] CP1: `0011_staff_contact.sql` — nullable `email` + `phone` on `staff` (applied to remote via MCP, types regenerated)
+- [x] CP2: `updateStaffContact` action + `addStaffMember` accepts email/phone; `team.ts` schema updated
+- [x] CP3: Fix upload — apply `0008_storage_buckets.sql` to remote (was never pushed) with `private.`-qualified RLS; fix local migration file
+- [x] CP4: Add `--color-popover*`/card/accent theme tokens (dialogs were transparent)
+- [x] CP5: ImageUpload — `var(--token)` classes, cache-busted optimistic preview, configurable `placeholder` (user icon for avatars)
+- [x] CP6: Redesign AddStaffDialog, EditStaffDialog (contained switch, sectioned), StaffCard (contact rows)
+- [x] CP7: i18n `team.{contact,save,saving,saved,saveFailed}.*` (es + en)
+- [x] CP8: Tests 468/468; DECISIONS ADR-037..039
+
 ### Block C2 — Staff Email Invite + Accept Linking ⬜
 - [ ] Invitations data model (email column or `staff_invitations`), `auth.admin.inviteUserByEmail`, auth-trigger migration to set `role='staff'` + `business_id` and link `staff.user_id` on accept
 

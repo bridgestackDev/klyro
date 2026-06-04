@@ -45,6 +45,12 @@
   --color-primary-foreground: #ffffff;
   --color-secondary: #222246;
   --color-secondary-foreground: #ffffff;
+  --color-popover: #15153a;
+  --color-popover-foreground: #ffffff;
+  --color-card: #111131;
+  --color-card-foreground: #ffffff;
+  --color-accent: #222246;
+  --color-accent-foreground: #ffffff;
   --color-background: #0a0a1f;
   --color-foreground: #ffffff;
   --color-muted: #222246;

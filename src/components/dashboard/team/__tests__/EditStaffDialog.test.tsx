@@ -18,9 +18,11 @@ vi.mock('@/lib/actions/media', () => ({
 
 const mockSetStaffActive = vi.fn();
 const mockUpdateStaffBranches = vi.fn();
+const mockUpdateStaffContact = vi.fn();
 vi.mock('@/lib/actions/team', () => ({
   setStaffActive: (...args: unknown[]) => mockSetStaffActive(...args),
   updateStaffBranches: (...args: unknown[]) => mockUpdateStaffBranches(...args),
+  updateStaffContact: (...args: unknown[]) => mockUpdateStaffContact(...args),
 }));
 
 vi.mock('@/components/shared/ImageUpload', () => ({
@@ -72,6 +74,8 @@ const defaultProps = {
   businessId: 'biz-1',
   currentAvatarUrl: null,
   isActive: true,
+  email: null,
+  phone: null,
   branches: [
     { id: 'b1', name: 'Centro' },
     { id: 'b2', name: 'Norte' },
@@ -160,16 +164,37 @@ describe('EditStaffDialog', () => {
     expect(toggle).toHaveAttribute('aria-checked', 'true');
   });
 
-  it('saves branch assignment via updateStaffBranches', async () => {
+  it('saves contact + branches together via the Save button', async () => {
+    mockUpdateStaffContact.mockResolvedValue(undefined);
     mockUpdateStaffBranches.mockResolvedValue(undefined);
     render(<EditStaffDialog {...defaultProps} />);
     // Toggle the second branch on, then save
     await userEvent.click(screen.getByLabelText('Norte'));
-    await userEvent.click(screen.getByText('team.branches.save'));
+    await userEvent.click(screen.getByText('team.save'));
     await waitFor(() => {
+      expect(mockUpdateStaffContact).toHaveBeenCalledWith({
+        staffId: 'staff-1',
+        email: undefined,
+        phone: undefined,
+      });
       expect(mockUpdateStaffBranches).toHaveBeenCalledWith({
         staffId: 'staff-1',
         branchIds: ['b1', 'b2'],
+      });
+    });
+  });
+
+  it('passes entered contact details to updateStaffContact', async () => {
+    mockUpdateStaffContact.mockResolvedValue(undefined);
+    mockUpdateStaffBranches.mockResolvedValue(undefined);
+    render(<EditStaffDialog {...defaultProps} />);
+    await userEvent.type(screen.getByLabelText('team.contact.email'), 'ana@example.com');
+    await userEvent.click(screen.getByText('team.save'));
+    await waitFor(() => {
+      expect(mockUpdateStaffContact).toHaveBeenCalledWith({
+        staffId: 'staff-1',
+        email: 'ana@example.com',
+        phone: undefined,
       });
     });
   });

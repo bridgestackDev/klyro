@@ -564,6 +564,18 @@ Files changed:
 
 Tests: 466/466 passing (451 prior + 15 new). Typecheck + lint clean.
 
+**Block C polish (UI + contact info + upload fix)** ✅ Done
+
+Follow-up after design review of the team UI.
+
+- **Contact info:** `0011_staff_contact.sql` adds nullable `email` + `phone` to `staff` (applied to remote via MCP, types regenerated). New owner-only `updateStaffContact` action; `addStaffMember` accepts them. Shown on the card + editable in the dialog (ADR-038).
+- **Upload fix (root cause):** `storage.buckets` was **empty on remote** — `0008_storage_buckets.sql` had never been pushed, and its RLS called `get_my_business_id()` unqualified (the functions live in `private`). Applied the buckets + 8 policies via MCP with `private.`-qualified names; fixed the local migration file too (ADR-037).
+- **Dialog transparency:** added the missing `--color-popover*` (+ card/accent) theme tokens so all dialogs get a solid surface (ADR-039).
+- **ImageUpload:** fixed malformed `[--token]` classes → `var(--token)`; optimistic cache-busted preview so a fresh upload shows immediately; configurable `placeholder` (avatars use a user icon, logos keep the cat mark) (ADR-039).
+- **Redesign:** AddStaffDialog + EditStaffDialog (icon-prefixed inputs, sectioned layout, unified "Save changes", contained switch), StaffCard (contact rows + branch chips).
+
+Tests: 468/468 passing (466 prior + 2 new). Typecheck + lint clean.
+
 **Block C2 (email invite) — Not started. Blocks D–E — Not started.**
 
 ---

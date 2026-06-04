@@ -5,7 +5,7 @@
 --   staff-avatars/{business_id}/{staff_id}.{ext}
 --
 -- RLS uses (storage.foldername(name))[1] to extract the business_id folder
--- and compares it against get_my_business_id() from migration 0002.
+-- and compares it against private.get_my_business_id() from migration 0002.
 --
 -- For staff-avatars, non-owner staff are additionally restricted to their
 -- own subfolder via (storage.foldername(name))[2] = own staff id.
@@ -42,8 +42,8 @@ create policy "owner can upload business logo"
   on storage.objects for insert
   with check (
     bucket_id = 'business-logos'
-    and (storage.foldername(name))[1] = get_my_business_id()::text
-    and get_my_role() = 'owner'
+    and (storage.foldername(name))[1] = private.get_my_business_id()::text
+    and private.get_my_role() = 'owner'
   );
 
 -- [M1] WITH CHECK mirrors USING so the new-row state is validated too
@@ -51,21 +51,21 @@ create policy "owner can update business logo"
   on storage.objects for update
   using (
     bucket_id = 'business-logos'
-    and (storage.foldername(name))[1] = get_my_business_id()::text
-    and get_my_role() = 'owner'
+    and (storage.foldername(name))[1] = private.get_my_business_id()::text
+    and private.get_my_role() = 'owner'
   )
   with check (
     bucket_id = 'business-logos'
-    and (storage.foldername(name))[1] = get_my_business_id()::text
-    and get_my_role() = 'owner'
+    and (storage.foldername(name))[1] = private.get_my_business_id()::text
+    and private.get_my_role() = 'owner'
   );
 
 create policy "owner can delete business logo"
   on storage.objects for delete
   using (
     bucket_id = 'business-logos'
-    and (storage.foldername(name))[1] = get_my_business_id()::text
-    and get_my_role() = 'owner'
+    and (storage.foldername(name))[1] = private.get_my_business_id()::text
+    and private.get_my_role() = 'owner'
   );
 
 -- ── staff-avatars RLS ─────────────────────────────────────────────────────────
@@ -84,13 +84,13 @@ create policy "owner or self can upload staff avatar"
   on storage.objects for insert
   with check (
     bucket_id = 'staff-avatars'
-    and (storage.foldername(name))[1] = get_my_business_id()::text
+    and (storage.foldername(name))[1] = private.get_my_business_id()::text
     and (
-      get_my_role() = 'owner'
+      private.get_my_role() = 'owner'
       or (storage.foldername(name))[2] = (
         select id::text from staff
         where user_id = auth.uid()
-          and business_id = get_my_business_id()
+          and business_id = private.get_my_business_id()
       )
     )
   );
@@ -100,25 +100,25 @@ create policy "owner or self can update staff avatar"
   on storage.objects for update
   using (
     bucket_id = 'staff-avatars'
-    and (storage.foldername(name))[1] = get_my_business_id()::text
+    and (storage.foldername(name))[1] = private.get_my_business_id()::text
     and (
-      get_my_role() = 'owner'
+      private.get_my_role() = 'owner'
       or (storage.foldername(name))[2] = (
         select id::text from staff
         where user_id = auth.uid()
-          and business_id = get_my_business_id()
+          and business_id = private.get_my_business_id()
       )
     )
   )
   with check (
     bucket_id = 'staff-avatars'
-    and (storage.foldername(name))[1] = get_my_business_id()::text
+    and (storage.foldername(name))[1] = private.get_my_business_id()::text
     and (
-      get_my_role() = 'owner'
+      private.get_my_role() = 'owner'
       or (storage.foldername(name))[2] = (
         select id::text from staff
         where user_id = auth.uid()
-          and business_id = get_my_business_id()
+          and business_id = private.get_my_business_id()
       )
     )
   );
@@ -128,13 +128,13 @@ create policy "owner or self can delete staff avatar"
   on storage.objects for delete
   using (
     bucket_id = 'staff-avatars'
-    and (storage.foldername(name))[1] = get_my_business_id()::text
+    and (storage.foldername(name))[1] = private.get_my_business_id()::text
     and (
-      get_my_role() = 'owner'
+      private.get_my_role() = 'owner'
       or (storage.foldername(name))[2] = (
         select id::text from staff
         where user_id = auth.uid()
-          and business_id = get_my_business_id()
+          and business_id = private.get_my_business_id()
       )
     )
   );

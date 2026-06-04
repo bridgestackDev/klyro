@@ -30,7 +30,7 @@ export default async function TeamPage({
   const [{ data: staffList }, { data: branchList }] = await Promise.all([
     supabase
       .from('staff')
-      .select('id, display_name, slug, avatar_url, is_active')
+      .select('id, display_name, slug, avatar_url, is_active, email, phone')
       .eq('business_id', businessId)
       .order('is_active', { ascending: false })
       .order('display_name'),
@@ -86,6 +86,8 @@ export default async function TeamPage({
                 slug: member.slug as string,
                 avatarUrl: (member.avatar_url as string | null) ?? null,
                 isActive: (member.is_active as boolean) ?? true,
+                email: (member.email as string | null) ?? null,
+                phone: (member.phone as string | null) ?? null,
               }}
               businessId={businessId}
               branches={branches}

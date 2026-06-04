@@ -209,6 +209,18 @@
       "updated": "Foto actualizada",
       "failed": "No se pudo actualizar la foto"
     },
+    "save": "Guardar cambios",
+    "saving": "Guardando…",
+    "saved": "Cambios guardados",
+    "saveFailed": "No se pudieron guardar los cambios",
+    "contact": {
+      "heading": "Contacto",
+      "email": "Correo electrónico",
+      "emailPlaceholder": "nombre@ejemplo.com",
+      "phone": "Teléfono",
+      "phonePlaceholder": "+50498765432",
+      "phoneHelp": "Incluye el código de país (ej. +504)."
+    },
     "status": {
       "label": "Activo",
       "help": "Los miembros inactivos no aparecen en la página de reservas.",

@@ -7,8 +7,10 @@ import { logger } from '@/lib/log';
 import { slugify } from '@/lib/validation/slug';
 import {
   addStaffSchema,
+  updateStaffContactSchema,
   updateStaffBranchesSchema,
   type AddStaffInput,
+  type UpdateStaffContactInput,
   type UpdateStaffBranchesInput,
 } from '@/lib/schemas/team';
 
@@ -82,7 +84,7 @@ export async function addStaffMember(input: AddStaffInput): Promise<{ id: string
     const e = parsed.error.issues[0]!;
     throw ApiError.validation({ [e.path.join('.')]: e.message });
   }
-  const { displayName, branchIds } = parsed.data;
+  const { displayName, email, phone, branchIds } = parsed.data;
 
   const { supabase, user, businessId } = await getOwnerContext();
   await assertBranchesInBusiness(supabase, businessId, branchIds);
@@ -91,7 +93,14 @@ export async function addStaffMember(input: AddStaffInput): Promise<{ id: string
 
   const { data: inserted, error } = await supabase
     .from('staff')
-    .insert({ business_id: businessId, display_name: displayName, slug, is_active: true })
+    .insert({
+      business_id: businessId,
+      display_name: displayName,
+      slug,
+      is_active: true,
+      email: email ?? null,
+      phone: phone ?? null,
+    })
     .select('id')
     .single();
 
@@ -148,6 +157,39 @@ export async function setStaffActive(staffId: string, isActive: boolean): Promis
   }
 
   logger.info('setStaffActive', { userId: user.id, staffId, isActive });
+  revalidatePath('/', 'layout');
+}
+
+/** Updates a staff member's contact details (email + phone). Owner-only. */
+export async function updateStaffContact(input: UpdateStaffContactInput): Promise<void> {
+  const parsed = updateStaffContactSchema.safeParse(input);
+  if (!parsed.success) {
+    const e = parsed.error.issues[0]!;
+    throw ApiError.validation({ [e.path.join('.')]: e.message });
+  }
+  const { staffId, email, phone } = parsed.data;
+
+  const { supabase, user, businessId } = await getOwnerContext();
+
+  const { data: staffRow } = await supabase
+    .from('staff')
+    .select('id, business_id')
+    .eq('id', staffId)
+    .single();
+
+  if (!staffRow || staffRow.business_id !== businessId) throw ApiError.forbidden();
+
+  const { error } = await supabase
+    .from('staff')
+    .update({ email: email ?? null, phone: phone ?? null })
+    .eq('id', staffId);
+
+  if (error) {
+    logger.error('updateStaffContact failed', { userId: user.id, staffId, error: error.message });
+    throw ApiError.internal(new Error(error.message));
+  }
+
+  logger.info('updateStaffContact', { userId: user.id, staffId });
   revalidatePath('/', 'layout');
 }
 

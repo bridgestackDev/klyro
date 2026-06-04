@@ -18,6 +18,8 @@ interface ImageUploadProps {
   label?: string;
   helpText?: string;
   disabled?: boolean;
+  /** Placeholder shown when there's no image. Defaults to the Klyro cat mark. */
+  placeholder?: React.ReactNode;
 }
 
 async function resizeIfNeeded(file: File): Promise<Blob> {
@@ -76,11 +78,16 @@ export function ImageUpload({
   label,
   helpText,
   disabled = false,
+  placeholder,
 }: ImageUploadProps) {
   const t = useTranslations('media.upload');
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Local preview lets the freshly uploaded image show immediately. Because the
+  // upload upserts to the same path, the public URL is byte-identical, so we
+  // append a cache-busting query param to force the browser to re-fetch.
+  const [previewUrl, setPreviewUrl] = useState<string | null>(currentUrl);
 
   const triggerPicker = () => {
     if (disabled || uploading) return;
@@ -128,6 +135,8 @@ export function ImageUpload({
       }
 
       const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+      const bustedUrl = `${data.publicUrl}?t=${Date.now()}`;
+      setPreviewUrl(bustedUrl);
       await onUploaded(data.publicUrl);
     } catch {
       setError(t('failed'));
@@ -136,14 +145,14 @@ export function ImageUpload({
     }
   };
 
-  const hasImage = Boolean(currentUrl);
+  const hasImage = Boolean(previewUrl);
   const buttonLabel = hasImage ? t('change') : t('button');
   const aspectClass = aspect === 'square' ? 'aspect-square' : '';
 
   return (
     <div className="flex flex-col gap-2">
       {label && (
-        <span className="text-sm font-medium text-[--color-text-primary]">{label}</span>
+        <span className="text-sm font-medium text-[var(--color-text-primary)]">{label}</span>
       )}
 
       <button
@@ -153,10 +162,10 @@ export function ImageUpload({
         disabled={disabled || uploading}
         aria-label={buttonLabel}
         className={[
-          'relative flex items-center justify-center w-32 rounded-xl border-2 border-dashed',
-          'border-[--color-border] bg-[--color-bg-surface] transition-colors',
-          'hover:border-[--color-violet] focus-visible:outline-none focus-visible:ring-2',
-          'focus-visible:ring-[--color-violet] focus-visible:ring-offset-2',
+          'group relative flex items-center justify-center w-28 overflow-hidden rounded-2xl border-2 border-dashed',
+          'border-[var(--color-border)] bg-[var(--color-bg-elevated)] transition-colors',
+          'hover:border-[var(--color-violet)] focus-visible:outline-none focus-visible:ring-2',
+          'focus-visible:ring-[var(--color-violet)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-surface)]',
           'disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer',
           aspectClass,
         ].join(' ')}
@@ -191,21 +200,30 @@ export function ImageUpload({
         )}
 
         {hasImage ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={currentUrl!}
-            alt=""
-            className="w-full h-full object-cover rounded-[10px]"
-          />
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={previewUrl!}
+              alt=""
+              className="h-full w-full object-cover"
+            />
+            <span className="absolute inset-0 flex items-center justify-center bg-black/50 text-xs font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
+              {t('change')}
+            </span>
+          </>
         ) : (
-          <span className="opacity-20">
-            <Logo variant="mark" />
+          <span className="flex items-center justify-center text-[var(--color-text-muted)]">
+            {placeholder ?? (
+              <span className="opacity-30">
+                <Logo variant="mark" />
+              </span>
+            )}
           </span>
         )}
       </button>
 
       {helpText && (
-        <p className="text-xs text-[--color-text-secondary]">{helpText}</p>
+        <p className="text-xs text-[var(--color-text-secondary)]">{helpText}</p>
       )}
 
       {error && (

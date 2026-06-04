@@ -28,12 +28,16 @@ const baseStaff: {
   slug: string;
   avatarUrl: string | null;
   isActive: boolean;
+  email: string | null;
+  phone: string | null;
 } = {
   id: 'staff-1',
   displayName: 'Ana García',
   slug: 'ana-garcia',
   avatarUrl: null,
   isActive: true,
+  email: null,
+  phone: null,
 };
 
 const branches = [
@@ -97,5 +101,11 @@ describe('StaffCard', () => {
     renderCard(baseStaff, ['b1']);
     expect(screen.getByText('Centro')).toBeInTheDocument();
     expect(screen.queryByText('Norte')).toBeNull();
+  });
+
+  it('renders contact email and phone when present', () => {
+    renderCard({ ...baseStaff, email: 'ana@example.com', phone: '+50498765432' });
+    expect(screen.getByText('ana@example.com')).toBeInTheDocument();
+    expect(screen.getByText('+50498765432')).toBeInTheDocument();
   });
 });

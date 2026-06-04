@@ -209,6 +209,18 @@
       "updated": "Photo updated",
       "failed": "Couldn't update the photo"
     },
+    "save": "Save changes",
+    "saving": "Saving…",
+    "saved": "Changes saved",
+    "saveFailed": "Couldn't save changes",
+    "contact": {
+      "heading": "Contact",
+      "email": "Email",
+      "emailPlaceholder": "name@example.com",
+      "phone": "Phone",
+      "phonePlaceholder": "+50498765432",
+      "phoneHelp": "Include the country code (e.g. +504)."
+    },
     "status": {
       "label": "Active",
       "help": "Inactive members don't appear on the booking page.",

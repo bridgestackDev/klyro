@@ -481,3 +481,25 @@ This file records non-obvious design decisions and their rationale. Never delete
 **Why:** The `owner can manage staff` / `owner can manage staff_branches` RLS policies (`0002_rls_policies.sql`) are `for all` keyed on `business_id = get_my_business_id() and get_my_role() = 'owner'`. Unlike the wizard — which writes for a brand-new user whose `get_my_business_id()` is still `NULL` — the owner here already has a `business_id`, so RLS permits the inserts/updates directly. Each action still does an explicit owner + same-business check before writing, so a forged id fails fast with `FORBIDDEN` rather than relying on RLS alone. No migration was needed for this block.
 
 ---
+
+### ADR-037: staff-avatars / business-logos buckets were never on remote; applied via MCP + qualified function names
+
+**Decision:** The Phase 2.6 storage migration (`0008_storage_buckets.sql`) was applied to the remote project for the first time during Phase 5 Block C polish, and its RLS policies were rewritten to call `private.get_my_business_id()` / `private.get_my_role()` (schema-qualified) instead of the bare names in the original file.
+
+**Why:** Avatar upload failed with "Couldn't upload the image." Inspection showed `storage.buckets` was empty on remote — the bucket migration had never been pushed (same class of gap as the Phase 3 anon-RLS migration). Re-applying revealed a second latent bug: the helper functions live in the `private` schema, but `0008` called them unqualified, which only resolves when `search_path` includes `private`. The migration file is now corrected so a fresh apply works anywhere.
+
+**Trade-off:** The remote migration-history rows are named `storage_buckets` / `staff_contact` (MCP apply) rather than matching the `0008`/`0011` filenames. Acceptable for this local-only workflow; the SQL is identical.
+
+### ADR-038: Contact info (email + phone) added to staff
+
+**Decision:** `staff` gains nullable `email` + `phone` columns (`0011_staff_contact.sql`), surfaced in the add/edit dialogs and on the staff card. Owner-only `updateStaffContact` action; `addStaffMember` accepts them too.
+
+**Why:** Owners need to reach team members, and `email` also seeds the future invite-by-email flow (Block C2) — a staff row can carry an email before any `user_id` is linked. Both nullable + additive, so no backfill.
+
+### ADR-039: Missing popover token + ImageUpload robustness
+
+**Decision:** Added `--color-popover`/`--color-popover-foreground` (and `--color-card`/`--color-accent`) to the `@theme` aliases. Fixed `ImageUpload` to (a) use `var(--token)` syntax instead of the malformed `[--token]` arbitrary classes, (b) keep an optimistic, cache-busted local preview after upload, and (c) accept a configurable `placeholder` (avatars use a user icon; logos keep the cat mark).
+
+**Why:** The shared dialog uses `bg-popover`/`text-popover-foreground`, but those tokens were never defined — so every dialog rendered with a transparent background (content behind bled through). The `[--token]` classes emitted invalid CSS, so the upload control's colors never applied. After an upsert to the same path the public URL is byte-identical, so without a cache-bust the browser kept showing the stale image, making a successful upload look like a no-op.
+
+---
