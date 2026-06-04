@@ -268,19 +268,19 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 
 ## Phase 4 — Messaging Engine
 
-- [ ] `MessageRouter` abstraction: picks template by `(vertical, language, channel, type)`
-- [ ] WhatsApp Cloud API integration (`/lib/messaging/whatsapp.ts`)
-- [ ] Email via Resend + React Email templates
-- [ ] SMS via Twilio (optional, behind env flag)
-- [ ] Webhook handlers: `/api/webhooks/whatsapp`, `/api/webhooks/resend`, `/api/webhooks/twilio`
-- [ ] Webhook signature validation for all three providers
-- [ ] Supabase Edge Function `dispatch-due-messages` (called by pg_cron every 5 min)
-- [ ] Confirmation message fires immediately on booking
-- [ ] 24h reminder: scheduled via `messages.scheduled_at`, dispatched by Edge Function
-- [ ] Add `WHATSAPP_PHONE_NUMBER_ID` + `WHATSAPP_ACCESS_TOKEN` to env
-- [ ] Unit test: MessageRouter selects correct template for each vertical × channel combination
-- [ ] Typecheck + lint pass
-- [ ] Commit Phase 4
+- [X] `MessageRouter` abstraction: picks template by `(vertical, language, channel, type)`
+- [X] WhatsApp Cloud API integration (`/lib/messaging/whatsapp.ts`)
+- [X] Email via Resend + React Email templates
+- [X] SMS via Twilio (optional, behind env flag)
+- [X] Webhook handlers: `/api/webhooks/whatsapp`, `/api/webhooks/resend`, `/api/webhooks/twilio`
+- [X] Webhook signature validation for all three providers
+- [X] Supabase Edge Function `dispatch-due-messages` (called by pg_cron every 5 min)
+- [X] Confirmation message fires immediately on booking
+- [X] 24h reminder: scheduled via `messages.scheduled_at`, dispatched by Edge Function
+- [X] Add `WHATSAPP_PHONE_NUMBER_ID` + `WHATSAPP_ACCESS_TOKEN` to env
+- [X] Unit test: MessageRouter selects correct template for each vertical × channel combination
+- [X] Typecheck + lint pass
+- [X] Commit Phase 4
 
 ---
 
