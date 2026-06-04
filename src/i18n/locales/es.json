@@ -234,7 +234,8 @@
       "inactive": "Inactivo",
       "activated": "Miembro activado",
       "deactivated": "Miembro desactivado",
-      "failed": "No se pudo actualizar el estado"
+      "failed": "No se pudo actualizar el estado",
+      "pendingInvite": "Invitación pendiente"
     },
     "branches": {
       "label": "Sucursales",
@@ -254,7 +255,14 @@
       "submit": "Agregar miembro",
       "saving": "Agregando…",
       "created": "Miembro agregado",
-      "failed": "No se pudo agregar el miembro"
+      "failed": "No se pudo agregar el miembro",
+      "emailInviteHint": "Se enviará una invitación al correo electrónico"
+    },
+    "invite": {
+      "resend": "Reenviar invitación",
+      "resending": "Reenviando…",
+      "sentSuccess": "Invitación enviada",
+      "sentFailed": "No se pudo enviar la invitación"
     }
   },
   "settings": {

@@ -234,7 +234,8 @@
       "inactive": "Inactive",
       "activated": "Team member activated",
       "deactivated": "Team member deactivated",
-      "failed": "Couldn't update the status"
+      "failed": "Couldn't update the status",
+      "pendingInvite": "Pending invite"
     },
     "branches": {
       "label": "Branches",
@@ -254,7 +255,14 @@
       "submit": "Add member",
       "saving": "Adding…",
       "created": "Team member added",
-      "failed": "Couldn't add the team member"
+      "failed": "Couldn't add the team member",
+      "emailInviteHint": "An invitation will be sent to this email address"
+    },
+    "invite": {
+      "resend": "Resend invite",
+      "resending": "Resending…",
+      "sentSuccess": "Invite sent",
+      "sentFailed": "Could not send invite"
     }
   },
   "settings": {
