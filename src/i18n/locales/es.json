@@ -101,6 +101,12 @@
       "sidebarCollapsed": "Contraído",
       "sidebarHover": "Expandir al pasar"
     },
+    "theme": {
+      "label": "Tema",
+      "light": "Claro",
+      "dark": "Oscuro",
+      "system": "Sistema"
+    },
     "setup": {
       "bannerTitle": "Configura tu negocio",
       "bannerDesc": "Completa la configuración para comenzar a recibir citas.",

@@ -160,7 +160,7 @@ After completing a task:
 - `businesses.vertical` is a plain `text` field referencing keys in the registry — not a DB enum. Never create a migration to make it an enum.
 - Message templates are selected by `(type, channel, language, vertical)` — the unique index on `message_templates` enforces this.
 - 84 templates seeded (7 active verticals × 2 channels × 2 languages × 3 message types).
-- Dashboard is dark-mode only in v1. No light/dark toggle for the dashboard.
+- Dashboard supports a light/dark/system theme toggle (custom dashboard-scoped provider, default system; see ADR-040). Dark remains the default and the brand-anchor surface. Light/dark applies to the dashboard only -- the marketing landing stays dark and the public booking flow keeps its own light tokens.
 - JetBrains Mono is only for booking confirmation codes. Inter everywhere else.
 
 ---
@@ -260,7 +260,7 @@ if (!parsed.success) {
 - `businesses.vertical` is a plain `text` field referencing keys in the registry — not a DB enum. Never create a migration to make it an enum.
 - Message templates are selected by `(type, channel, language, vertical)` — the unique index on `message_templates` enforces this.
 - 84 templates seeded (7 active verticals × 2 channels × 2 languages × 3 message types).
-- Dashboard is dark-mode only in v1. No light/dark toggle for the dashboard.
+- Dashboard supports a light/dark/system theme toggle (custom dashboard-scoped provider, default system; see ADR-040). Dark remains the default and the brand-anchor surface. Light/dark applies to the dashboard only -- the marketing landing stays dark and the public booking flow keeps its own light tokens.
 - JetBrains Mono is only for booking confirmation codes. Inter everywhere else.
 
 ---

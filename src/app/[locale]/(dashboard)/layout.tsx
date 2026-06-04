@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { ThemeProvider } from "@/components/shared/ThemeProvider";
 
 export default async function DashboardLayout({
   children,
@@ -28,12 +29,14 @@ export default async function DashboardLayout({
   const userInitial = displayName.charAt(0).toUpperCase();
 
   return (
-    <DashboardShell
-      locale={locale}
-      userEmail={user.email ?? ""}
-      userInitial={userInitial}
-    >
-      {children}
-    </DashboardShell>
+    <ThemeProvider>
+      <DashboardShell
+        locale={locale}
+        userEmail={user.email ?? ""}
+        userInitial={userInitial}
+      >
+        {children}
+      </DashboardShell>
+    </ThemeProvider>
   );
 }

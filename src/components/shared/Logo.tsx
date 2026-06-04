@@ -119,7 +119,7 @@ export function Logo({ variant = "lockup", theme = "dark", className }: LogoProp
         width={140}
         height={140}
         priority
- 
+
       />
     </span>
   );

@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import { getLocale } from "next-intl/server";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { THEME_NO_FLASH_SCRIPT } from "@/components/shared/theme-no-flash";
 import "./globals.css";
 
 const inter = Inter({
@@ -33,9 +34,17 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
+      suppressHydrationWarning
       className={`${inter.variable} ${jetbrainsMono.variable} h-full`}
     >
       <body className="min-h-full antialiased">
+        {/* Dashboard-scoped no-flash theme script — self-gates to dashboard
+            paths; rendered here (stable root layout) so it never goes through a
+            client render. See theme-no-flash.ts / ADR-040. */}
+        <script
+          dangerouslySetInnerHTML={{ __html: THEME_NO_FLASH_SCRIPT }}
+          suppressHydrationWarning
+        />
         {children}
         <Analytics />
         <SpeedInsights />

@@ -6,11 +6,33 @@ import { useTranslations } from "next-intl";
 import { Bell, ChevronDown, LogOut, Menu, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Logo } from "@/components/shared/Logo";
+import { useTheme } from "@/components/shared/ThemeProvider";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { signOut } from "@/lib/actions/auth";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "./nav-items";
+import { ThemeToggle } from "./ThemeToggle";
+
+/**
+ * Text-only wordmark that follows the dashboard theme — no mascot/icon in
+ * either mode. The wordmark renders white on dark surfaces and navy on light,
+ * so we just feed it the resolved theme (defaulting to dark until mounted to
+ * match SSR).
+ */
+function DashboardLogo({ className }: { className?: string }) {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
+
+  const logoTheme = mounted && resolvedTheme === "light" ? "light" : "dark";
+
+  return <Logo variant="wordmark" theme={logoTheme} className={className} />;
+}
 
 interface NavbarProps {
   locale: string;
@@ -106,7 +128,7 @@ function MobileNavSheet({
       >
         <div className="flex h-full flex-col gap-4 p-4">
           <div className="flex h-14 items-center px-1">
-            <Logo variant="lockup" theme="dark" className="h-9" />
+            <DashboardLogo className="h-9" />
           </div>
           <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto">
             {NAV_ITEMS.map(({ key, href, icon: Icon }) => {
@@ -170,11 +192,14 @@ export function Navbar({ locale, userEmail, userInitial }: NavbarProps) {
 
       {/* Logo */}
       <div className="flex items-center">
-        <Logo variant="lockup" theme="dark" className="h-9" />
+        <DashboardLogo className="h-9" />
       </div>
 
       {/* Right actions */}
-      <div className="ml-auto flex items-center gap-1">
+      <div className="ml-auto flex items-center gap-1.5">
+        {/* Theme toggle */}
+        <ThemeToggle />
+
         {/* Notifications */}
         <button
           aria-label="Notifications"

@@ -76,11 +76,62 @@
   --shadow-violet: 0 8px 32px rgba(109, 100, 251, 0.16);
 }
 
-/* Default dark theme — dashboard is dark-only for MVP */
+/* Default theme is dark (landing + booking-light surfaces rely on this).
+   The dashboard opts into a light/dark toggle via next-themes, which sets a
+   `light` / `dark` class on <html>. Light overrides live in `html.light`
+   below; `dark` is identical to the default tokens so no extra block is
+   needed. See DECISIONS.md ADR-040. */
 html {
   background-color: #0a0a1f;
   color: #bdbdc8;
   color-scheme: dark;
+}
+
+/* Light theme — applied only when next-themes resolves the dashboard to light
+   (or system-light). Overrides the dark token values defined in @theme above;
+   Tailwind utilities reference these as var(--color-*), so flipping the custom
+   properties flips every consuming utility. */
+html.light {
+  color-scheme: light;
+  background-color: #f6f6fb;
+  color: #45455f;
+
+  /* surfaces */
+  --color-bg-base: #f6f6fb;
+  --color-bg-surface: #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-bg-hover: #eeeef6;
+
+  /* text */
+  --color-text-primary: #14143a;
+  --color-text-secondary: #45455f;
+  --color-text-muted: #6e6e85;
+
+  /* violet readability on light surfaces */
+  --color-violet-soft: #5d56d8;
+
+  /* borders & lines (the :root vars consumed directly) */
+  --border-subtle: rgba(20, 20, 58, 0.1);
+  --border-strong: rgba(109, 100, 251, 0.32);
+
+  /* gradients & shadows */
+  --grad-surface: linear-gradient(180deg, #ffffff 0%, #f6f6fb 100%);
+
+  /* shadcn/ui primitive aliases */
+  --color-secondary: #eeeef6;
+  --color-secondary-foreground: #14143a;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #14143a;
+  --color-card: #ffffff;
+  --color-card-foreground: #14143a;
+  --color-accent: #eeeef6;
+  --color-accent-foreground: #14143a;
+  --color-background: #f6f6fb;
+  --color-foreground: #14143a;
+  --color-muted: #eeeef6;
+  --color-muted-foreground: #6e6e85;
+  --color-border: rgba(20, 20, 58, 0.1);
+  --color-input: #e6e6f0;
 }
 
 body {

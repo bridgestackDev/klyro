@@ -101,6 +101,12 @@
       "sidebarCollapsed": "Collapsed",
       "sidebarHover": "Expand on hover"
     },
+    "theme": {
+      "label": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
     "setup": {
       "bannerTitle": "Set up your business",
       "bannerDesc": "Complete your setup to start receiving appointments.",
