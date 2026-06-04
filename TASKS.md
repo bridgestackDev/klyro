@@ -309,8 +309,20 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 - [x] B9: DECISIONS.md — ADR-031..034
 - [ ] B-followup: owner-side cancel server action (void reminder + cancellation message) — deferred, ADR-031
 
-### Block C — Team Management ⬜
-- [ ] Invite staff by email, active toggle, branch assignment; `src/lib/actions/team.ts`
+### Block C — Team Management (ops) ✅
+- [x] C1: `src/lib/schemas/team.ts` — `addStaffSchema` + `updateStaffBranchesSchema`
+- [x] C2: `src/lib/actions/team.ts` — `addStaffMember`, `setStaffActive`, `updateStaffBranches` (owner-only, authed client, RLS-enforced; collision-safe slug)
+- [x] C3: `team/page.tsx` — fetch branches + per-staff assignments + `is_active`; "Add member" header action; shows active + inactive staff
+- [x] C4: `AddStaffDialog` — name + branch checkboxes, calls `addStaffMember`
+- [x] C5: `StaffCard` — active badge, assigned-branch chips, dimmed when inactive
+- [x] C6: `EditStaffDialog` — active toggle (`setStaffActive`) + branch assignment (`updateStaffBranches`) alongside existing avatar upload
+- [x] C7: i18n `team.{status,branches,add}.*` (es + en)
+- [x] C8: Tests — team action (9), StaffCard (+3), EditStaffDialog (+3); 466/466 green
+- [x] C9: DECISIONS.md — ADR-035 (ops-only split), ADR-036 (authed client over admin)
+- Scope: email invite + accept-linking deferred (ADR-035), see Block C2
+
+### Block C2 — Staff Email Invite + Accept Linking ⬜
+- [ ] Invitations data model (email column or `staff_invitations`), `auth.admin.inviteUserByEmail`, auth-trigger migration to set `role='staff'` + `business_id` and link `staff.user_id` on accept
 
 ### Block D — Branches / Services / Links / Settings ⬜
 - [ ] CRUD pages + actions; QR codes on Links (justifies `qrcode` dep)

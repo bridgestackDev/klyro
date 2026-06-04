@@ -208,6 +208,35 @@
     "avatar": {
       "updated": "Foto actualizada",
       "failed": "No se pudo actualizar la foto"
+    },
+    "status": {
+      "label": "Activo",
+      "help": "Los miembros inactivos no aparecen en la página de reservas.",
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "activated": "Miembro activado",
+      "deactivated": "Miembro desactivado",
+      "failed": "No se pudo actualizar el estado"
+    },
+    "branches": {
+      "label": "Sucursales",
+      "save": "Guardar sucursales",
+      "saved": "Sucursales actualizadas",
+      "failed": "No se pudieron actualizar las sucursales"
+    },
+    "add": {
+      "button": "Agregar miembro",
+      "title": "Agregar miembro del equipo",
+      "description": "Aparecerá en tu página de reservas una vez asignado a una sucursal.",
+      "nameLabel": "Nombre visible",
+      "namePlaceholder": "ej. Ana García",
+      "nameError": "Ingresa un nombre de al menos 2 caracteres.",
+      "branchesLabel": "Sucursales",
+      "cancel": "Cancelar",
+      "submit": "Agregar miembro",
+      "saving": "Agregando…",
+      "created": "Miembro agregado",
+      "failed": "No se pudo agregar el miembro"
     }
   },
   "settings": {

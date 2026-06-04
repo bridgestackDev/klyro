@@ -16,6 +16,13 @@ vi.mock('@/lib/actions/media', () => ({
   updateStaffAvatar: (...args: unknown[]) => mockUpdateStaffAvatar(...args),
 }));
 
+const mockSetStaffActive = vi.fn();
+const mockUpdateStaffBranches = vi.fn();
+vi.mock('@/lib/actions/team', () => ({
+  setStaffActive: (...args: unknown[]) => mockSetStaffActive(...args),
+  updateStaffBranches: (...args: unknown[]) => mockUpdateStaffBranches(...args),
+}));
+
 vi.mock('@/components/shared/ImageUpload', () => ({
   ImageUpload: (props: {
     bucket: string;
@@ -64,6 +71,12 @@ const defaultProps = {
   staffName: 'Ana García',
   businessId: 'biz-1',
   currentAvatarUrl: null,
+  isActive: true,
+  branches: [
+    { id: 'b1', name: 'Centro' },
+    { id: 'b2', name: 'Norte' },
+  ],
+  assignedBranchIds: ['b1'],
 };
 
 describe('EditStaffDialog', () => {
@@ -122,6 +135,42 @@ describe('EditStaffDialog', () => {
     await userEvent.click(screen.getByText('trigger-upload'));
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('team.avatar.failed');
+    });
+  });
+
+  it('toggles active state via setStaffActive', async () => {
+    mockSetStaffActive.mockResolvedValue(undefined);
+    render(<EditStaffDialog {...defaultProps} />);
+    const toggle = screen.getByRole('switch');
+    expect(toggle).toHaveAttribute('aria-checked', 'true');
+    await userEvent.click(toggle);
+    await waitFor(() => {
+      expect(mockSetStaffActive).toHaveBeenCalledWith('staff-1', false);
+    });
+  });
+
+  it('reverts the toggle when setStaffActive fails', async () => {
+    mockSetStaffActive.mockRejectedValue(new Error('boom'));
+    render(<EditStaffDialog {...defaultProps} />);
+    const toggle = screen.getByRole('switch');
+    await userEvent.click(toggle);
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('team.status.failed');
+    });
+    expect(toggle).toHaveAttribute('aria-checked', 'true');
+  });
+
+  it('saves branch assignment via updateStaffBranches', async () => {
+    mockUpdateStaffBranches.mockResolvedValue(undefined);
+    render(<EditStaffDialog {...defaultProps} />);
+    // Toggle the second branch on, then save
+    await userEvent.click(screen.getByLabelText('Norte'));
+    await userEvent.click(screen.getByText('team.branches.save'));
+    await waitFor(() => {
+      expect(mockUpdateStaffBranches).toHaveBeenCalledWith({
+        staffId: 'staff-1',
+        branchIds: ['b1', 'b2'],
+      });
     });
   });
 });

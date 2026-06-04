@@ -208,6 +208,35 @@
     "avatar": {
       "updated": "Photo updated",
       "failed": "Couldn't update the photo"
+    },
+    "status": {
+      "label": "Active",
+      "help": "Inactive members don't appear on the booking page.",
+      "active": "Active",
+      "inactive": "Inactive",
+      "activated": "Team member activated",
+      "deactivated": "Team member deactivated",
+      "failed": "Couldn't update the status"
+    },
+    "branches": {
+      "label": "Branches",
+      "save": "Save branches",
+      "saved": "Branches updated",
+      "failed": "Couldn't update branches"
+    },
+    "add": {
+      "button": "Add member",
+      "title": "Add team member",
+      "description": "They'll appear on your booking page once assigned to a branch.",
+      "nameLabel": "Display name",
+      "namePlaceholder": "e.g. Ana García",
+      "nameError": "Enter a name with at least 2 characters.",
+      "branchesLabel": "Branches",
+      "cancel": "Cancel",
+      "submit": "Add member",
+      "saving": "Adding…",
+      "created": "Team member added",
+      "failed": "Couldn't add the team member"
     }
   },
   "settings": {

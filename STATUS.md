@@ -1,7 +1,7 @@
 # Klyro — Build Status
 
-**Last updated:** 2026-06-02
-**Active phase:** Phase 5 — Owner Dashboard (Blocks A–B done)
+**Last updated:** 2026-06-03
+**Active phase:** Phase 5 — Owner Dashboard (Blocks A–C done)
 
 ---
 
@@ -18,7 +18,7 @@
 | 3 | Public Booking Flow | ✅ Done | All blocks A–E complete; email capture fix landed |
 | 3.5 | API Documentation | ✅ Done | Swagger UI at /api-docs + Postman setup |
 | 4 | Messaging Engine | ✅ Done | Engine + Edge Function + Resend live (direct table access, ADR-027) |
-| 5 | Owner Dashboard | 🟡 In progress | Blocks A–B done (home + agenda calendar); C–E pending |
+| 5 | Owner Dashboard | 🟡 In progress | Blocks A–C done (home + agenda + team ops); C2/D–E pending |
 | 6 | Staff Dashboard | ⬜ Not started | RLS-scoped own-day view |
 | 7 | Polish & QA | ⬜ Not started | WCAG AA, Lighthouse >90, brand pass |
 | 8 | Closed Beta | ⬜ Not started | 10 pioneer businesses, klyro.app |
@@ -544,7 +544,27 @@ Tests: 451/451 passing (426 prior + 25 new). Typecheck + lint clean.
 
 **Known follow-up:** owner-side cancel is not wired — the existing `/api/appointments/[id]/cancel` route is a public, client-token endpoint. A dedicated owner cancellation server action (void pending reminder + enqueue cancellation message) is needed; deferred per ADR-031 (Block B must not build messaging).
 
-**Blocks C–E** — Not started.
+**Block C — Team Management (ops)** ✅ Done
+
+Adds owner team operations to the previously avatar-only team page (Phase 2.6, ADR-016). Ops-only — email invite + accept-linking split into Block C2 (ADR-035).
+
+Files added:
+- `src/lib/schemas/team.ts` — `addStaffSchema` + `updateStaffBranchesSchema`
+- `src/lib/actions/team.ts` — `addStaffMember` (collision-safe slug, branch links), `setStaffActive`, `updateStaffBranches`; all owner-only via `getOwnerContext`, explicit same-business checks, authed client (ADR-036), no migration
+- `src/components/dashboard/team/AddStaffDialog.tsx` — name + branch checkboxes
+- `src/lib/actions/__tests__/team.test.ts` — 9 tests (unauth, forbidden role, cross-tenant branch, success, toggle, branch replace, validation)
+
+Files changed:
+- `src/app/[locale]/(dashboard)/team/page.tsx` — fetch branches + per-staff `staff_branches` assignments + `is_active`; "Add member" header action; lists active and inactive staff
+- `src/components/dashboard/team/StaffCard.tsx` — active badge, branch chips, dimmed-when-inactive; passes new props through
+- `src/components/dashboard/team/EditStaffDialog.tsx` — active toggle (`setStaffActive`, optimistic w/ revert) + branch assignment (`updateStaffBranches`) added beside avatar upload
+- `src/i18n/locales/es.json` + `en.json` — `team.{status,branches,add}.*`
+- `DECISIONS.md` — ADR-035, ADR-036
+- Test updates: `StaffCard.test.tsx` (+3), `EditStaffDialog.test.tsx` (+3)
+
+Tests: 466/466 passing (451 prior + 15 new). Typecheck + lint clean.
+
+**Block C2 (email invite) — Not started. Blocks D–E — Not started.**
 
 ---
 

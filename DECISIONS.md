@@ -465,3 +465,19 @@ This file records non-obvious design decisions and their rationale. Never delete
 **Why:** A working component already existed and was wired into the old agenda scaffold being replaced. Substituting a placeholder would remove live functionality. Block E can refine/extend this (e.g. the `MessageStatusBadge` summary on rows) without re-adding what already works.
 
 ---
+
+### ADR-035: Team management Block C ships ops-only; email invite deferred to Block C2
+
+**Decision:** Phase 5 Block C delivers add-staff, active toggle, and branch assignment via `src/lib/actions/team.ts` (owner-only server actions on the authed Supabase client). The PRD §6.5 email-invite + accept-linking flow is split out into a follow-up Block C2.
+
+**Why:** The invite/accept flow needs auth-flow work the ops UI does not — the `staff` table has no email column and no `staff_invitations` table, and `0005_auth_trigger.sql` hardcodes `role = 'owner'` and never sets `business_id`. Doing the full flow (invitations data model + `auth.admin.inviteUserByEmail` + a trigger migration to read business/role from invite metadata) in the same block would mix auth and ops concerns and push the file count well past the ~12-file atomic-block limit. New staff rows are created with `user_id = null` so Block C2 can later link them on accept.
+
+**Trade-off:** Owners can build out their team list and assignments now, but invited members can't self-onboard until Block C2. For the closed-beta cohort (owner is usually the only staff) this is not a launch blocker.
+
+### ADR-036: Owner team actions use the authed server client, not the admin client
+
+**Decision:** `team.ts` uses the standard authed `createClient()` (like `media.ts`), not the service-role admin client the wizard uses.
+
+**Why:** The `owner can manage staff` / `owner can manage staff_branches` RLS policies (`0002_rls_policies.sql`) are `for all` keyed on `business_id = get_my_business_id() and get_my_role() = 'owner'`. Unlike the wizard — which writes for a brand-new user whose `get_my_business_id()` is still `NULL` — the owner here already has a `business_id`, so RLS permits the inserts/updates directly. Each action still does an explicit owner + same-business check before writing, so a forged id fails fast with `FORBIDDEN` rather than relying on RLS alone. No migration was needed for this block.
+
+---
