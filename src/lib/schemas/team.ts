@@ -41,3 +41,9 @@ export const updateStaffBranchesSchema = z.object({
 export type AddStaffInput = z.infer<typeof addStaffSchema>;
 export type UpdateStaffContactInput = z.infer<typeof updateStaffContactSchema>;
 export type UpdateStaffBranchesInput = z.infer<typeof updateStaffBranchesSchema>;
+
+export const inviteStaffSchema = z.object({
+  staffId: z.string().uuid('staffId must be a valid UUID'),
+});
+
+export type InviteStaffInput = z.infer<typeof inviteStaffSchema>;
