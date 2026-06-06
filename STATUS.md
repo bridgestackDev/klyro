@@ -1,6 +1,6 @@
 # Klyro — Build Status
 
-**Last updated:** 2026-06-03
+**Last updated:** 2026-06-06
 **Active phase:** Phase 5 — Owner Dashboard (Blocks A–C done)
 
 ---
@@ -576,7 +576,7 @@ Follow-up after design review of the team UI.
 
 Tests: 468/468 passing (466 prior + 2 new). Typecheck + lint clean.
 
-**Block C2 (email invite) — Not started. Blocks D–E — Not started.**
+**Block C2 (email invite) — ✅ Done. Blocks D–E — Not started.**
 
 ---
 

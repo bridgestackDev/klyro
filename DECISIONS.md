@@ -517,3 +517,31 @@ This file records non-obvious design decisions and their rationale. Never delete
 **Landing protection:** the provider removes the `light`/`dark` class from `<html>` on unmount, so even a client-side dashboard→landing transition reverts to default-dark tokens. Combined with the provider being mounted only in the dashboard layout (a fresh landing load never mounts it), the dark landing is never contaminated.
 
 **Logo:** the dashboard navbar uses the **text-only wordmark** (no mascot/icon) in both themes — `Logo`'s `wordmark` variant already renders white on dark and navy on light. The navbar resolves the active theme (`useTheme().resolvedTheme`, dark until mounted) and feeds it to the logo, avoiding the white-only lockup PNG that would be invisible on a light navbar.
+
+---
+
+## Phase 5 — Block C2
+
+### ADR-041: Staff invite uses metadata on inviteUserByEmail — no separate invitations table
+
+**Decision:** Staff invite metadata (`role: 'staff'`, `business_id`, `staff_id`) is passed as `data` to `auth.admin.inviteUserByEmail`. The updated `private.handle_new_user` trigger reads this metadata and links `staff.user_id` atomically on accept. Pending invite state is derived from `user_id IS NULL AND email IS NOT NULL` — no new table needed.
+
+**Why:** A dedicated `staff_invitations` table would require a callback route that matches invite tokens — redundant because Supabase handles token verification server-side. The metadata approach is the idiomatic Supabase pattern and keeps the schema minimal.
+
+**Trade-off:** No explicit invite audit log. If beta feedback demands "invited at" timestamps, add `invite_sent_at` column to `staff` in a future migration.
+
+---
+
+### ADR-042: Admin client scoped to inviteUserByEmail call only
+
+**Decision:** `sendStaffInvite` verifies ownership with the authed server client before creating the `createAdminClient()` solely for the `inviteUserByEmail` call. The admin client is not used for any read or write on application tables.
+
+**Why:** Consistent with ADR-036 (owner team actions use authed client). Scoping the admin client to the minimum surface area reduces the blast radius of any auth logic bug — ownership is always validated via RLS-enforced queries first.
+
+---
+
+### ADR-043: addStaffMember does not roll back on invite failure
+
+**Decision:** If `sendStaffInvite` throws after the staff row and branch links have been created, `addStaffMember` catches the error, logs it, and returns the staff id normally. The staff row is persisted regardless.
+
+**Why:** The invite email is a side-effect, not an atomic part of the staff record. Rolling back would leave the owner with no record to resend from. The owner can resend via `EditStaffDialog`; if the row is gone, they'd have to re-add the member entirely — a worse failure mode.

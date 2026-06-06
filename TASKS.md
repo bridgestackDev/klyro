@@ -331,8 +331,16 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 - [x] CP7: i18n `team.{contact,save,saving,saved,saveFailed}.*` (es + en)
 - [x] CP8: Tests 468/468; DECISIONS ADR-037..039
 
-### Block C2 — Staff Email Invite + Accept Linking ⬜
-- [ ] Invitations data model (email column or `staff_invitations`), `auth.admin.inviteUserByEmail`, auth-trigger migration to set `role='staff'` + `business_id` and link `staff.user_id` on accept
+### Block C2 — Staff Email Invite + Accept Linking ✅
+- [x] `0012_invite_trigger_update.sql` — auth trigger branches on `role='staff'` metadata; links `staff.user_id` atomically on accept
+- [x] `0013_staff_invite_hardening.sql` — role allowlist, RAISE WARNING on parse failure, unique index on `staff.user_id`
+- [x] `sendStaffInvite(staffId)` server action — owner-only, calls `auth.admin.inviteUserByEmail` with `{ role, business_id, staff_id }` metadata
+- [x] `addStaffMember` auto-sends invite when email is provided (non-fatal on failure)
+- [x] `StaffCard` — pending invite badge when `user_id IS NULL AND email IS NOT NULL`
+- [x] `EditStaffDialog` — resend invite button (same condition)
+- [x] `AddStaffDialog` — email invite hint text
+- [x] i18n: `team.status.pendingInvite`, `team.add.emailInviteHint`, `team.invite.*` (es + en)
+- [x] ADR-041, ADR-042, ADR-043
 
 ### Block D — Branches / Services / Links / Settings ⬜
 - [ ] CRUD pages + actions; QR codes on Links (justifies `qrcode` dep)
