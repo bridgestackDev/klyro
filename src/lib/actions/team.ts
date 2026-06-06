@@ -132,6 +132,20 @@ export async function addStaffMember(input: AddStaffInput): Promise<{ id: string
     }
   }
 
+  // Fire invite email non-fatally — staff row is created regardless.
+  // Owner can resend from EditStaffDialog if this fails.
+  if (email) {
+    try {
+      await sendStaffInvite(staffId);
+    } catch (err) {
+      logger.error('addStaffMember: invite failed (non-fatal)', {
+        userId: user.id,
+        staffId,
+        error: (err as Error).message,
+      });
+    }
+  }
+
   logger.info('addStaffMember', { userId: user.id, businessId, staffId });
   revalidatePath('/', 'layout');
   return { id: staffId };

@@ -108,6 +108,61 @@ describe('addStaffMember', () => {
     const { revalidatePath } = await import('next/cache');
     expect(vi.mocked(revalidatePath)).toHaveBeenCalledWith('/', 'layout');
   });
+
+  it('sends an invite when email is provided', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+    mockFrom
+      // addStaffMember: getOwnerContext
+      .mockReturnValueOnce(selectSingle({ business_id: 'biz1', role: 'owner' }))
+      // addStaffMember: assertBranches
+      .mockReturnValueOnce(selectEqIn([{ id: VALID_BRANCH }]))
+      // addStaffMember: uniqueStaffSlug (no collision)
+      .mockReturnValueOnce(selectEqLike([]))
+      // addStaffMember: staff insert
+      .mockReturnValueOnce(insertSelectSingle({ data: { id: STAFF_ID }, error: null }))
+      // addStaffMember: branch links
+      .mockReturnValueOnce(insertResolve(null))
+      // sendStaffInvite: getOwnerContext
+      .mockReturnValueOnce(selectSingle({ business_id: 'biz1', role: 'owner' }))
+      // sendStaffInvite: staff row fetch
+      .mockReturnValueOnce(selectSingle({ id: STAFF_ID, business_id: 'biz1', email: 'ana@klyro.app', user_id: null }));
+
+    mockInviteUserByEmail.mockResolvedValue({ data: { user: {} }, error: null });
+
+    const result = await addStaffMember({
+      displayName: 'Ana',
+      email: 'ana@klyro.app',
+      branchIds: [VALID_BRANCH],
+    });
+
+    expect(result).toEqual({ id: STAFF_ID });
+    expect(mockInviteUserByEmail).toHaveBeenCalledWith('ana@klyro.app', {
+      data: { role: 'staff', business_id: 'biz1', staff_id: STAFF_ID },
+      redirectTo: expect.stringContaining('/callback'),
+    });
+  });
+
+  it('still returns the staff id when invite fails (non-fatal)', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } } });
+    mockFrom
+      .mockReturnValueOnce(selectSingle({ business_id: 'biz1', role: 'owner' }))
+      .mockReturnValueOnce(selectEqIn([{ id: VALID_BRANCH }]))
+      .mockReturnValueOnce(selectEqLike([]))
+      .mockReturnValueOnce(insertSelectSingle({ data: { id: STAFF_ID }, error: null }))
+      .mockReturnValueOnce(insertResolve(null))
+      .mockReturnValueOnce(selectSingle({ business_id: 'biz1', role: 'owner' }))
+      .mockReturnValueOnce(selectSingle({ id: STAFF_ID, business_id: 'biz1', email: 'ana@klyro.app', user_id: null }));
+
+    mockInviteUserByEmail.mockResolvedValue({ data: null, error: { message: 'SMTP error' } });
+
+    const result = await addStaffMember({
+      displayName: 'Ana',
+      email: 'ana@klyro.app',
+      branchIds: [VALID_BRANCH],
+    });
+
+    expect(result).toEqual({ id: STAFF_ID });
+  });
 });
 
 describe('setStaffActive', () => {
