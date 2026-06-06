@@ -19,10 +19,12 @@ vi.mock('@/lib/actions/media', () => ({
 const mockSetStaffActive = vi.fn();
 const mockUpdateStaffBranches = vi.fn();
 const mockUpdateStaffContact = vi.fn();
+const mockSendStaffInvite = vi.fn();
 vi.mock('@/lib/actions/team', () => ({
   setStaffActive: (...args: unknown[]) => mockSetStaffActive(...args),
   updateStaffBranches: (...args: unknown[]) => mockUpdateStaffBranches(...args),
   updateStaffContact: (...args: unknown[]) => mockUpdateStaffContact(...args),
+  sendStaffInvite: (...args: unknown[]) => mockSendStaffInvite(...args),
 }));
 
 vi.mock('@/components/shared/ImageUpload', () => ({
@@ -76,6 +78,7 @@ const defaultProps = {
   isActive: true,
   email: null,
   phone: null,
+  userId: null,
   branches: [
     { id: 'b1', name: 'Centro' },
     { id: 'b2', name: 'Norte' },
@@ -196,6 +199,26 @@ describe('EditStaffDialog', () => {
         email: 'ana@example.com',
         phone: undefined,
       });
+    });
+  });
+
+  it('shows resend invite button when userId is null and email is set', () => {
+    render(<EditStaffDialog {...defaultProps} email="ana@example.com" userId={null} />);
+    expect(screen.getByText('team.invite.resend')).toBeInTheDocument();
+  });
+
+  it('does not show resend button when userId is set', () => {
+    render(<EditStaffDialog {...defaultProps} email="ana@example.com" userId="some-uid" />);
+    expect(screen.queryByText('team.invite.resend')).toBeNull();
+  });
+
+  it('calls sendStaffInvite and shows success toast on resend click', async () => {
+    mockSendStaffInvite.mockResolvedValue(undefined);
+    render(<EditStaffDialog {...defaultProps} email="ana@example.com" userId={null} />);
+    await userEvent.click(screen.getByText('team.invite.resend'));
+    await waitFor(() => {
+      expect(mockSendStaffInvite).toHaveBeenCalledWith('staff-1');
+      expect(toast.success).toHaveBeenCalledWith('team.invite.sentSuccess');
     });
   });
 });

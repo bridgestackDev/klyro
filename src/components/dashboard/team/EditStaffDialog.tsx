@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { updateStaffAvatar } from '@/lib/actions/media';
-import { setStaffActive, updateStaffContact, updateStaffBranches } from '@/lib/actions/team';
+import { setStaffActive, updateStaffContact, updateStaffBranches, sendStaffInvite } from '@/lib/actions/team';
 
 interface Branch {
   id: string;
@@ -32,6 +32,7 @@ interface EditStaffDialogProps {
   isActive: boolean;
   email: string | null;
   phone: string | null;
+  userId: string | null;
   branches: Branch[];
   assignedBranchIds: string[];
 }
@@ -44,6 +45,7 @@ export function EditStaffDialog({
   isActive,
   email,
   phone,
+  userId,
   branches,
   assignedBranchIds,
 }: EditStaffDialogProps) {
@@ -54,6 +56,18 @@ export function EditStaffDialog({
   const [selected, setSelected] = useState<string[]>(assignedBranchIds);
   const [savingToggle, startToggle] = useTransition();
   const [saving, startSave] = useTransition();
+  const [resending, startResend] = useTransition();
+
+  function handleResendInvite() {
+    startResend(async () => {
+      try {
+        await sendStaffInvite(staffId);
+        toast.success(t('invite.sentSuccess'));
+      } catch {
+        toast.error(t('invite.sentFailed'));
+      }
+    });
+  }
 
   const handleUploaded = async (publicUrl: string) => {
     try {
@@ -186,6 +200,16 @@ export function EditStaffDialog({
             </div>
             <p className="text-xs text-[var(--color-text-muted)]">{t('contact.phoneHelp')}</p>
           </div>
+          {!userId && emailValue && (
+            <button
+              type="button"
+              onClick={handleResendInvite}
+              disabled={resending}
+              className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-button)] border border-dashed border-amber-500/40 px-3 py-2 text-xs font-medium text-amber-500 transition-colors hover:bg-amber-500/5 disabled:opacity-50"
+            >
+              {resending ? t('invite.resending') : t('invite.resend')}
+            </button>
+          )}
         </div>
 
         {/* Branches */}
