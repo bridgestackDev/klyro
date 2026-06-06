@@ -14,6 +14,7 @@ interface StaffMember {
   isActive: boolean;
   email: string | null;
   phone: string | null;
+  userId: string | null;
 }
 
 interface Branch {
@@ -63,15 +64,22 @@ export function StaffCard({ staff, businessId, branches, assignedBranchIds }: St
           </p>
           <p className="truncate text-xs text-[var(--color-text-muted)]">{staff.slug}</p>
         </div>
-        <span
-          className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
-            staff.isActive
-              ? 'bg-[var(--color-success)]/15 text-[var(--color-success)]'
-              : 'bg-[var(--color-text-muted)]/15 text-[var(--color-text-muted)]'
-          }`}
-        >
-          {staff.isActive ? t('status.active') : t('status.inactive')}
-        </span>
+        <div className="flex shrink-0 flex-col items-end gap-1">
+          <span
+            className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
+              staff.isActive
+                ? 'bg-[var(--color-success)]/15 text-[var(--color-success)]'
+                : 'bg-[var(--color-text-muted)]/15 text-[var(--color-text-muted)]'
+            }`}
+          >
+            {staff.isActive ? t('status.active') : t('status.inactive')}
+          </span>
+          {!staff.userId && staff.email && (
+            <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-medium text-amber-500">
+              {t('status.pendingInvite')}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Contact */}
@@ -119,6 +127,7 @@ export function StaffCard({ staff, businessId, branches, assignedBranchIds }: St
           isActive={staff.isActive}
           email={staff.email}
           phone={staff.phone}
+          userId={staff.userId}
           branches={branches}
           assignedBranchIds={assignedBranchIds}
         />

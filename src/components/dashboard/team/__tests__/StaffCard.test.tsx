@@ -30,6 +30,7 @@ const baseStaff: {
   isActive: boolean;
   email: string | null;
   phone: string | null;
+  userId: string | null;
 } = {
   id: 'staff-1',
   displayName: 'Ana García',
@@ -38,6 +39,7 @@ const baseStaff: {
   isActive: true,
   email: null,
   phone: null,
+  userId: null,
 };
 
 const branches = [
@@ -107,5 +109,20 @@ describe('StaffCard', () => {
     renderCard({ ...baseStaff, email: 'ana@example.com', phone: '+50498765432' });
     expect(screen.getByText('ana@example.com')).toBeInTheDocument();
     expect(screen.getByText('+50498765432')).toBeInTheDocument();
+  });
+
+  it('shows pending invite badge when userId is null and email is set', () => {
+    renderCard({ ...baseStaff, email: 'ana@example.com', userId: null });
+    expect(screen.getByText('team.status.pendingInvite')).toBeInTheDocument();
+  });
+
+  it('does not show pending invite badge when userId is null and email is also null', () => {
+    renderCard({ ...baseStaff, email: null, userId: null });
+    expect(screen.queryByText('team.status.pendingInvite')).toBeNull();
+  });
+
+  it('does not show pending invite badge when userId is set', () => {
+    renderCard({ ...baseStaff, email: 'ana@example.com', userId: 'some-user-id' });
+    expect(screen.queryByText('team.status.pendingInvite')).toBeNull();
   });
 });
