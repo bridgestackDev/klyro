@@ -126,6 +126,9 @@ export function AddStaffDialog({ branches }: AddStaffDialogProps) {
                 autoComplete="off"
               />
             </div>
+            {email.trim() && (
+              <p className="text-xs text-[var(--color-text-muted)]">{t('add.emailInviteHint')}</p>
+            )}
           </div>
 
           <div className="space-y-1.5">
