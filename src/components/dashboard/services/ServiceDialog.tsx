@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
@@ -59,6 +59,10 @@ export function ServiceDialog({
     initialData ? formFromService(initialData) : defaultForm(defaultCurrency)
   );
   const [pending, startTransition] = useTransition();
+
+  useEffect(() => {
+    setForm(initialData ? formFromService(initialData) : defaultForm(defaultCurrency));
+  }, [initialData, defaultCurrency]);
 
   function set<K extends keyof FormState>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));

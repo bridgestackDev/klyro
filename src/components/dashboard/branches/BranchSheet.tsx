@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
@@ -64,6 +64,11 @@ export function BranchSheet({ open, onOpenChange, initialData }: BranchSheetProp
   );
   const [nameError, setNameError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  useEffect(() => {
+    setForm(initialData ? formFromBranch(initialData) : defaultForm());
+    setNameError(null);
+  }, [initialData]);
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [key]: value }));

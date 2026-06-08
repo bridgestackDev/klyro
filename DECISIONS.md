@@ -545,3 +545,14 @@ This file records non-obvious design decisions and their rationale. Never delete
 **Decision:** If `sendStaffInvite` throws after the staff row and branch links have been created, `addStaffMember` catches the error, logs it, and returns the staff id normally. The staff row is persisted regardless.
 
 **Why:** The invite email is a side-effect, not an atomic part of the staff record. Rolling back would leave the owner with no record to resend from. The owner can resend via `EditStaffDialog`; if the row is gone, they'd have to re-add the member entirely — a worse failure mode.
+
+
+---
+
+### ADR-044: Service buffer_min deferred — column not in schema
+
+**Decision:** The Block D design spec included a `buffer_min` field (0–120 min) on services. The field was not implemented because the `services` DB table has no `buffer_min` column (only `duration_minutes`, `price`, `currency`, `is_active`, `name`). The schema, actions, dialog, and row components operate without buffer.
+
+**Why:** Adding a column would require a migration. The wizard seeds services without buffer; adding it now would create a divergence between wizard-seeded and dashboard-added services until the wizard is also updated. Deferred to a future migration + wizard update.
+
+**Trade-off:** Services created via the dashboard cannot express buffer time. When the column is added, `ServiceDialog` needs a buffer input field and `ServiceRow` needs to display "+ N min".

@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
+import { env } from '@/lib/env';
 import { LinkCard, type LinkItem } from '@/components/dashboard/links/LinkCard';
 
 export default async function LinksPage({
@@ -28,13 +29,15 @@ export default async function LinksPage({
   const businessSlug =
     ((Array.isArray(businesses) ? businesses[0] : businesses)?.slug as string | undefined) ?? '';
 
+  if (!businessSlug) return null;
+
   const { data: staffRows } = await supabase
     .from('staff')
     .select('id, display_name, slug, avatar_url, staff_branches(branches(id, name, slug, is_active))')
     .eq('business_id', userData.business_id as string)
     .eq('is_active', true);
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
+  const baseUrl = env.NEXT_PUBLIC_APP_URL;
 
   const links: LinkItem[] = (staffRows ?? []).flatMap((member) =>
     (
