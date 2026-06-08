@@ -168,6 +168,35 @@
         "statusUpdated": "Appointment updated.",
         "statusFailed": "Couldn't update the appointment."
       }
+    },
+    "branches": {
+      "title": "Branches",
+      "addButton": "Add branch",
+      "empty": "No branches yet. Add your first one.",
+      "active": "Active",
+      "inactive": "Inactive",
+      "editBranch": "Edit {name}",
+      "addTitle": "New branch",
+      "addDescription": "Fill in the branch details.",
+      "editTitle": "Edit branch",
+      "editDescription": "Update this branch's information.",
+      "nameLabel": "Name",
+      "namePlaceholder": "e.g. Downtown Branch",
+      "nameRequired": "Name is required",
+      "addressLabel": "Address",
+      "addressPlaceholder": "e.g. 123 Main St",
+      "countryLabel": "Country",
+      "cityLabel": "City",
+      "cityPlaceholder": "e.g. Tegucigalpa",
+      "timezoneLabel": "Timezone",
+      "phoneLabel": "General phone",
+      "whatsappLabel": "WhatsApp (confirmations)",
+      "whatsappHelp": "This number will receive client replies.",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Branch saved",
+      "failed": "Could not save branch"
     }
   },
   "errors": {

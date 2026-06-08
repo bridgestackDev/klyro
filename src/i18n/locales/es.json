@@ -168,6 +168,35 @@
         "statusUpdated": "Cita actualizada.",
         "statusFailed": "No se pudo actualizar la cita."
       }
+    },
+    "branches": {
+      "title": "Sucursales",
+      "addButton": "Agregar sucursal",
+      "empty": "Aún no tienes sucursales. Agrega la primera.",
+      "active": "Activa",
+      "inactive": "Inactiva",
+      "editBranch": "Editar {name}",
+      "addTitle": "Nueva sucursal",
+      "addDescription": "Completa los datos de la sucursal.",
+      "editTitle": "Editar sucursal",
+      "editDescription": "Actualiza la información de esta sucursal.",
+      "nameLabel": "Nombre",
+      "namePlaceholder": "Ej. Sucursal Centro",
+      "nameRequired": "El nombre es obligatorio",
+      "addressLabel": "Dirección",
+      "addressPlaceholder": "Ej. Bulevar Morazán 123",
+      "countryLabel": "País",
+      "cityLabel": "Ciudad",
+      "cityPlaceholder": "Ej. Tegucigalpa",
+      "timezoneLabel": "Zona horaria",
+      "phoneLabel": "Teléfono general",
+      "whatsappLabel": "WhatsApp (confirmaciones)",
+      "whatsappHelp": "Este número recibirá las respuestas de tus clientes.",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "saving": "Guardando…",
+      "saved": "Sucursal guardada",
+      "failed": "No se pudo guardar la sucursal"
     }
   },
   "errors": {
