@@ -220,6 +220,13 @@
       "saving": "Guardando…",
       "saved": "Servicio guardado",
       "failed": "No se pudo guardar el servicio"
+    },
+    "links": {
+      "title": "Links de reserva",
+      "empty": "No hay staff activo con sucursales asignadas.",
+      "copyLink": "Copiar link",
+      "copied": "¡Copiado!",
+      "downloadQr": "Descargar QR"
     }
   },
   "errors": {

@@ -220,6 +220,13 @@
       "saving": "Saving…",
       "saved": "Service saved",
       "failed": "Could not save service"
+    },
+    "links": {
+      "title": "Booking links",
+      "empty": "No active staff with branch assignments.",
+      "copyLink": "Copy link",
+      "copied": "Copied!",
+      "downloadQr": "Download QR"
     }
   },
   "errors": {
