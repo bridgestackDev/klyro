@@ -331,6 +331,18 @@
       "help": "This image will appear on your public booking page.",
       "updated": "Logo updated",
       "failed": "Couldn't update the logo"
+    },
+    "business": {
+      "title": "Business information",
+      "help": "Update your business name, country, and currency.",
+      "nameLabel": "Business name",
+      "countryLabel": "Country",
+      "currencyLabel": "Default currency",
+      "languageLabel": "Default language",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Information updated",
+      "failed": "Could not update information"
     }
   },
   "media": {

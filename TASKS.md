@@ -342,8 +342,9 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 - [x] i18n: `team.status.pendingInvite`, `team.add.emailInviteHint`, `team.invite.*` (es + en)
 - [x] ADR-041, ADR-042, ADR-043
 
-### Block D — Branches / Services / Links / Settings ⬜
-- [ ] CRUD pages + actions; QR codes on Links (justifies `qrcode` dep)
+### Block D — Branches / Services / Links / Settings 🟡
+- [x] D4: Settings expansion — Business Info Card (name, country, currency, language) below Brand Card; `updateBusinessInfo` server action; i18n `settings.business.*`
+- [ ] CRUD pages for branches + services + links (QR codes justify `qrcode` dep)
 
 ### Block E — Realtime + Message Status ⬜
 - [ ] Supabase Realtime on `appointments:{businessId}`; `MessageStatusBadge`; `read-status.ts`; tag `phase-5-done`

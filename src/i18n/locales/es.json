@@ -331,6 +331,18 @@
       "help": "Esta imagen aparecerá en tu página pública de reservas.",
       "updated": "Logo actualizado",
       "failed": "No se pudo actualizar el logo"
+    },
+    "business": {
+      "title": "Información del negocio",
+      "help": "Actualiza el nombre, país y moneda de tu negocio.",
+      "nameLabel": "Nombre del negocio",
+      "countryLabel": "País",
+      "currencyLabel": "Moneda predeterminada",
+      "languageLabel": "Idioma predeterminado",
+      "save": "Guardar",
+      "saving": "Guardando…",
+      "saved": "Información actualizada",
+      "failed": "No se pudo actualizar la información"
     }
   },
   "media": {
