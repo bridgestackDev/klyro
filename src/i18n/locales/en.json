@@ -197,6 +197,29 @@
       "saving": "Saving…",
       "saved": "Branch saved",
       "failed": "Could not save branch"
+    },
+    "services": {
+      "title": "Services",
+      "addButton": "Add service",
+      "empty": "No services yet. Add your first one.",
+      "active": "Active",
+      "inactive": "Inactive",
+      "addTitle": "New service",
+      "addDescription": "Define a service for your business.",
+      "editTitle": "Edit service",
+      "editDescription": "Update this service's information.",
+      "nameLabel": "Name",
+      "namePlaceholder": "e.g. Haircut",
+      "durationLabel": "Duration (min)",
+      "durationPlaceholder": "45",
+      "priceLabel": "Price",
+      "pricePlaceholder": "0.00",
+      "currencyLabel": "Currency",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Service saved",
+      "failed": "Could not save service"
     }
   },
   "errors": {

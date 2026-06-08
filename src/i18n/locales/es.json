@@ -197,6 +197,29 @@
       "saving": "Guardando…",
       "saved": "Sucursal guardada",
       "failed": "No se pudo guardar la sucursal"
+    },
+    "services": {
+      "title": "Servicios",
+      "addButton": "Agregar servicio",
+      "empty": "Aún no tienes servicios. Agrega el primero.",
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "addTitle": "Nuevo servicio",
+      "addDescription": "Define un servicio para tu negocio.",
+      "editTitle": "Editar servicio",
+      "editDescription": "Actualiza la información de este servicio.",
+      "nameLabel": "Nombre",
+      "namePlaceholder": "Ej. Corte de cabello",
+      "durationLabel": "Duración (min)",
+      "durationPlaceholder": "45",
+      "priceLabel": "Precio",
+      "pricePlaceholder": "0.00",
+      "currencyLabel": "Moneda",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "saving": "Guardando…",
+      "saved": "Servicio guardado",
+      "failed": "No se pudo guardar el servicio"
     }
   },
   "errors": {
