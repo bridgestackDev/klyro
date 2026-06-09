@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
+import { requireOwner } from '@/lib/dashboard/access';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BrandSettingsForm } from '@/components/dashboard/settings/BrandSettingsForm';
 import { BusinessInfoForm } from '@/components/dashboard/settings/BusinessInfoForm';
@@ -9,7 +10,8 @@ export default async function SettingsPage({
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  await params;
+  const { locale } = await params;
+  await requireOwner(locale);
   const tBrand = await getTranslations('settings.brand');
   const tBiz = await getTranslations('settings.business');
 

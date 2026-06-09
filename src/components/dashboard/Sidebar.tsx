@@ -6,11 +6,12 @@ import { useTranslations } from "next-intl";
 import { PanelLeft } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { NAV_ITEMS } from "./nav-items";
+import { navItemsForRole, type UserRole } from "./nav-items";
 import type { SidebarMode } from "./DashboardShell";
 
 interface SidebarProps {
   locale: string;
+  role: UserRole;
   mode: SidebarMode;
   onModeChange: (mode: SidebarMode) => void;
 }
@@ -21,9 +22,10 @@ const MODES: { key: SidebarMode; labelKey: string }[] = [
   { key: "hover", labelKey: "sidebarHover" },
 ];
 
-export function Sidebar({ locale, mode, onModeChange }: SidebarProps) {
+export function Sidebar({ locale, role, mode, onModeChange }: SidebarProps) {
   const t = useTranslations("dashboard.nav");
   const pathname = usePathname();
+  const navItems = navItemsForRole(role);
   const [menuOpen, setMenuOpen] = useState(false);
   const [popoverPos, setPopoverPos] = useState<{ bottom: number; left: number } | null>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -72,7 +74,7 @@ export function Sidebar({ locale, mode, onModeChange }: SidebarProps) {
       >
         {/* Nav — overflow-hidden clips invisible labels */}
         <nav className="flex flex-1 flex-col gap-0.5 overflow-hidden px-1.5 py-3">
-          {NAV_ITEMS.map(({ key, href, icon: Icon }) => {
+          {navItems.map(({ key, href, icon: Icon }) => {
             const fullHref = `/${locale}${href}`;
             const isActive =
               pathname === fullHref || pathname.startsWith(`${fullHref}/`);

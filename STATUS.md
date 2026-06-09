@@ -1,7 +1,7 @@
 # Klyro — Build Status
 
-**Last updated:** 2026-06-08
-**Active phase:** Phase 5 — Owner Dashboard (Blocks A–C done, D4 done)
+**Last updated:** 2026-06-09
+**Active phase:** Phase 6 — Staff Dashboard (Block A done; Block B next)
 
 ---
 
@@ -19,7 +19,7 @@
 | 3.5 | API Documentation | ✅ Done | Swagger UI at /api-docs + Postman setup |
 | 4 | Messaging Engine | ✅ Done | Engine + Edge Function + Resend live (direct table access, ADR-027) |
 | 5 | Owner Dashboard | 🟡 In progress | Blocks A–C done (home + agenda + team ops); C2/D–E pending |
-| 6 | Staff Dashboard | ⬜ Not started | RLS-scoped own-day view |
+| 6 | Staff Dashboard | 🟡 In progress | Block A (role-aware shell) done; Block B (RLS write) next |
 | 7 | Polish & QA | ⬜ Not started | WCAG AA, Lighthouse >90, brand pass |
 | 8 | Closed Beta | ⬜ Not started | 10 pioneer businesses, klyro.app |
 
@@ -577,6 +577,49 @@ Follow-up after design review of the team UI.
 Tests: 468/468 passing (466 prior + 2 new). Typecheck + lint clean.
 
 **Block C2 (email invite) — ✅ Done. Block D4 (Settings expansion) — ✅ Done. Blocks D (remainder) / E — Not started.**
+
+---
+
+## Phase 6 — Staff Dashboard 🟡
+
+**Branch:** `feature/owner-dashboard` (continues from Phase 5)
+
+**Goal:** A staff member signs in (via the existing invite link), lands on a
+dashboard scoped to their own day, and can mark their appointments completed /
+no-show. RLS verified for tenant isolation.
+
+**Pre-existing:** staff login + accept-linking shipped in Phase 5 Block C2
+(ADR-041..043) — `inviteUserByEmail` metadata + trigger links `staff.user_id`.
+Staff sign in passwordless; no set-password screen (not needed for the exit
+criterion). RLS already gives staff SELECT on their own appointments.
+
+**Block A — Role-aware shell & route guarding** ✅ Done
+
+Files added:
+- `src/lib/dashboard/access.ts` — `getDashboardUser()` (resolves `users.role` +
+  `business_id`, RLS-readable own row) + `requireOwner(locale)` (redirects
+  unauthenticated → login, staff → `/agenda`; returns context for owners)
+- `src/lib/dashboard/__tests__/access.test.ts` — 7 tests
+- `src/components/dashboard/__tests__/nav-items.test.ts` — 3 tests
+
+Files changed:
+- `src/components/dashboard/nav-items.ts` — `ownerOnly` flag on team/branches/
+  services/links/settings + `navItemsForRole(role)` (staff → Dashboard + Agenda)
+- `(dashboard)/layout.tsx` — resolves role, passes `role` to `DashboardShell`
+- `DashboardShell.tsx` → `Navbar.tsx` + `Sidebar.tsx` — thread `role`, filter nav
+- Owner-only pages (`team`, `branches`, `services`, `settings`, `links`) — call
+  `requireOwner(locale)` at the top (UX guard; RLS remains the real boundary)
+- `(dashboard)/dashboard/page.tsx` — `getBusinessContext` reads `role`; staff get
+  agenda-only quick links; logo nudge + setup banner are owner-only
+- `DECISIONS.md` — ADR-045
+
+Tests: 553/553 passing (539 prior + 14 new). Typecheck clean; Block A files lint
+clean. (`pnpm lint` still reports 2 **pre-existing** `react-hooks/set-state-in-effect`
+errors in `ServiceDialog.tsx` from Phase 5 Block D — untouched here, tracked as
+debt.)
+
+**Block B** — Not started (staff UPDATE RLS policy + staff-safe status action +
+RLS verification + `git tag phase-6-done`).
 
 ---
 

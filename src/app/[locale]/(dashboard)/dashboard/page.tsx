@@ -24,6 +24,7 @@ interface BusinessContext {
   onboardingCompleted: boolean;
   businessId: string | null;
   timezone: string;
+  role: "owner" | "staff";
 }
 
 async function getBusinessContext(userId: string): Promise<BusinessContext> {
@@ -31,10 +32,12 @@ async function getBusinessContext(userId: string): Promise<BusinessContext> {
   const { data } = await supabase
     .from("users")
     .select(
-      "business_id, businesses(onboarding_completed, logo_url, branches(timezone, is_active))"
+      "business_id, role, businesses(onboarding_completed, logo_url, branches(timezone, is_active))"
     )
     .eq("id", userId)
     .single();
+
+  const role: "owner" | "staff" = data?.role === "owner" ? "owner" : "staff";
 
   const empty: BusinessContext = {
     needsSetup: true,
@@ -42,6 +45,7 @@ async function getBusinessContext(userId: string): Promise<BusinessContext> {
     onboardingCompleted: false,
     businessId: null,
     timezone: DEFAULT_TZ,
+    role,
   };
 
   if (!data?.business_id) return empty;
@@ -65,6 +69,7 @@ async function getBusinessContext(userId: string): Promise<BusinessContext> {
     onboardingCompleted: biz.onboarding_completed ?? false,
     businessId: data.business_id,
     timezone,
+    role,
   };
 }
 
@@ -107,8 +112,9 @@ export default async function DashboardPage({
         onboardingCompleted: false,
         businessId: null,
         timezone: DEFAULT_TZ,
+        role: "staff" as const,
       };
-  const { needsSetup, logoUrl, onboardingCompleted, timezone } = ctx;
+  const { needsSetup, logoUrl, onboardingCompleted, timezone, role } = ctx;
 
   const home = needsSetup ? null : await getHomeData(timezone);
 
@@ -129,10 +135,15 @@ export default async function DashboardPage({
     user?.email?.split("@")[0] ??
     "";
 
+  // Staff only get the agenda quick link — team/links are owner-only screens.
   const quickLinks = [
     { href: `/${locale}/agenda`, label: t("home.quickLinks.agenda"), icon: CalendarDays },
-    { href: `/${locale}/team`, label: t("home.quickLinks.team"), icon: Users },
-    { href: `/${locale}/links`, label: t("home.quickLinks.links"), icon: LinkIcon },
+    ...(role === "owner"
+      ? [
+          { href: `/${locale}/team`, label: t("home.quickLinks.team"), icon: Users },
+          { href: `/${locale}/links`, label: t("home.quickLinks.links"), icon: LinkIcon },
+        ]
+      : []),
   ];
 
   return (
@@ -147,15 +158,17 @@ export default async function DashboardPage({
         </p>
       </div>
 
-      {/* Logo nudge — shown when onboarding is done but logo hasn't been uploaded */}
-      <SetupLogoBanner
-        logoUrl={logoUrl}
-        onboardingCompleted={onboardingCompleted}
-        locale={locale}
-      />
+      {/* Logo nudge — owner-only (staff can't upload a business logo) */}
+      {role === "owner" && (
+        <SetupLogoBanner
+          logoUrl={logoUrl}
+          onboardingCompleted={onboardingCompleted}
+          locale={locale}
+        />
+      )}
 
-      {/* Setup banner */}
-      {needsSetup && (
+      {/* Setup banner — owner-only (the wizard is the owner's flow) */}
+      {role === "owner" && needsSetup && (
         <div className="rounded-[var(--radius-card)] border border-[var(--color-violet)]/30 bg-gradient-to-br from-[var(--color-violet)]/10 to-[var(--color-bg-surface)] p-6 shadow-[0_4px_24px_rgba(109,100,251,0.12)]">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-1">

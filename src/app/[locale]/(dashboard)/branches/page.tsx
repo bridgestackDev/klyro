@@ -1,6 +1,7 @@
 // src/app/[locale]/(dashboard)/branches/page.tsx
 import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
+import { requireOwner } from '@/lib/dashboard/access';
 import { BranchList } from '@/components/dashboard/branches/BranchList';
 
 export default async function BranchesPage({
@@ -8,7 +9,8 @@ export default async function BranchesPage({
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  await params;
+  const { locale } = await params;
+  await requireOwner(locale);
   const t = await getTranslations('dashboard.branches');
   const supabase = await createClient();
 

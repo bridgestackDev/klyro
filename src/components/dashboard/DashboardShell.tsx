@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Navbar } from "./Navbar";
 import { Sidebar } from "./Sidebar";
 import { Toaster } from "@/components/ui/sonner";
+import type { UserRole } from "./nav-items";
 
 export type SidebarMode = "collapsed" | "expanded" | "hover";
 
@@ -13,6 +14,7 @@ const VALID_MODES: SidebarMode[] = ["collapsed", "expanded", "hover"];
 interface DashboardShellProps {
   children: React.ReactNode;
   locale: string;
+  role: UserRole;
   userEmail?: string;
   userInitial?: string;
 }
@@ -20,6 +22,7 @@ interface DashboardShellProps {
 export function DashboardShell({
   children,
   locale,
+  role,
   userEmail,
   userInitial,
 }: DashboardShellProps) {
@@ -46,11 +49,12 @@ export function DashboardShell({
     <div className="flex h-screen flex-col overflow-hidden bg-[var(--color-bg-base)]">
       <Navbar
         locale={locale}
+        role={role}
         userEmail={userEmail}
         userInitial={userInitial}
       />
       <div className="flex min-h-0 flex-1 overflow-hidden">
-        <Sidebar locale={locale} mode={mode} onModeChange={handleModeChange} />
+        <Sidebar locale={locale} role={role} mode={mode} onModeChange={handleModeChange} />
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
       </div>
       <Toaster position="bottom-right" />

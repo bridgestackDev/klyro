@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
 import { env } from '@/lib/env';
+import { requireOwner } from '@/lib/dashboard/access';
 import { LinkCard, type LinkItem } from '@/components/dashboard/links/LinkCard';
 
 export default async function LinksPage({
@@ -9,6 +10,7 @@ export default async function LinksPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  await requireOwner(locale);
   const t = await getTranslations('dashboard.links');
   const supabase = await createClient();
 

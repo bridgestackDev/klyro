@@ -556,3 +556,23 @@ This file records non-obvious design decisions and their rationale. Never delete
 **Why:** Adding a column would require a migration. The wizard seeds services without buffer; adding it now would create a divergence between wizard-seeded and dashboard-added services until the wizard is also updated. Deferred to a future migration + wizard update.
 
 **Trade-off:** Services created via the dashboard cannot express buffer time. When the column is added, `ServiceDialog` needs a buffer input field and `ServiceRow` needs to display "+ N min".
+
+---
+
+## Phase 6 — Block A
+
+### ADR-045: Staff dashboard scoping is a UX guard; RLS remains the authorization boundary
+
+**Decision:** Phase 6 introduces role-aware navigation and route guards (`requireOwner`), but these are **UX affordances, not the security boundary**. `getDashboardUser()` reads `users.role` (RLS-readable own row); the dashboard layout threads `role` into `DashboardShell` → `Navbar` + `Sidebar`, which render only `navItemsForRole(role)` (staff: Dashboard + Agenda). Owner-only pages (`team`, `branches`, `services`, `settings`, `links`) call `requireOwner(locale)`, which redirects a staff member to `/agenda`.
+
+**Why:** The real isolation is enforced by RLS (`0002_rls_policies.sql`) — owner-scoped policies require `get_my_role() = 'owner'`, so a staff member who bypassed a redirect still cannot read/mutate owner data. Adding a parallel client-side authz layer would be redundant and risk drift. The guards exist purely so staff aren't shown screens that would render empty or fail on save.
+
+**Fail-closed default:** when `users.role` can't be read (should be impossible — the column is `not null` and the own-row SELECT policy applies), `getDashboardUser` defaults `role` to `staff` (least privilege), so an ambiguous identity gets the smaller surface, never the owner surface.
+
+**Trade-off:** Role is read once per dashboard navigation (one extra `users` SELECT in the layout). Acceptable; the query hits the PK and the value is small. Staff home reuses the owner home page (KPIs auto-scope to the staff's own appointments via RLS) rather than a separate route — same components, scoped data, matching the PRD's "same UI, vertical labels propagate" intent.
+
+### ADR-046: Pre-existing lint debt in ServiceDialog left untouched in Block A
+
+**Decision:** `pnpm lint` reports 2 `react-hooks/set-state-in-effect` errors in `src/components/dashboard/services/ServiceDialog.tsx` (Phase 5 Block D). These predate Phase 6 (confirmed via `git stash` + lint at HEAD) and are left untouched in Block A.
+
+**Why:** Per the workflow's mixed-concerns rule, an unrelated fix gets its own commit. Block A introduces zero new lint errors (its own files lint clean). The debt is tracked in STATUS.md and should be cleared in a dedicated `fix(dashboard)` commit (likely deriving state with `useMemo`/`key` instead of a setState-in-effect).

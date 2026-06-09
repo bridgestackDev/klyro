@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
+import { requireOwner } from '@/lib/dashboard/access';
 import { ServiceList } from '@/components/dashboard/services/ServiceList';
 
 export default async function ServicesPage({
@@ -7,7 +8,8 @@ export default async function ServicesPage({
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  await params;
+  const { locale } = await params;
+  await requireOwner(locale);
   const t = await getTranslations('dashboard.services');
   const supabase = await createClient();
 

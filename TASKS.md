@@ -353,12 +353,27 @@ Legend: ✅ Done · 🟡 In progress / built · ⬜ Not started · 🔴 Blocked
 
 ## Phase 6 — Staff Dashboard
 
-- [ ] Staff login (accepts invitation link → sets password / OAuth)
-- [ ] Staff view: own-day agenda only (RLS enforced)
-- [ ] Mark appointment as completed / no-show
-- [ ] Verify RLS: staff cannot see other staff's appointments or other businesses
-- [ ] Typecheck + lint pass
-- [ ] Commit Phase 6
+Staff login + accept-linking already shipped in Phase 5 Block C2 (ADR-041). Staff
+sign in passwordless via the invite link; no set-password screen is built (not
+required for the exit criterion). Phase 6 scopes the dashboard down for staff and
+unblocks staff status writes.
+
+### Block A — Role-aware shell & route guarding ✅
+- [x] A1: `src/lib/dashboard/access.ts` — `getDashboardUser()` + `requireOwner(locale)` guard
+- [x] A2: `nav-items.ts` — `ownerOnly` flag + `navItemsForRole(role)`; staff see Dashboard + Agenda only
+- [x] A3: `(dashboard)/layout.tsx` resolves `users.role`, threads it to `DashboardShell` → `Navbar` + `Sidebar`
+- [x] A4: Owner-only pages (`team`, `branches`, `services`, `settings`, `links`) call `requireOwner` → staff redirected to `/agenda`
+- [x] A5: Dashboard home — staff get agenda-only quick links; logo/setup banners owner-only
+- [x] A6: Tests — `access.test.ts` (7), `nav-items.test.ts` (3); 553/553 green
+- [x] A7: DECISIONS.md — ADR-045
+
+### Block B — Staff appointment actions + RLS + verification ⬜
+- [ ] B1: Migration — staff UPDATE policy on own `appointments` (mark completed / no-show)
+- [ ] B2: `updateAppointmentStatus` staff-safe (works for staff role, not just owner)
+- [ ] B3: Staff agenda mark completed / no-show works end-to-end
+- [ ] B4: Verify RLS — staff cannot see/mutate other staff's appointments or other businesses
+- [ ] B5: Typecheck + lint pass
+- [ ] B6: `git tag phase-6-done`
 
 ---
 

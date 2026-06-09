@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
+import { requireOwner } from '@/lib/dashboard/access';
 import { StaffCard } from '@/components/dashboard/team/StaffCard';
 import { AddStaffDialog } from '@/components/dashboard/team/AddStaffDialog';
 
@@ -8,7 +9,8 @@ export default async function TeamPage({
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  await params;
+  const { locale } = await params;
+  await requireOwner(locale);
   const t = await getTranslations('team');
 
   const supabase = await createClient();

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { signOut } from "@/lib/actions/auth";
 import { cn } from "@/lib/utils";
-import { NAV_ITEMS } from "./nav-items";
+import { navItemsForRole, type UserRole } from "./nav-items";
 import { ThemeToggle } from "./ThemeToggle";
 
 /**
@@ -36,6 +36,7 @@ function DashboardLogo({ className }: { className?: string }) {
 
 interface NavbarProps {
   locale: string;
+  role: UserRole;
   userEmail?: string;
   userInitial?: string;
 }
@@ -102,12 +103,14 @@ function UserMenu({
 
 function MobileNavSheet({
   locale,
+  role,
   userEmail,
   userInitial,
 }: NavbarProps) {
   const [open, setOpen] = useState(false);
   const t = useTranslations("dashboard.nav");
   const pathname = usePathname();
+  const navItems = navItemsForRole(role);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -131,7 +134,7 @@ function MobileNavSheet({
             <DashboardLogo className="h-9" />
           </div>
           <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto">
-            {NAV_ITEMS.map(({ key, href, icon: Icon }) => {
+            {navItems.map(({ key, href, icon: Icon }) => {
               const fullHref = `/${locale}${href}`;
               const isActive =
                 pathname === fullHref || pathname.startsWith(`${fullHref}/`);
@@ -178,13 +181,14 @@ function MobileNavSheet({
   );
 }
 
-export function Navbar({ locale, userEmail, userInitial }: NavbarProps) {
+export function Navbar({ locale, role, userEmail, userInitial }: NavbarProps) {
   return (
     <header className="flex h-14 shrink-0 items-center border-b border-[var(--border-subtle)] bg-[var(--color-bg-surface)] px-4">
       {/* Mobile hamburger */}
       <div className="mr-3 lg:hidden">
         <MobileNavSheet
           locale={locale}
+          role={role}
           userEmail={userEmail}
           userInitial={userInitial}
         />
