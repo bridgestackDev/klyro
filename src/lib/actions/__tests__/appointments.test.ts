@@ -68,6 +68,37 @@ describe("updateAppointmentStatus", () => {
     });
   });
 
+  it("a staff member targeting a colleague's appointment gets NOT_FOUND (RLS hides the row)", async () => {
+    // For a staff session, the "staff can view own appointments" SELECT policy
+    // returns only their own rows, so a colleague's appointment id resolves to
+    // null here — the action throws NOT_FOUND before reaching the UPDATE. The
+    // matching "staff can update own appointments" UPDATE policy (0014) would
+    // also block the write, but the read scope stops it first.
+    mockGetUser.mockResolvedValue({ data: { user: { id: "staff-user" } } });
+    mockFrom
+      .mockReturnValueOnce({ select: vi.fn().mockReturnValue(eqChain({ business_id: "biz1" })) })
+      .mockReturnValueOnce({ select: vi.fn().mockReturnValue(eqChain(null)) });
+    await expect(updateAppointmentStatus("colleague-appt", "completed")).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
+  });
+
+  it("updates the status for a staff member's own appointment and revalidates", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "staff-user" } } });
+    const updateSpy = updateChain(null);
+    mockFrom
+      .mockReturnValueOnce({ select: vi.fn().mockReturnValue(eqChain({ business_id: "biz1" })) })
+      .mockReturnValueOnce({
+        select: vi.fn().mockReturnValue(
+          eqChain({ id: "my-appt", business_id: "biz1", status: "confirmed" })
+        ),
+      })
+      .mockReturnValueOnce(updateSpy);
+
+    await expect(updateAppointmentStatus("my-appt", "noshow")).resolves.toBeUndefined();
+    expect(updateSpy.update).toHaveBeenCalledWith({ status: "noshow" });
+  });
+
   it("updates the status for the owner and revalidates", async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: "u1" } } });
     const updateSpy = updateChain(null);

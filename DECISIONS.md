@@ -576,3 +576,23 @@ This file records non-obvious design decisions and their rationale. Never delete
 **Decision:** `pnpm lint` reports 2 `react-hooks/set-state-in-effect` errors in `src/components/dashboard/services/ServiceDialog.tsx` (Phase 5 Block D). These predate Phase 6 (confirmed via `git stash` + lint at HEAD) and are left untouched in Block A.
 
 **Why:** Per the workflow's mixed-concerns rule, an unrelated fix gets its own commit. Block A introduces zero new lint errors (its own files lint clean). The debt is tracked in STATUS.md and should be cleared in a dedicated `fix(dashboard)` commit (likely deriving state with `useMemo`/`key` instead of a setState-in-effect).
+
+---
+
+## Phase 6 — Block B
+
+### ADR-047: Staff status writes via a dedicated UPDATE policy that mirrors the staff SELECT predicate
+
+**Decision:** `0014_staff_appointment_update.sql` adds a `staff can update own appointments` policy — `for update`, with both `USING` and `WITH CHECK` scoped to `staff_id in (select id from staff where user_id = auth.uid())`. The owner keeps the broader `owner can manage all appointments in own business` policy. `updateAppointmentStatus` needed no logic change: it's role-agnostic, the read scopes to the caller's own appointments via the pre-existing SELECT policy, and the new UPDATE policy permits the write.
+
+**Why:** Staff need to mark their own appointments completed / no-show from the staff agenda, but only their own. A new policy keyed on the exact same predicate as the long-standing `staff can view own appointments` SELECT policy inherits its proven isolation. The symmetric `WITH CHECK` stops a staff member from reassigning an appointment to another staff member — the post-update row must still be theirs. The dashboard only ever writes `status`, so the row's `staff_id` is unchanged and `WITH CHECK` always passes for legitimate use.
+
+**Trade-off:** RLS is row-level, not column-level, so the policy doesn't itself restrict *which* columns a staff member may change — only that the row stays theirs. The app writes only `status`; a hand-crafted request could change other columns of their own appointment. Acceptable: it's still their own row, and the booking-critical fields (slot times, staff) are not owner-sensitive cross-tenant data. Column-level hardening (a trigger or a narrowed RPC) can be added later if needed.
+
+### ADR-048: Behavioral RLS verification is not possible through the Supabase MCP SQL runner
+
+**Decision:** Tenant-isolation verification for Phase 6 rests on (a) structural inspection of the policy clauses in `pg_policies`, (b) the fact the new UPDATE predicate is identical to the production-proven `staff can view own appointments` SELECT predicate, and (c) unit tests. It does **not** rest on a behavioral simulation through the MCP `execute_sql` / Management API, because that channel bypasses RLS.
+
+**Why:** Attempting `begin; set local role authenticated; select set_config('request.jwt.claims', …); …; rollback;` confirmed `current_user = authenticated` and the JWT claims were set, yet a `select count(*) from appointments` returned **all 13 rows including a row from another business** — impossible under enforced RLS for a role that is neither superuser nor `BYPASSRLS` (both confirmed false; RLS enabled, not forced). The Management/MCP SQL runner therefore evaluates queries with row security effectively bypassed, regardless of an inline `SET ROLE`. The probe ran inside a rolled-back transaction and mutated nothing (the foreign appointment stayed `pending`), but the channel simply can't exercise policy enforcement.
+
+**Consequence:** Genuine behavioral RLS tests require the real app stack — an anon/authenticated `supabase-js` client carrying a signed JWT (or `ALTER TABLE … FORCE ROW LEVEL SECURITY` + a non-owner login role). That's deferred; if a future block needs behavioral RLS coverage, add it as an integration test using two real signed-in clients rather than the admin SQL runner.

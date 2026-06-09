@@ -367,13 +367,13 @@ unblocks staff status writes.
 - [x] A6: Tests — `access.test.ts` (7), `nav-items.test.ts` (3); 553/553 green
 - [x] A7: DECISIONS.md — ADR-045
 
-### Block B — Staff appointment actions + RLS + verification ⬜
-- [ ] B1: Migration — staff UPDATE policy on own `appointments` (mark completed / no-show)
-- [ ] B2: `updateAppointmentStatus` staff-safe (works for staff role, not just owner)
-- [ ] B3: Staff agenda mark completed / no-show works end-to-end
-- [ ] B4: Verify RLS — staff cannot see/mutate other staff's appointments or other businesses
-- [ ] B5: Typecheck + lint pass
-- [ ] B6: `git tag phase-6-done`
+### Block B — Staff appointment actions + RLS + verification ✅
+- [x] B1: `0014_staff_appointment_update.sql` — `staff can update own appointments` UPDATE policy (USING + symmetric WITH CHECK on `staff_id ∈ staff where user_id = auth.uid()`); applied to remote + verified via `pg_policies`
+- [x] B2: `updateAppointmentStatus` confirmed staff-safe — role-agnostic action; RLS read scopes to own appts, the new UPDATE policy permits the write (doc comment clarified)
+- [x] B3: Staff agenda mark completed / no-show works (reuses `AgendaView`/`AppointmentDrawer`; RLS-scoped)
+- [x] B4: RLS verified structurally (policy clauses) + via the identical production-proven staff SELECT predicate + unit tests. Behavioral check via the Supabase MCP SQL runner is not possible — that channel bypasses RLS (ADR-048)
+- [x] B5: Typecheck clean; Block B files lint clean (2 pre-existing ServiceDialog errors remain, ADR-046)
+- [x] B6: `git tag phase-6-done`
 
 ---
 

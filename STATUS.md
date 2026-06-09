@@ -1,7 +1,7 @@
 # Klyro — Build Status
 
 **Last updated:** 2026-06-09
-**Active phase:** Phase 6 — Staff Dashboard (Block A done; Block B next)
+**Active phase:** Phase 6 — Staff Dashboard ✅ (Blocks A + B done; `phase-6-done` tagged)
 
 ---
 
@@ -19,7 +19,7 @@
 | 3.5 | API Documentation | ✅ Done | Swagger UI at /api-docs + Postman setup |
 | 4 | Messaging Engine | ✅ Done | Engine + Edge Function + Resend live (direct table access, ADR-027) |
 | 5 | Owner Dashboard | 🟡 In progress | Blocks A–C done (home + agenda + team ops); C2/D–E pending |
-| 6 | Staff Dashboard | 🟡 In progress | Block A (role-aware shell) done; Block B (RLS write) next |
+| 6 | Staff Dashboard | ✅ Done | Role-aware shell + staff own-day agenda + staff status writes (RLS) |
 | 7 | Polish & QA | ⬜ Not started | WCAG AA, Lighthouse >90, brand pass |
 | 8 | Closed Beta | ⬜ Not started | 10 pioneer businesses, klyro.app |
 
@@ -618,8 +618,59 @@ clean. (`pnpm lint` still reports 2 **pre-existing** `react-hooks/set-state-in-e
 errors in `ServiceDialog.tsx` from Phase 5 Block D — untouched here, tracked as
 debt.)
 
-**Block B** — Not started (staff UPDATE RLS policy + staff-safe status action +
-RLS verification + `git tag phase-6-done`).
+**Block B — Staff appointment actions + RLS + verification** ✅ Done
+
+Files added:
+- `supabase/migrations/0014_staff_appointment_update.sql` — `staff can update own
+  appointments` UPDATE policy (USING + symmetric WITH CHECK scoped to
+  `staff_id ∈ (staff where user_id = auth.uid())`). Applied to remote via MCP and
+  verified present in `pg_policies` with the correct clauses.
+
+Files changed:
+- `src/lib/actions/appointments.ts` — doc comment clarified to spell out both the
+  owner and staff RLS paths (the action itself is role-agnostic; no logic change)
+- `src/lib/actions/__tests__/appointments.test.ts` — 2 staff-path tests (colleague
+  appt → NOT_FOUND; own appt → success)
+- `DECISIONS.md` — ADR-047, ADR-048
+
+Tests: 555/555 passing (553 prior + 2). Typecheck clean; Block B files lint clean.
+
+**RLS verification note:** the policy is verified *structurally* (clauses in
+`pg_policies`) and inherits the guarantee of the identical, production-proven
+`staff can view own appointments` SELECT predicate (live since the staff-invite
+flow). A *behavioral* check via the Supabase MCP SQL runner is not possible — that
+admin channel bypasses RLS (an impersonated `authenticated` session still saw a
+foreign-business row), so it cannot exercise policy enforcement. No data was
+mutated (the probe ran in a rolled-back transaction; the foreign appt stayed
+`pending`). See ADR-048.
+
+---
+
+### Phase 6 Retro
+
+**What shipped:** Staff now get a scoped dashboard. Block A made the shell role-
+aware (nav filtered to Dashboard + Agenda, owner-only pages guarded by
+`requireOwner`, home banners/quick-links owner-gated) without touching the
+authorization boundary — RLS stays the real gate. Block B added the one missing
+piece for staff to *act*: an UPDATE policy letting them mark their own
+appointments completed / no-show, mirroring the long-standing staff SELECT
+policy. Staff login + accept-linking was already done (Phase 5 Block C2), so no
+auth work was needed.
+
+**What surprised us:** The Supabase MCP/Management SQL runner bypasses RLS, so it
+can't be used to behaviorally prove tenant isolation — an impersonated
+`authenticated` role (`current_user` confirmed) still read across businesses.
+Verification had to rest on structural policy inspection + the identical
+production-proven predicate + unit tests. Also a reminder of the Phase-3 lesson:
+the new migration was pushed to remote immediately (via MCP) and confirmed, not
+left local-only.
+
+**What to revisit:** (1) The 2 pre-existing `ServiceDialog` lint errors (ADR-046)
+still block a fully-green `pnpm lint` — clear them in a dedicated `fix` commit.
+(2) The staff agenda still renders the colleague/branch *filter* dropdowns even
+though RLS returns only the staff member's own appointments — harmless but could
+be hidden for staff in a polish pass. (3) No set-password screen for invited
+staff (passwordless invite link only) — fine for beta, revisit if requested.
 
 ---
 

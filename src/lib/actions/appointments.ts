@@ -33,8 +33,16 @@ async function getSessionAndBusiness() {
 
 /**
  * Update an appointment's status (mark completed / no-show / confirmed).
- * RLS already scopes writes to the owner's business; we additionally read the
- * row first for an explicit ownership check so the UI gets clean error codes.
+ *
+ * RLS is the authorization boundary and handles both roles:
+ *  - owners: "owner can manage all appointments in own business" (any appt in
+ *    their business)
+ *  - staff: "staff can update own appointments" (0014) — only their own rows;
+ *    the SELECT below also returns only the staff member's own appointments, so
+ *    a colleague's appointment id resolves to NOT_FOUND before any write.
+ *
+ * We read the row first for an explicit same-business check so the UI gets clean
+ * error codes, but the row-level isolation is enforced by RLS regardless.
  */
 export async function updateAppointmentStatus(
   appointmentId: string,
